@@ -1,0 +1,1940 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>무인도 탈출 v0.2</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0e14;--bg2:#111720;--bg3:#1a2232;--bg4:#222d40;
+  --border:#2a3a52;--border2:#3a4f6a;
+  --text:#c8d8e8;--text2:#7a9ab8;--text3:#4a6a88;
+  --accent:#e8b84b;--accent2:#c49030;
+  --green:#4caf7d;--green2:#2d7a52;
+  --red:#e05050;--red2:#9a2828;
+  --blue:#4a90d4;--blue2:#2a5a9a;
+  --purple:#9a70d4;
+  --tag-resource:#2d5a2d;--tag-resource-t:#7cd47c;
+  --tag-tool:#5a4010;--tag-tool-t:#f0b840;
+  --tag-combat:#1a2a5a;--tag-combat-t:#6090e8;
+  --tag-status:#4a1818;--tag-status-t:#e07070;
+  --font-t:'Black Han Sans',sans-serif;
+  --font-b:'Noto Sans KR',sans-serif;
+  --font-m:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.05) 2px,rgba(0,0,0,0.05) 4px);pointer-events:none;z-index:9999;}
+
+/* HEADER */
+#hdr{background:var(--bg2);border-bottom:1px solid var(--border);padding:7px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+#hdr h1{font-family:var(--font-t);font-size:17px;color:var(--accent);text-shadow:0 0 14px rgba(232,184,75,.3);}
+.hs{display:flex;align-items:center;gap:4px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:3px 8px;font-family:var(--font-m);font-size:11px;}
+.hs .lbl{color:var(--text3);font-size:9px;}
+.hs .val{font-weight:600;}.hs .val.low{color:var(--red);}
+.wpill{background:var(--bg3);border:1px solid var(--border2);border-radius:16px;padding:2px 9px;font-size:11px;color:var(--text2);}
+#doom-wrap{max-width:120px;}
+.doom-lbl{font-size:9px;color:var(--text3);font-family:var(--font-m);margin-bottom:2px;}
+.doom-trk{height:4px;background:var(--bg4);border-radius:2px;overflow:hidden;}
+.doom-fill{height:4px;background:linear-gradient(90deg,var(--accent2),var(--red));transition:width .5s;}
+
+/* LAYOUT */
+#layout{display:grid;grid-template-columns:330px 1fr 244px;height:calc(100vh - 50px);}
+#map-col{border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+#ctr-col{display:flex;flex-direction:column;overflow:hidden;}
+#rgt-col{border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.col-hdr{background:var(--bg2);border-bottom:1px solid var(--border);padding:6px 11px;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);font-family:var(--font-m);display:flex;align-items:center;gap:5px;}
+.col-hdr span{color:var(--accent);}
+
+/* MAP */
+#map-wrap{padding:9px;overflow:auto;flex:1;}
+#grid{display:grid;grid-template-columns:repeat(10,29px);gap:2px;}
+.tile{width:29px;height:29px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;border:1px solid transparent;transition:all .1s;position:relative;user-select:none;}
+.tile.fog{background:#0d1420;cursor:default;}.tile.fog::after{content:'▓';color:#1e2d40;font-size:9px;}
+.tile:not(.fog):hover{border-color:var(--border2);transform:scale(1.1);z-index:2;}
+.tile.player{border-color:var(--accent)!important;border-width:2px;box-shadow:0 0 7px rgba(232,184,75,.4);}
+.tile.camp-t{box-shadow:inset 0 0 5px rgba(76,175,125,.3);}
+.tile.explored::after{content:'·';position:absolute;bottom:1px;right:2px;font-size:7px;color:var(--green2);}
+.tile.t-beach{background:#1a1a0e;border-color:#3a3010;}.tile.t-forest{background:#0e1a10;border-color:#103018;}
+.tile.t-cave{background:#141418;border-color:#2a2a32;}.tile.t-ruins{background:#14100e;border-color:#2a2018;}
+.tile.t-shore{background:#0e1420;border-color:#103040;}
+
+/* ACTIONS */
+#act-panel{padding:7px 9px;border-top:1px solid var(--border);}
+.act-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.btn{font-family:var(--font-b);font-size:11px;font-weight:500;padding:5px 9px;border-radius:5px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);cursor:pointer;transition:all .12s;display:flex;align-items:center;gap:4px;}
+.btn:hover:not(:disabled){background:var(--bg4);border-color:var(--text3);}
+.btn:disabled{opacity:.35;cursor:default;}
+.btn.primary{border-color:var(--accent2);background:rgba(232,184,75,.08);color:var(--accent);}
+.btn.primary:hover:not(:disabled){background:rgba(232,184,75,.15);}
+.btn.green-btn{border-color:var(--green2);background:rgba(76,175,125,.08);color:var(--green);}
+.btn.green-btn:hover:not(:disabled){background:rgba(76,175,125,.15);}
+.btn.purple-btn{border-color:var(--purple);background:rgba(154,112,212,.08);color:var(--purple);}
+.btn.full{grid-column:span 2;}
+.apb{margin-left:auto;background:var(--bg4);border-radius:3px;padding:1px 4px;font-size:8px;color:var(--text3);font-family:var(--font-m);}
+
+/* STATS */
+#stats-wrap{padding:9px 11px;overflow-y:auto;flex:1;}
+.sb{margin-bottom:8px;}
+.srh{display:flex;justify-content:space-between;margin-bottom:2px;}
+.sn{font-size:9px;color:var(--text3);font-family:var(--font-m);}
+.sv{font-size:10px;font-weight:600;font-family:var(--font-m);}
+.strk{height:4px;background:var(--bg4);border-radius:2px;overflow:hidden;}
+.bar{height:4px;border-radius:2px;transition:width .4s;}
+.bar-hp{background:var(--green);}.bar-san{background:var(--purple);}
+.bar-hun{background:var(--accent);}.bar-thi{background:var(--blue);}
+.info-box{margin-top:8px;background:var(--bg3);border-radius:6px;padding:8px;font-family:var(--font-m);font-size:9px;}
+.info-box .lbl{color:var(--text3);font-size:8px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;}
+
+/* DECK */
+#deck-area{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+#deck-scroll{padding:7px;overflow-y:auto;flex:1;}
+.dk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:5px;}
+.card{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;cursor:pointer;transition:all .14s;min-height:78px;}
+.card:hover{transform:translateY(-3px);border-color:var(--border2);}
+.card-icon{font-size:18px;margin-bottom:2px;}
+.card-name{font-size:7px;font-weight:700;color:var(--text);text-align:center;margin-bottom:2px;}
+.card-tag{font-size:6px;padding:1px 3px;border-radius:2px;font-family:var(--font-m);font-weight:600;margin-bottom:2px;}
+.card-stats{font-size:7px;color:var(--text3);font-family:var(--font-m);}
+.tag-resource{background:var(--tag-resource);color:var(--tag-resource-t);}
+.tag-tool{background:var(--tag-tool);color:var(--tag-tool-t);}
+.tag-combat{background:var(--tag-combat);color:var(--tag-combat-t);}
+.tag-status{background:var(--tag-status);color:var(--tag-status-t);}
+
+/* LOG */
+#log-main{height:190px;overflow-y:auto;padding:5px 7px;}
+.le{font-size:9px;padding:2px 4px;border-radius:3px;margin-bottom:2px;line-height:1.4;color:var(--text2);font-family:var(--font-m);}
+.le.important{color:var(--text);background:rgba(255,255,255,.02);}
+.le.success{color:var(--green);}.le.danger{color:var(--red);}
+.le.system{color:var(--accent);}.le.combat{color:var(--blue);}
+.le.gather{color:#70b0e0;}
+
+/* TOOLTIP */
+#tt{display:none;position:fixed;z-index:700;pointer-events:none;width:170px;}
+.tt-inner{background:var(--bg2);border:1px solid var(--border2);border-radius:9px;padding:11px 10px;box-shadow:0 8px 26px rgba(0,0,0,.65);}
+.tt-icon{font-size:26px;text-align:center;margin-bottom:5px;}
+.tt-name{font-family:var(--font-t);font-size:13px;color:var(--text);text-align:center;margin-bottom:3px;}
+.tt-sts{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:6px;}
+.tt-st{background:var(--bg4);border-radius:3px;padding:3px;text-align:center;}
+.tt-sl{font-size:7px;color:var(--text3);}.tt-sv{font-size:12px;font-weight:600;font-family:var(--font-m);}
+.tt-sv.pos{color:var(--green);}.tt-sv.neg{color:var(--red);}.tt-sv.zero{color:var(--text3);}
+.tt-desc{font-size:9px;color:var(--text2);line-height:1.5;border-top:1px solid var(--border);padding-top:6px;}
+.tt-fx{font-size:9px;margin-top:4px;padding:3px 6px;border-radius:3px;}
+.tt-use{color:var(--green);background:rgba(76,175,125,.1);}
+.tt-passive{color:var(--accent);background:rgba(232,184,75,.08);}
+.tt-cbt{color:var(--blue);background:rgba(74,144,212,.08);}
+.tt-gather{color:#70b0e0;background:rgba(112,176,224,.08);}
+.tt-consumable{color:var(--red);background:rgba(224,80,80,.08);}
+
+/* MODALS */
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:50;align-items:center;justify-content:center;}
+.mb{background:var(--bg2);border:1px solid var(--border2);border-radius:13px;padding:20px;max-width:95vw;}
+.mo-title{font-family:var(--font-t);margin-bottom:4px;}
+
+/* DECK VIEWER */
+#dv-mo{z-index:300;align-items:flex-start;padding-top:48px;overflow-y:auto;}
+#dv-box{width:680px;max-height:85vh;overflow-y:auto;}
+.dv-tabs{display:flex;gap:4px;margin-bottom:10px;border-bottom:1px solid var(--border);padding-bottom:7px;}
+.dv-tab{font-size:9px;padding:3px 9px;border-radius:4px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;font-family:var(--font-m);}
+.dv-tab.active{border-color:var(--accent2);background:rgba(232,184,75,.1);color:var(--accent);}
+.dv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:6px;}
+.dv-card{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 4px;text-align:center;cursor:pointer;transition:all .12s;}
+.dv-card:hover{border-color:var(--border2);transform:translateY(-2px);}
+.dc-icon{font-size:18px;margin-bottom:2px;}.dc-name{font-size:7px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.dc-atk{font-size:7px;color:var(--text3);font-family:var(--font-m);}
+.dv-empty{color:var(--text3);font-size:11px;padding:18px;text-align:center;font-family:var(--font-m);grid-column:1/-1;}
+
+/* EXPLORE */
+#ex-mo{z-index:55;}
+#ex-box{width:510px;}
+.ex-title{font-size:19px;color:var(--accent);}
+.ex-flavor{font-size:11px;color:var(--text2);margin-bottom:14px;line-height:1.6;}
+.ex-choice{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;cursor:pointer;transition:all .12s;display:flex;align-items:flex-start;gap:9px;margin-bottom:6px;}
+.ex-choice:hover{border-color:var(--accent2);background:rgba(232,184,75,.04);transform:translateX(3px);}
+.ex-ci{font-size:19px;flex-shrink:0;margin-top:2px;}
+.ex-cn{font-size:11px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.ex-cd{font-size:9px;color:var(--text3);font-family:var(--font-m);line-height:1.5;}
+
+/* JUDGMENT */
+#jdg-mo{z-index:60;}
+#jdg-box{width:420px;text-align:center;}
+.jdg-title{font-size:15px;color:var(--text2);margin-bottom:10px;}
+.jdg-req{font-size:9px;color:var(--text3);font-family:var(--font-m);margin-bottom:10px;}
+.jdg-wrap{perspective:600px;margin:0 auto 16px;width:90px;height:118px;}
+.jdg-card{width:90px;height:118px;position:relative;transform-style:preserve-3d;transition:transform .65s cubic-bezier(.4,0,.2,1);}
+.jdg-card.flipped{transform:rotateY(180deg);}
+.jdg-front,.jdg-back{position:absolute;inset:0;border-radius:9px;backface-visibility:hidden;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;}
+.jdg-front{background:var(--bg3);border:2px solid var(--border2);}.jdg-front::before{content:'?';font-family:var(--font-t);font-size:40px;color:var(--border2);}
+.jdg-back{background:var(--bg3);border:2px solid var(--border);transform:rotateY(180deg);padding:6px;}
+.jdg-back.ok{border-color:var(--green);box-shadow:0 0 16px rgba(76,175,125,.3);}
+.jdg-back.great{border-color:var(--accent);box-shadow:0 0 20px rgba(232,184,75,.45);}
+.jdg-back.fail{border-color:var(--red);box-shadow:0 0 16px rgba(224,80,80,.3);}
+.jdg-cicon{font-size:24px;}.jdg-cname{font-size:9px;font-weight:700;color:var(--text);}
+.jdg-res{font-family:var(--font-t);font-size:20px;margin-bottom:5px;}
+.jdg-res.ok{color:var(--green);}.jdg-res.great{color:var(--accent);}.jdg-res.fail{color:var(--red);}
+.jdg-detail{font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:10px;font-family:var(--font-m);white-space:pre-line;}
+.jdg-bonus{font-size:10px;color:var(--accent);font-family:var(--font-m);padding:4px 8px;background:rgba(232,184,75,.08);border-radius:4px;margin-bottom:9px;}
+
+/* GATHER */
+#ga-mo{z-index:56;}
+#ga-box{width:480px;}
+
+/* USE CARD */
+#uc-mo{z-index:80;}
+#uc-box{width:580px;}
+
+/* CRAFT */
+#cr-mo{z-index:70;align-items:flex-start;padding-top:48px;overflow-y:auto;}
+#cr-box{width:640px;max-height:88vh;overflow-y:auto;}
+.cr-recipe{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:11px;display:flex;flex-direction:column;gap:5px;transition:border-color .15s;}
+.cr-recipe.avail{border-color:var(--purple);}
+
+/* SLEEP EVENT */
+#se-mo{z-index:90;}
+#se-box{width:450px;text-align:center;}
+.sc-row{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin:14px 0;}
+.sc{width:68px;height:90px;border-radius:8px;background:var(--bg3);border:1px solid var(--border2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:26px;transition:all .15s;position:relative;}
+.sc:hover:not(.revealed){border-color:var(--accent2);transform:translateY(-4px);}
+.sc.revealed{cursor:default;}
+.sc.sc-ok{border-color:var(--green);box-shadow:0 0 10px rgba(76,175,125,.28);}
+.sc.sc-fail{border-color:var(--red);box-shadow:0 0 10px rgba(224,80,80,.28);}
+.sc.sc-bad{border-color:var(--red);background:rgba(224,80,80,.1);}
+.sc::before{content:'?';font-family:var(--font-t);font-size:30px;color:var(--border);position:absolute;}
+.sc.revealed::before{display:none;}
+
+/* COMBAT */
+#cbt-mo{z-index:100;}
+#cbt-box{width:700px;max-height:95vh;overflow-y:auto;}
+.cbt-title{font-family:var(--font-t);font-size:19px;color:var(--red);margin-bottom:3px;text-shadow:0 0 12px rgba(224,80,80,.4);}
+.enemy-area{display:flex;gap:12px;margin-bottom:12px;}
+.enemy-card{background:var(--bg3);border:1px solid var(--red2);border-radius:8px;padding:12px;flex:0 0 130px;text-align:center;}
+.enemy-icon{font-size:32px;margin-bottom:5px;}.enemy-name{font-family:var(--font-t);font-size:14px;color:var(--red);margin-bottom:3px;}
+.ehp-trk{height:6px;background:var(--bg4);border-radius:3px;margin:5px 0;overflow:hidden;}
+.ehp-fill{height:6px;background:var(--red);border-radius:3px;transition:width .4s;}
+.cbt-zones{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px;}
+.zone{background:var(--bg3);border:1px dashed var(--border2);border-radius:7px;padding:8px;min-height:74px;}
+.zone.atk-z{border-color:var(--red2);}.zone.def-z{border-color:var(--blue2);}
+.zone-title{font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:5px;font-family:var(--font-m);}
+.mini-card{background:var(--bg4);border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-size:8px;display:inline-flex;align-items:center;gap:3px;cursor:pointer;margin:2px;font-family:var(--font-m);}
+.cbt-hd{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+.c-card{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:6px;width:60px;text-align:center;cursor:pointer;transition:all .12s;}
+.c-card:hover{transform:translateY(-3px);border-color:var(--border2);}
+.c-card.a-atk{border-color:var(--red);background:rgba(224,80,80,.08);}
+.c-card.a-def{border-color:var(--blue);background:rgba(74,144,212,.08);}
+.smart-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px;}
+.res-area{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px;margin-bottom:9px;font-family:var(--font-m);font-size:10px;line-height:1.8;}
+.rl{margin-bottom:1px;}.rl.good{color:var(--green);}.rl.bad{color:var(--red);}.rl.neutral{color:var(--text2);}
+.cbt-btn-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;margin-top:8px;}
+
+/* GAMEOVER */
+#go-scr{display:none;position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:200;align-items:center;justify-content:center;flex-direction:column;gap:13px;}
+.go-title{font-family:var(--font-t);font-size:42px;letter-spacing:.05em;}
+.go-title.dead{color:var(--red);text-shadow:0 0 26px rgba(224,80,80,.5);}
+.go-title.win{color:var(--accent);text-shadow:0 0 26px rgba(232,184,75,.5);}
+.go-sub{font-size:12px;color:var(--text2);font-family:var(--font-m);}
+.go-stats{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 18px;font-family:var(--font-m);font-size:10px;color:var(--text2);line-height:2;}
+
+::-webkit-scrollbar{width:3px;height:3px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.fi{animation:fadeIn .2s ease;}
+
+/* ══ MOBILE ══ */
+#mob-tabs{display:none;position:fixed;bottom:0;left:0;right:0;z-index:800;background:var(--bg2);border-top:1px solid var(--border);grid-template-columns:repeat(4,1fr);}
+.mob-tab{padding:8px 4px 10px;text-align:center;font-size:9px;color:var(--text3);font-family:var(--font-m);cursor:pointer;transition:color .15s;border:none;background:none;position:relative;}
+.mob-tab .mt-icon{font-size:18px;display:block;margin-bottom:2px;}
+.mob-tab.active{color:var(--accent);}
+.mob-tab.active .mt-icon{filter:drop-shadow(0 0 4px var(--accent));}
+.tab-badge{position:absolute;top:4px;right:6px;background:var(--red);color:#fff;font-size:7px;font-family:var(--font-m);font-weight:700;border-radius:8px;padding:1px 4px;display:none;}
+.tab-badge.show{display:block;}
+
+@media(max-width:700px){
+  #hdr{padding:5px 10px;gap:6px;}
+  #hdr h1{font-size:14px;}
+  .hs{padding:2px 6px;font-size:10px;}
+  .hs .lbl{display:none;}
+  .wpill{display:none;}
+  #hdr>span:nth-child(6){display:none;}
+  #doom-wrap{max-width:80px;}
+  #layout{display:block;height:calc(100vh - 50px - 54px);overflow:hidden;position:relative;}
+  #map-col,#ctr-col,#rgt-col{position:absolute;inset:0;display:none;flex-direction:column;overflow:hidden;transition:opacity .15s;}
+  #map-col.mob-active,#ctr-col.mob-active,#rgt-col.mob-active{display:flex;}
+  #mob-tabs{display:grid;}
+  #grid{grid-template-columns:repeat(10,calc((100vw - 20px)/10));gap:1px;}
+  .tile{width:calc((100vw - 20px)/10);height:calc((100vw - 20px)/10);font-size:11px;border-radius:3px;}
+  .act-grid{grid-template-columns:1fr 1fr;gap:4px;}
+  .btn{font-size:12px;padding:10px 8px;border-radius:7px;justify-content:center;}
+  .apb{font-size:9px;}
+  .mb{width:95vw!important;max-width:95vw!important;padding:14px!important;}
+  #dv-box,#cr-box{width:95vw!important;}
+  #cbt-box{width:95vw!important;max-height:90vh!important;}
+  .c-card{width:52px;padding:5px;}
+  .dk-grid{grid-template-columns:repeat(auto-fill,minmax(58px,1fr));}
+  #log-main{height:calc(100vh - 50px - 54px - 38px - 180px);max-height:300px;}
+  .ex-choice{padding:10px;}
+  .sc{width:56px;height:76px;}
+  .sc::before{font-size:24px;}
+  .smart-row{gap:4px;}
+  .smart-row .btn{font-size:8px;padding:6px 5px;}
+  #stats-wrap{padding:8px 10px;}
+  #cr-list{grid-template-columns:1fr!important;}
+  .dv-tab{font-size:10px;padding:5px 10px;}
+  .sc-row{gap:6px;}
+  .jdg-wrap{width:80px;height:106px;}
+  .jdg-card{width:80px;height:106px;}
+}
+@media(max-width:380px){
+  .tile{font-size:9px;}
+  .btn{font-size:11px;}
+  .sc{width:48px;height:66px;}
+}
+
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="hdr">
+  <h1>🏝 무인도 탈출</h1>
+  <div class="hs"><span class="lbl">HP</span><span class="val" id="hv-hp">100</span></div>
+  <div class="hs"><span class="lbl">정신력</span><span class="val" id="hv-san">100</span></div>
+  <div class="hs"><span class="lbl">허기</span><span class="val" id="hv-hun">80</span></div>
+  <div class="hs"><span class="lbl">갈증</span><span class="val" id="hv-thi">80</span></div>
+  <div class="wpill" id="hv-wx">☀️ 맑음</div>
+  <span style="font-size:9px;color:var(--text3);">내일: <span id="hv-tmrw" style="color:var(--text2);">?</span></span>
+  <div style="margin-left:auto;font-family:var(--font-m);font-size:11px;">
+    <span style="color:var(--text3);">DAY </span><span id="hv-day" style="color:var(--accent);font-weight:600;">1</span>
+    &nbsp;&nbsp;<span style="color:var(--text3);">AP </span><span id="hv-ap" style="font-weight:600;">10</span>
+  </div>
+  <div id="doom-wrap">
+    <div class="doom-lbl">DOOM <span id="doom-pct">0</span>%</div>
+    <div class="doom-trk"><div class="doom-fill" id="doom-fill" style="width:0%"></div></div>
+  </div>
+  <span style="font-size:9px;color:var(--text3);">탈출 <span id="hv-esc" style="color:var(--green);">0</span>%</span>
+</div>
+
+<div id="layout">
+
+  <!-- MAP -->
+  <div id="map-col">
+    <div class="col-hdr">🗺 탐색 맵 <span>난파선 섬</span></div>
+    <div id="map-wrap">
+      <div id="grid"></div>
+      <div style="margin-top:7px;font-size:8px;color:var(--text3);font-family:var(--font-m);display:flex;gap:7px;flex-wrap:wrap;">
+        <span>🏖️해변</span><span>🌲숲</span><span>🪨동굴</span><span>🏚️폐허</span><span>🌊해안</span>
+        <span style="color:var(--accent);">🧍나</span><span style="color:var(--green);">🏕️캠프</span>
+      </div>
+    </div>
+    <div id="act-panel">
+      <div class="act-grid">
+        <button class="btn" id="btn-exp" onclick="doExplore()">🔍 탐색 <span class="apb">AP2</span></button>
+        <button class="btn" id="btn-ga" onclick="openGather()">🎒 수집 <span class="apb">AP3</span></button>
+        <button class="btn" id="btn-camp" onclick="doCamp()">🏕️ 캠프 건설 <span class="apb">AP8</span></button>
+        <button class="btn purple-btn" id="btn-craft" onclick="openCraft()">🔨 제작 <span style="font-size:8px;color:var(--text3);">캠프·AP1~</span></button>
+        <button class="btn green-btn full" id="btn-use" onclick="openUseCard()">✨ 카드 사용 — 5장 드로우 <span class="apb">AP1</span></button>
+        <button class="btn primary full" id="btn-sleep" onclick="doSleep()">🌙 취침 → 다음날</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER -->
+  <div id="ctr-col">
+    <div class="col-hdr">📦 덱 <span id="dk-total">0</span>장
+      <span style="margin-left:4px;font-size:8px;">잔여:<span id="dk-deck">0</span> 버림:<span id="dk-disc">0</span></span>
+      <button class="btn" onclick="openDv()" style="padding:1px 6px;font-size:8px;margin-left:auto;">🔎 덱 보기</button>
+    </div>
+    <div id="deck-area">
+      <div id="deck-scroll">
+        <div class="dk-grid" id="deck-grid"></div>
+        <div style="margin-top:8px;padding:7px;background:var(--bg3);border-radius:5px;font-size:8px;color:var(--text3);font-family:var(--font-m);line-height:1.8;">
+          🍗💧🌿 내구도 소진 시 영구 제거 | 🔨 제작 캠프(AP1~) | 🎒 수집 탐색완료+장비 필요 | AP10으로 시작
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="col-hdr">📋 게임 로그</div>
+      <div id="log-main"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div id="rgt-col">
+    <div class="col-hdr">📊 생존 수치</div>
+    <div id="stats-wrap">
+      <div class="sb"><div class="srh"><span class="sn">❤️ 체력</span><span class="sv" id="sv-hp">100</span></div><div class="strk"><div class="bar bar-hp" id="bar-hp" style="width:100%"></div></div></div>
+      <div class="sb"><div class="srh"><span class="sn">🧠 정신력</span><span class="sv" id="sv-san">100</span></div><div class="strk"><div class="bar bar-san" id="bar-san" style="width:100%"></div></div></div>
+      <div class="sb"><div class="srh"><span class="sn">🍗 허기</span><span class="sv" id="sv-hun">80</span></div><div class="strk"><div class="bar bar-hun" id="bar-hun" style="width:80%"></div></div></div>
+      <div class="sb"><div class="srh"><span class="sn">💧 갈증</span><span class="sv" id="sv-thi">80</span></div><div class="strk"><div class="bar bar-thi" id="bar-thi" style="width:80%"></div></div></div>
+      <div class="info-box">
+        <div class="lbl">탈출 진행도</div>
+        <div class="strk" style="height:7px;"><div class="bar" id="bar-esc" style="width:0%;background:var(--green);height:7px;border-radius:3px;"></div></div>
+        <div style="margin-top:3px;color:var(--green);font-size:11px;font-weight:600;" id="sv-esc">0%</div>
+      </div>
+      <div class="info-box">
+        <div class="lbl">캠프 현황</div>
+        <div id="camp-info" style="color:var(--text2);">캠프 없음</div>
+      </div>
+      <div class="info-box">
+        <div class="lbl">활성 패시브</div>
+        <div id="passive-info" style="color:var(--text3);line-height:1.6;">없음</div>
+      </div>
+      <div class="info-box" style="line-height:1.8;">
+        <div class="lbl">조작</div>
+        <span style="color:var(--text3);">타일클릭→이동(AP1~, 캠프 거리 비례) | 탐색→이벤트+판정<br>수집→탐색완료+장비(반복 시 성공률 감소) | 제작→캠프(AP소모)<br>카드사용(AP1)→🔋내구도 소진 시 영구제거 | 캠프건설AP8<br>취침→허기갈증 소모 | 일찍자면 노숙이벤트↓</span>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /layout -->
+
+<!-- 모바일 탭바 -->
+<div id="mob-tabs">
+  <button class="mob-tab active" id="mtab-map" onclick="mobTab('map')">
+    <span class="mt-icon">🗺️</span>맵·행동
+  </button>
+  <button class="mob-tab" id="mtab-deck" onclick="mobTab('deck')">
+    <span class="mt-icon">📦</span>덱·로그
+    <span class="tab-badge" id="badge-deck"></span>
+  </button>
+  <button class="mob-tab" id="mtab-stat" onclick="mobTab('stat')">
+    <span class="mt-icon">📊</span>생존수치
+    <span class="tab-badge" id="badge-stat"></span>
+  </button>
+  <button class="mob-tab" id="mtab-help" onclick="mobTab('help')">
+    <span class="mt-icon">❓</span>도움말
+  </button>
+</div>
+
+<!-- TOOLTIP -->
+<div id="tt"><div class="tt-inner">
+  <div class="tt-icon" id="tt-icon"></div>
+  <div class="tt-name" id="tt-name"></div>
+  <div style="text-align:center;margin-bottom:6px;" id="tt-tag"></div>
+  <div class="tt-sts">
+    <div class="tt-st"><div class="tt-sl">공격</div><div class="tt-sv" id="tt-atk">0</div></div>
+    <div class="tt-st"><div class="tt-sl">방어</div><div class="tt-sv" id="tt-def">0</div></div>
+  </div>
+  <div class="tt-desc" id="tt-desc"></div>
+  <div class="tt-fx tt-consumable" id="tt-con" style="display:none;"></div>
+  <div class="tt-fx tt-use" id="tt-use" style="display:none;"></div>
+  <div class="tt-fx tt-passive" id="tt-pass" style="display:none;"></div>
+  <div class="tt-fx tt-cbt" id="tt-cbt" style="display:none;"></div>
+  <div class="tt-fx tt-gather" id="tt-ga" style="display:none;"></div>
+</div></div>
+
+<!-- DECK VIEWER -->
+<div id="dv-mo" class="mo">
+  <div id="dv-box" class="mb">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;">
+      <div style="font-family:var(--font-t);font-size:16px;color:var(--accent);">📦 덱 구성</div>
+      <button class="btn" onclick="closeDv()">✕ 닫기</button>
+    </div>
+    <div class="dv-tabs">
+      <button class="dv-tab active" id="dvt-all" onclick="dvSwitch('all')">전체 (<span id="dvn-all">0</span>)</button>
+      <button class="dv-tab" id="dvt-deck" onclick="dvSwitch('deck')">잔여 (<span id="dvn-deck">0</span>)</button>
+      <button class="dv-tab" id="dvt-disc" onclick="dvSwitch('disc')">버림 (<span id="dvn-disc">0</span>)</button>
+    </div>
+    <div class="dv-grid" id="dv-grid"></div>
+  </div>
+</div>
+
+<!-- EXPLORE CHOICE -->
+<div id="ex-mo" class="mo">
+  <div id="ex-box" class="mb">
+    <div class="mo-title ex-title" id="ex-title"></div>
+    <div class="ex-flavor" id="ex-flavor"></div>
+    <div id="ex-choices"></div>
+    <div style="font-size:8px;color:var(--text3);font-family:var(--font-m);text-align:right;margin-top:3px;">★ 특정 카드 뽑히면 대성공!</div>
+  </div>
+</div>
+
+<!-- JUDGMENT -->
+<div id="jdg-mo" class="mo">
+  <div id="jdg-box" class="mb">
+    <div class="jdg-title" id="jdg-title">판정 중...</div>
+    <div class="jdg-req" id="jdg-req"></div>
+    <div class="jdg-wrap"><div class="jdg-card" id="jdg-card">
+      <div class="jdg-front"></div>
+      <div class="jdg-back" id="jdg-back">
+        <div class="jdg-cicon" id="jdg-cicon"></div>
+        <div class="jdg-cname" id="jdg-cname"></div>
+        <div id="jdg-ctag"></div>
+      </div>
+    </div></div>
+    <div class="jdg-res" id="jdg-res" style="display:none;"></div>
+    <div class="jdg-detail" id="jdg-det" style="display:none;"></div>
+    <div class="jdg-bonus" id="jdg-bon" style="display:none;"></div>
+    <button class="btn primary" id="jdg-ok" onclick="closeJdg()" style="display:none;">확인</button>
+  </div>
+</div>
+
+<!-- GATHER -->
+<div id="ga-mo" class="mo">
+  <div id="ga-box" class="mb">
+    <div class="mo-title" id="ga-title" style="font-size:17px;color:#70b0e0;margin-bottom:3px;"></div>
+    <div style="font-size:10px;color:var(--text2);margin-bottom:11px;" id="ga-flavor"></div>
+    <div id="ga-opts" style="display:flex;flex-direction:column;gap:6px;"></div>
+    <div style="margin-top:8px;font-size:9px;color:var(--text3);font-family:var(--font-m);" id="ga-note"></div>
+  </div>
+</div>
+
+<!-- CRAFT -->
+<div id="cr-mo" class="mo">
+  <div id="cr-box" class="mb">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <div style="font-family:var(--font-t);font-size:17px;color:var(--purple);">🔨 캠프 제작소</div>
+      <button class="btn" onclick="closeCraft()">✕ 닫기</button>
+    </div>
+    <div id="cr-mats" style="display:flex;gap:5px;flex-wrap:wrap;padding:7px;background:var(--bg3);border-radius:6px;font-family:var(--font-m);font-size:9px;margin-bottom:10px;"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;" id="cr-list"></div>
+    <div id="cr-msg" style="margin-top:8px;padding:6px 8px;background:var(--bg3);border-radius:4px;font-size:9px;font-family:var(--font-m);display:none;"></div>
+  </div>
+</div>
+
+<!-- USE CARD -->
+<div id="uc-mo" class="mo">
+  <div id="uc-box" class="mb">
+    <div style="font-family:var(--font-t);font-size:16px;color:var(--green);margin-bottom:3px;">✨ 카드 사용</div>
+    <div style="font-size:9px;color:var(--text3);font-family:var(--font-m);margin-bottom:10px;" id="uc-sub"></div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin-bottom:10px;" id="uc-cards"></div>
+    <div id="uc-result" style="font-size:10px;font-family:var(--font-m);min-height:16px;margin-bottom:8px;"></div>
+    <div style="display:flex;justify-content:flex-end;">
+      <button class="btn primary" onclick="closeUseCard()">완료 (나머지 버림)</button>
+    </div>
+  </div>
+</div>
+
+<!-- SLEEP EVENT -->
+<div id="se-mo" class="mo">
+  <div id="se-box" class="mb">
+    <div style="font-family:var(--font-t);font-size:18px;color:var(--text2);margin-bottom:7px;" id="se-title"></div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:12px;line-height:1.6;" id="se-flavor"></div>
+    <div style="font-size:9px;color:var(--text3);font-family:var(--font-m);margin-bottom:8px;" id="se-hint"></div>
+    <div class="sc-row" id="se-cards"></div>
+    <div id="se-result" style="min-height:34px;font-family:var(--font-m);font-size:11px;margin-bottom:10px;"></div>
+    <button class="btn primary" id="se-ok" onclick="closeSleepEvt()" style="display:none;">다음날로 →</button>
+  </div>
+</div>
+
+<!-- COMBAT -->
+<div id="cbt-mo" class="mo">
+  <div id="cbt-box" class="mb">
+    <div class="cbt-title" id="cbt-title">⚔️ 전투!</div>
+    <div style="font-size:9px;color:var(--text3);font-family:var(--font-m);margin-bottom:9px;" id="cbt-sub"></div>
+    <div class="enemy-area">
+      <div class="enemy-card">
+        <div class="enemy-icon" id="cbt-eicon"></div>
+        <div class="enemy-name" id="cbt-ename"></div>
+        <div style="font-size:9px;font-family:var(--font-m);color:var(--text3);">HP <span id="cbt-ehp">0</span>/<span id="cbt-emhp">0</span></div>
+        <div class="ehp-trk"><div class="ehp-fill" id="cbt-ehpbar" style="width:100%"></div></div>
+        <div style="font-size:9px;color:var(--text2);font-family:var(--font-m);margin-top:4px;" id="cbt-intent"></div>
+      </div>
+      <div style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:9px;font-family:var(--font-m);line-height:1.9;color:var(--text2);">
+        카드 클릭→팝업에서 공/방 지정<br>
+        <b style="color:var(--red);">⚔️ 공격모드</b> 클릭 후 카드클릭=공격 일괄<br>
+        <b style="color:var(--blue);">🛡️ 방어모드</b> 클릭 후 카드클릭=방어 일괄<br>
+        <b style="color:var(--accent);">⚡ 스마트</b> = ATK>0→공격, DEF>0→방어 자동배정
+        <div id="cbt-sfx" style="margin-top:5px;"></div>
+      </div>
+    </div>
+    <div class="smart-row">
+      <button class="btn" onclick="smartAssign()" style="font-size:9px;">⚡ 스마트 자동배정</button>
+      <button class="btn" id="btn-matk" onclick="setCbtMode('atk')" style="font-size:9px;border-color:var(--red2);color:var(--red);">⚔️ 공격모드</button>
+      <button class="btn" id="btn-mdef" onclick="setCbtMode('def')" style="font-size:9px;border-color:var(--blue2);color:var(--blue);">🛡️ 방어모드</button>
+      <button class="btn" onclick="setCbtMode(null)" style="font-size:9px;">모드해제</button>
+      <button class="btn" onclick="clearAssign()" style="font-size:9px;margin-left:auto;">초기화</button>
+    </div>
+    <div class="cbt-zones">
+      <div class="zone atk-z"><div class="zone-title">⚔️ 공격 합계: <span id="atk-tot">0</span></div><div id="atk-zone"></div></div>
+      <div class="zone def-z"><div class="zone-title">🛡️ 방어 합계: <span id="def-tot">0</span></div><div id="def-zone"></div></div>
+    </div>
+    <div style="font-size:8px;color:var(--text3);font-family:var(--font-m);margin-bottom:5px;">핸드 — 클릭하여 배정 | 배정된 카드 재클릭 시 해제</div>
+    <div class="cbt-hd" id="cbt-hand"></div>
+    <div class="res-area" id="cbt-res" style="display:none;"></div>
+    <div class="cbt-btn-row">
+      <button class="btn" id="btn-cbt-resolve" onclick="resolveCombat()">⚔️ 전투 해결</button>
+      <button class="btn primary" id="btn-cbt-flee" onclick="fleeCombat()">💨 도망 (HP-8)</button>
+      <button class="btn green-btn" id="btn-cbt-close" onclick="closeCombat()" style="display:none;">✓ 전투 종료</button>
+    </div>
+  </div>
+</div>
+
+<!-- GAMEOVER -->
+<div id="go-scr">
+  <div class="go-title" id="go-title">💀 게임 오버</div>
+  <div class="go-sub" id="go-sub"></div>
+  <div class="go-stats" id="go-stats"></div>
+  <button class="btn primary" onclick="initGame()" style="font-size:13px;padding:9px 20px;">🔄 다시 시작</button>
+</div>
+
+<!-- JS: 로드 순서 중요 -->
+<script>
+// ═══════════════ DATA ═══════════════
+
+const TILE_TYPES=[
+  {id:'beach', name:'해변',icon:'🏖️',cls:'t-beach',flavor:'해변의 모래사장을 걷는다. 파도 소리가 들려온다.',
+   events:['res_wood','res_metal','res_food','nothing'],
+   gather:[{tool:'fishing_rod',res:'food',label:'낚시',flavor:'해변에서 낚싯대로 물고기를 잡는다.'}]},
+  {id:'forest',name:'숲',  icon:'🌲',cls:'t-forest',flavor:'울창한 숲이다. 여러 동식물의 소리가 들린다.',
+   events:['res_food','res_herb','cbt_boar','cbt_snake','nothing'],
+   gather:[
+     {tool:'gathering_knife',res:'herb',label:'약초채집',flavor:'채집칼로 약초를 모은다.'},
+     {tool:'axe',res:'wood',label:'나무베기',flavor:'도끼로 나무를 벤다.'},
+   ]},
+  {id:'cave',  name:'동굴',icon:'🪨',cls:'t-cave',flavor:'어두운 동굴 입구가 보인다. 안에서 차가운 공기가 흘러나온다.',
+   events:['res_metal','cbt_bat','find_shelter','nothing'],
+   gather:[{tool:'pickaxe',res:'metal',label:'채굴',flavor:'곡괭이로 동굴 벽을 캔다.'}]},
+  {id:'ruins', name:'폐허',icon:'🏚️',cls:'t-ruins',flavor:'오래된 구조물의 잔해가 흩어져 있다. 무언가 숨겨져 있을 것 같다.',
+   events:['res_metal','find_blueprint','cbt_ghost','res_food'],
+   gather:[{tool:'torch',res:'metal',label:'유물탐색',flavor:'횃불로 폐허를 샅샅이 뒤진다.'}]},
+  {id:'shore', name:'해안',icon:'🌊',cls:'t-shore',flavor:'거친 파도가 해안을 두드린다. 표류물이 밀려와 있다.',
+   events:['res_food','res_metal','find_wreckage','nothing'],
+   gather:[
+     {tool:'fishing_rod',res:'food',label:'낚시',flavor:'해안에서 낚싯대로 낚시한다.'},
+     {tool:'canteen',res:'water',label:'물 채집',flavor:'물통에 깨끗한 물을 담는다.'},
+   ]},
+];
+
+const WEATHER=[
+  {id:'sunny', name:'맑음',    icon:'☀️', eff:null},
+  {id:'cloudy',name:'흐림',    icon:'☁️', eff:null},
+  {id:'rain',  name:'폭우',    icon:'🌧️',eff:'ap_-1'},
+  {id:'heat',  name:'폭염',    icon:'🔥', eff:'thi_-14'},
+  {id:'fog',   name:'짙은안개',icon:'🌫️',eff:'fog'},
+  {id:'storm', name:'폭풍',    icon:'⛈️', eff:'hp_-10'},
+];
+
+// dur: n회 사용 후 덱에서 영구 제거. 인스턴스에 curDur 추가
+const CARDS=[
+  {id:'wood',  name:'목재', icon:'🪵',tag:'resource',atk:0,def:1,n:4,
+   desc:'뗏목·도구 제작 핵심. 방어 판정에 유리.'},
+  {id:'metal', name:'고철', icon:'⚙️', tag:'resource',atk:1,def:0,n:3,
+   desc:'도구 제작·공격 판정. 해안에서 많이 발견.'},
+  {id:'food',  name:'식량', icon:'🍗',tag:'resource',atk:0,def:0,n:4,use:'eat',dur:3,
+   desc:'허기 +22 (칼 패시브 +8). 내구도 3회 사용 후 소진.'},
+  {id:'water', name:'물',   icon:'💧',tag:'resource',atk:0,def:0,n:3,use:'drink',dur:3,
+   desc:'갈증 +28. 내구도 3회 사용 후 소진.'},
+  {id:'herb',  name:'약초', icon:'🌿',tag:'resource',atk:0,def:0,n:2,use:'heal',dur:2,
+   desc:'HP +10. 내구도 2회 사용 후 소진.'},
+  // 도구 — 패시브 + 수집장비
+  {id:'knife',    name:'칼',    icon:'🔪',tag:'tool',atk:4,def:1,n:0,
+   passiveDesc:'식량 회복 +8 (22→30)',
+   desc:'패시브: 식량 회복 증가. 전투 공격력 4.'},
+  {id:'torch',    name:'횃불',  icon:'🔦',tag:'tool',atk:2,def:1,n:0,gatherTool:true,
+   passiveDesc:'탐색 tool 판정 성공 시 추가 보상 1장',
+   desc:'패시브: 탐색 보너스. 폐허 유물탐색 수집장비.'},
+  {id:'rope',     name:'밧줄',  icon:'🪢',tag:'tool',atk:0,def:3,n:0,
+   passiveDesc:'카드사용 시 드로우 +1장',
+   desc:'패시브: 드로우 보너스. 방어력 3.'},
+  {id:'axe',      name:'도끼',  icon:'🪓',tag:'tool',atk:3,def:1,n:0,gatherTool:true,
+   desc:'숲 나무베기 수집 전용. 전투 ATK3.'},
+  {id:'gathering_knife',name:'채집칼',icon:'🗡️',tag:'tool',atk:2,def:1,n:0,gatherTool:true,
+   desc:'숲 약초채집 수집 전용. 전투 ATK2.'},
+  {id:'fishing_rod',name:'낚싯대',icon:'🎣',tag:'tool',atk:0,def:2,n:0,gatherTool:true,
+   desc:'해변·해안 낚시 수집 전용. 방어력 2.'},
+  {id:'canteen',  name:'물통',  icon:'🫙',tag:'tool',atk:0,def:2,n:0,gatherTool:true,
+   desc:'해안 물 채집 전용. 방어력 2.'},
+  {id:'pickaxe',  name:'곡괭이',icon:'⛏️',tag:'tool',atk:3,def:0,n:0,gatherTool:true,
+   desc:'동굴 채굴 수집 전용. 전투 ATK3.'},
+  // 전투
+  {id:'spear', name:'창',  icon:'🗡️',tag:'combat',atk:8,def:0,n:1,cbtFx:'pierce',
+   desc:'관통: 공격배정 시 적 방어 완전무시 +4 추가공격.'},
+  {id:'shield',name:'방패',icon:'🛡️',tag:'combat',atk:0,def:8,n:1,cbtFx:'block',
+   desc:'완전방어: 방어배정 시 +5 추가방어. DEF8.'},
+  {id:'trap',  name:'함정',icon:'🪤',tag:'combat',atk:5,def:3,n:1,cbtFx:'stun',
+   desc:'기절: 배정 시 적 다음라운드 피해 0. 추가ATK3.'},
+  // 전투 획득 재료
+  {id:'hide',    name:'가죽',    icon:'🦴',tag:'resource',atk:0,def:1,n:0,
+   desc:'전투 획득. 가죽갑옷·독칼 제작 재료.'},
+  {id:'venom',   name:'독낭',    icon:'🧪',tag:'resource',atk:0,def:0,n:0,
+   desc:'전투 획득. 독칼 제작 재료.'},
+  {id:'feather', name:'깃털',    icon:'🪶',tag:'resource',atk:0,def:0,n:0,
+   desc:'전투 획득. 깃털망토 제작 재료.'},
+  {id:'shard',   name:'고대파편',icon:'🔮',tag:'resource',atk:0,def:0,n:0,
+   desc:'전투 획득. 유물나침반 제작 재료.'},
+  // 제작 아이템
+  {id:'leather_armor',name:'가죽갑옷',icon:'🧥',tag:'combat',atk:0,def:4,n:0,
+   passiveDesc:'전투 시 받는 피해 -2',cbtFx:'armor',
+   desc:'패시브: 전투 피해 경감 -2. DEF4.'},
+  {id:'poison_knife',name:'독칼',icon:'☠️',tag:'combat',atk:6,def:0,n:0,
+   cbtFx:'poison',desc:'독: 공격배정 시 적에게 매 라운드 추가 3피해. ATK6.'},
+  {id:'feather_cloak',name:'깃털망토',icon:'🧣',tag:'combat',atk:0,def:2,n:0,
+   passiveDesc:'도망 비용 HP-8 → HP-2',cbtFx:'cloak',
+   desc:'패시브: 도망 비용 대폭 감소. DEF2.'},
+  {id:'compass',name:'유물나침반',icon:'🧭',tag:'tool',atk:0,def:0,n:0,
+   passiveDesc:'탈출도 +20% 즉시. 이벤트 선택지 +1',
+   desc:'고대 유물. 탈출도 즉시 +20%.'},
+  // 상태이상
+  {id:'injury',      name:'부상',icon:'🩹',tag:'status',atk:-1,def:-1,n:0,desc:'ATK·DEF -1.'},
+  {id:'fear',        name:'공포',icon:'😱',tag:'status',atk:-1,def:-1,n:0,desc:'ATK·DEF -1.'},
+  {id:'fatigue',     name:'피로',icon:'😴',tag:'status',atk:0, def:-1,n:0,desc:'DEF -1. 취침 AP회복 -2.'},
+  {id:'poison_status',name:'중독',icon:'💀',tag:'status',atk:-1,def:0,n:0,desc:'ATK -1. 매 취침 HP -5.'},
+];
+
+const ENEMIES={
+  cbt_boar:{name:'멧돼지',icon:'🐗',hp:30,atk:12,def:4,
+    reward:{cards:[{id:'food',n:2},{id:'hide',n:2}]},
+    rewardDesc:'식량×2 + 가죽×2'},
+  cbt_snake:{name:'독사',  icon:'🐍',hp:18,atk:10,def:2,
+    reward:{cards:[{id:'herb',n:1},{id:'venom',n:1}]},
+    rewardDesc:'약초×1 + 독낭×1',
+    penalty:{card:'injury',desc:'독사에게 물려 부상 카드 추가'}},
+  cbt_bat:{name:'박쥐떼',icon:'🦇',hp:22,atk:8, def:1,
+    reward:{cards:[{id:'feather',n:2}]},
+    rewardDesc:'깃털×2',
+    penalty:{san:-10,desc:'박쥐떼에 시달려 정신력 -10'}},
+  cbt_ghost:{name:'환각존재',icon:'👻',hp:24,atk:10,def:3,
+    reward:{san:20,cards:[{id:'shard',n:2}]},
+    rewardDesc:'정신력+20 + 고대파편×2',
+    penalty:{san:-20,desc:'환각에 시달려 정신력 -20'}},
+};
+
+const EVENTS={
+  res_wood:{
+    name:'목재 더미 발견',flavor:'해안가에 파도에 쓸려온 통나무가 쌓여 있다.',
+    choices:[
+      {label:'꼼꼼히 수거',icon:'🪵',req:'resource',reward:{card:'wood',n:2},failPen:{hun:-8},
+       greatCard:'axe',greatBonus:{card:'wood',n:1,ap:1},desc:'자원판정. 성공:목재×2 / 대성공(도끼):+목재+AP환급'},
+      {label:'빠르게만 챙긴다',icon:'👀',req:null,reward:{card:'wood',n:1},desc:'무조건 성공. 목재 1장.'},
+    ]},
+  res_food:{
+    name:'먹을 것 발견',flavor:'덤불 사이에 먹을 수 있을 것 같은 것들이 보인다.',
+    choices:[
+      {label:'독 여부 확인',icon:'🔍',req:'tool',reward:{card:'food',n:2},failPen:{hp:-8},
+       greatCard:'gathering_knife',greatBonus:{card:'food',n:1},desc:'도구판정. 성공:식량×2 / 대성공(채집칼):+식량'},
+      {label:'그냥 조금 먹어본다',icon:'🍽️',req:'resource',reward:{card:'food',n:1},failPen:{san:-8},desc:'자원판정. 실패:정신력↓'},
+    ]},
+  res_metal:{
+    name:'고철 잔해 발견',flavor:'부서진 기계 부품들이 흩어져 있다.',
+    choices:[
+      {label:'꼼꼼히 분해',icon:'⚙️',req:'tool',reward:{card:'metal',n:2},failPen:{hp:-6},
+       greatCard:'pickaxe',greatBonus:{card:'metal',n:2,ap:1},desc:'도구판정. 성공:고철×2 / 대성공(곡괭이):+고철×2+AP'},
+      {label:'보이는 것만 줍기',icon:'👋',req:'resource',reward:{card:'metal',n:1},desc:'자원판정. 실패:빈손.'},
+    ]},
+  res_herb:{
+    name:'약초 군락 발견',flavor:'상처에 좋아 보이는 풀들이 자라고 있다.',
+    choices:[
+      {label:'약효 있는 것 선별',icon:'🌿',req:'tool',reward:{card:'herb',n:2},failPen:{san:-5},
+       greatCard:'gathering_knife',greatBonus:{card:'herb',n:1},desc:'도구판정. 성공:약초×2 / 대성공(채집칼):+약초'},
+      {label:'보이는 대로 채집',icon:'🤲',req:'resource',reward:{card:'herb',n:1},desc:'자원판정. 실패:빈손.'},
+    ]},
+  find_shelter:{
+    name:'은신처 발견',flavor:'폭풍을 피할 수 있는 작은 동굴 입구가 보인다.',
+    choices:[
+      {label:'깊이 탐색한다',icon:'🔦',req:'tool',reward:{san:14,card:'metal',n:1},failPen:{hp:-10},
+       greatCard:'torch',greatBonus:{san:10,ap:2},desc:'도구판정. 성공:정신력+고철 / 대성공(횃불):+정신력+AP×2'},
+      {label:'입구만 살핀다',icon:'👁️',req:null,reward:{san:8},desc:'무조건. 정신력 +8.'},
+    ]},
+  find_blueprint:{
+    name:'탈출 설계도!',flavor:'낡은 상자 안에 뭔가 적힌 종이가 보인다.',
+    choices:[
+      {label:'신중히 분석',icon:'📐',req:'tool',reward:{escape:30},failPen:{san:-10},
+       greatCard:'torch',greatBonus:{escape:15,ap:1},desc:'도구판정. 성공:탈출+30% / 대성공(횃불):+15%+AP'},
+      {label:'일단 챙긴다',icon:'🗂️',req:'resource',reward:{escape:15},desc:'자원판정. 실패:탈출 없음.'},
+    ]},
+  find_wreckage:{
+    name:'난파 잔해',flavor:'배의 잔해가 해안에 널려있다.',
+    choices:[
+      {label:'잠수해서 수거',icon:'🤿',req:'tool',reward:{card:'metal',n:3},failPen:{hp:-12},
+       greatCard:'rope',greatBonus:{card:'metal',n:2},desc:'도구판정. 성공:고철×3 / 대성공(밧줄):+고철×2'},
+      {label:'육지 잔해만',icon:'🏖️',req:'resource',reward:{card:'metal',n:1},desc:'자원판정. 실패:빈손.'},
+    ]},
+  nothing:{
+    name:'아무것도 없음',flavor:'이 주변을 둘러봤지만 특별한 것은 없었다.',
+    choices:[
+      {label:'한 번 더 살핀다',icon:'🔎',req:'tool',reward:{card:'food',n:1},
+       greatCard:'torch',greatBonus:{card:'food',n:1,ap:1},desc:'도구판정. 성공:식량 / 대성공(횃불):+식량+AP'},
+      {label:'그냥 돌아간다',icon:'↩️',req:null,reward:{},desc:'무조건. 빈손.'},
+    ]},
+};
+
+const RECIPES=[
+  {id:'r_knife',   name:'칼',       icon:'🔪',result:'knife',          rn:1,ap:1,cost:[{id:'wood',n:1},{id:'metal',n:2}],  desc:'패시브:식량회복+8. 전투ATK4.'},
+  {id:'r_torch',   name:'횃불',     icon:'🔦',result:'torch',          rn:1,ap:1,cost:[{id:'wood',n:2}],                   desc:'패시브:탐색추가보상. 폐허수집장비.'},
+  {id:'r_rope',    name:'밧줄',     icon:'🪢',result:'rope',           rn:1,ap:1,cost:[{id:'wood',n:1},{id:'food',n:1}],   desc:'패시브:드로우+1. 방어DEF3.'},
+  {id:'r_axe',     name:'도끼',     icon:'🪓',result:'axe',            rn:1,ap:1,cost:[{id:'wood',n:2},{id:'metal',n:1}],  desc:'숲 나무베기. 전투ATK3.'},
+  {id:'r_gknife',  name:'채집칼',   icon:'🗡️',result:'gathering_knife',rn:1,ap:1,cost:[{id:'metal',n:2}],                  desc:'숲 약초채집. 전투ATK2.'},
+  {id:'r_frod',    name:'낚싯대',   icon:'🎣',result:'fishing_rod',    rn:1,ap:1,cost:[{id:'wood',n:2},{id:'metal',n:1}],  desc:'해변·해안 낚시. 방어DEF2.'},
+  {id:'r_canteen', name:'물통',     icon:'🫙',result:'canteen',        rn:1,ap:1,cost:[{id:'metal',n:2}],                  desc:'해안 물 채집. 방어DEF2.'},
+  {id:'r_pick',    name:'곡괭이',   icon:'⛏️',result:'pickaxe',       rn:1,ap:1,cost:[{id:'wood',n:1},{id:'metal',n:3}],  desc:'동굴 채굴. 전투ATK3.'},
+  {id:'r_spear',   name:'창',       icon:'🗡️',result:'spear',         rn:1,ap:2,cost:[{id:'wood',n:2},{id:'metal',n:3}],  desc:'관통특수. ATK8+4관통. 최강공격.'},
+  {id:'r_larmor',  name:'가죽갑옷', icon:'🧥',result:'leather_armor',  rn:1,ap:1,cost:[{id:'hide',n:2}],                  desc:'패시브:전투피해-2. DEF4. 가죽×2.'},
+  {id:'r_pknife',  name:'독칼',     icon:'☠️',result:'poison_knife',   rn:1,ap:1,cost:[{id:'hide',n:1},{id:'venom',n:1}],  desc:'독:매라운드+3피해. ATK6. 가죽+독낭.'},
+  {id:'r_fcloak',  name:'깃털망토', icon:'🧣',result:'feather_cloak',  rn:1,ap:1,cost:[{id:'feather',n:2}],               desc:'패시브:도망비용HP-2. DEF2. 깃털×2.'},
+  {id:'r_compass', name:'유물나침반',icon:'🧭',result:'compass',       rn:1,ap:1,cost:[{id:'shard',n:2}],                  desc:'즉시 탈출도+20%. 고대파편×2.'},
+  // 뗏목 — 뽑기 시스템 (대성공1/성공3/실패1)
+  {id:'r_raft',    name:'뗏목 부품',icon:'🛶',result:null,             rn:0,ap:2,cost:[{id:'wood',n:3},{id:'metal',n:1}],
+   desc:'대성공(1/5): +30%  성공(3/5): +15%  실패(1/5): -10%', raftLottery:true},
+];
+
+// ═══════════════ STATE ═══════════════
+
+let G={}, CBT={};
+let _dvTab='all', _ttTm=null, _cbtMode=null, _ucHand=[];
+let _mobTab='map';
+const _tabMap={map:'map-col',deck:'ctr-col',stat:'rgt-col',help:'rgt-col'};
+
+function initGame(){
+  G={
+    day:1, ap:10, maxAP:10,
+    hp:100, san:100, hun:80, thi:80,
+    doom:0, escape:0,
+    camps:[], tiles:[], pos:22,
+    deck:[], disc:[],
+    weather:WEATHER[0], tomorrow:WEATHER[1],
+    over:false, win:false, logs:[], kills:0,
+    gatherCnt:{},
+  };
+  buildDeck(); buildMap();
+  document.getElementById('go-scr').style.display='none';
+  initMobile();
+  log('🌊 난파선 섬에 표류했다! 생존하고 탈출하라.','system');
+  log('팁: 탐색→캠프→제작소에서 도구 제작→수집으로 자원 확보','');
+  render();
+}
+
+function buildDeck(){
+  let c=[];
+  CARDS.forEach(d=>{
+    for(let i=0;i<d.n;i++){
+      const card={...d, uid:uid()};
+      if(d.dur) card.curDur=d.dur;
+      c.push(card);
+    }
+  });
+  G.deck=shuffle(c);
+}
+
+// ═══════════════ HELPERS ═══════════════
+
+function uid(){ return Math.random().toString(36).slice(2); }
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+function log(msg, type){
+  G.logs.unshift({msg, type});
+  if(G.logs.length>60) G.logs.pop();
+  if(window.innerWidth<=700 && _mobTab!=='deck'){
+    const b=document.getElementById('badge-deck');
+    if(b){b.textContent='NEW';b.classList.add('show');}
+  }
+  if(window.innerWidth<=700 && _mobTab!=='stat' && type==='danger'){
+    const b=document.getElementById('badge-stat');
+    if(b){b.textContent='!';b.classList.add('show');}
+  }
+}
+
+function addCard(id, n){
+  const def=CARDS.find(c=>c.id===id); if(!def) return;
+  for(let i=0;i<n;i++){
+    const card={...def, uid:uid()};
+    if(def.dur) card.curDur=def.dur;
+    G.disc.push(card);
+  }
+}
+
+function drawCards(n){
+  for(let i=0;i<n;i++){
+    if(!G.deck.length){ if(!G.disc.length) break; G.deck=shuffle([...G.disc]); G.disc=[]; }
+    if(G.deck.length) G.disc.push(G.deck.pop());
+  }
+}
+
+function cntInDeck(id){ return [...G.deck,...G.disc].filter(c=>c.id===id).length; }
+
+function rmFromDeck(id, n){
+  let r=n;
+  G.disc=G.disc.filter(c=>{ if(c.id===id&&r>0){r--;return false;} return true; });
+  G.deck=G.deck.filter(c=>{ if(c.id===id&&r>0){r--;return false;} return true; });
+}
+
+function canCraft(rec){ return rec.cost.every(c=>cntInDeck(c.id)>=c.n); }
+
+function hasTool(id){ return [...G.deck,...G.disc].some(c=>c.id===id); }
+
+// ═══════════════ SURVIVAL ═══════════════
+
+function checkSurvival(){
+  G.hun=Math.max(0,G.hun); G.thi=Math.max(0,G.thi);
+  if(G.hun===0){ G.hp=Math.max(0,G.hp-5); log('🍗 굶주림! HP-5','danger'); }
+  if(G.thi===0){ G.hp=Math.max(0,G.hp-8); log('💧 탈수! HP-8','danger'); }
+  if(G.hp<=0)    triggerGameOver('체력이 소진되었습니다.');
+  if(G.san<=0)   triggerGameOver('정신력이 무너졌습니다.');
+  if(G.doom>=100)triggerGameOver('섬의 종말이 도래했습니다.');
+}
+
+function checkWin(){
+  if(G.escape>=100){
+    G.over=true;
+    document.getElementById('go-title').textContent='🎉 탈출 성공!';
+    document.getElementById('go-title').className='go-title win';
+    document.getElementById('go-sub').textContent=`${G.day}일 만에 탈출!`;
+    document.getElementById('go-stats').innerHTML=`생존 일수: ${G.day}일<br>처치: ${G.kills}마리`;
+    document.getElementById('go-scr').style.display='flex';
+  }
+}
+
+function triggerGameOver(reason){
+  if(G.over) return;
+  G.over=true;
+  document.getElementById('go-title').textContent='💀 게임 오버';
+  document.getElementById('go-title').className='go-title dead';
+  document.getElementById('go-sub').textContent=reason+` (${G.day}일차)`;
+  document.getElementById('go-stats').innerHTML=`생존 일수: ${G.day}일<br>처치: ${G.kills}마리<br>탈출도: ${G.escape}%`;
+  document.getElementById('go-scr').style.display='flex';
+}
+
+// ═══════════════ TOOLTIP ═══════════════
+// [버그수정] eat +22(not +20), heal +10(not +8), pierce +4(not +3), block +5(not +4)
+
+let _ttLock=false;
+
+function showTT(c, el){
+  clearTimeout(_ttTm);
+  const tt=document.getElementById('tt');
+  document.getElementById('tt-icon').textContent=c.icon;
+  document.getElementById('tt-name').textContent=c.name;
+  document.getElementById('tt-tag').innerHTML=`<span class="card-tag tag-${c.tag}" style="font-size:7px;">${c.tag}</span>`;
+  const av=document.getElementById('tt-atk'), dv=document.getElementById('tt-def');
+  av.textContent=c.atk; av.className='tt-sv'+(c.atk>0?' pos':c.atk<0?' neg':' zero');
+  dv.textContent=c.def; dv.className='tt-sv'+(c.def>0?' pos':c.def<0?' neg':' zero');
+  document.getElementById('tt-desc').textContent=c.desc||c.name;
+
+  const con=document.getElementById('tt-con');
+  if(c.dur){
+    con.style.display='';
+    con.textContent=`🔋 내구도 ${c.curDur||c.dur}/${c.dur} — 0이 되면 영구 제거`;
+  } else { con.style.display='none'; }
+
+  const useEl=document.getElementById('tt-use');
+  if(c.use){
+    useEl.style.display='';
+    const kB=hasTool('knife')?8:0;
+    const m={eat:`🍗 허기+${22+kB}`,drink:'💧 갈증+28',heal:'🌿 HP+10'};
+    useEl.textContent=m[c.use]||'';
+  } else useEl.style.display='none';
+
+  const pEl=document.getElementById('tt-pass');
+  if(c.passiveDesc){pEl.style.display='';pEl.textContent='⭐ '+c.passiveDesc;}
+  else pEl.style.display='none';
+
+  const cEl=document.getElementById('tt-cbt');
+  if(c.cbtFx){
+    cEl.style.display='';
+    const m2={pierce:'★ 관통: 적방어무시+4',block:'★ 완전방어: +5',stun:'★ 기절: 적피해0+ATK3',poison:'★ 독: 매라운드+3',armor:'★ 갑옷: 피해-2',cloak:'★ 망토: 도망HP-2'};
+    cEl.textContent=m2[c.cbtFx]||'';
+  } else cEl.style.display='none';
+
+  const gEl=document.getElementById('tt-ga');
+  if(c.gatherTool){gEl.style.display='';gEl.textContent='🎒 수집장비 — '+c.desc;}
+  else gEl.style.display='none';
+
+  tt.style.display='block';
+  const r=el.getBoundingClientRect();
+  let left=r.right+8, top=r.top;
+  if(left+178>window.innerWidth) left=r.left-178;
+  if(top+280>window.innerHeight) top=window.innerHeight-284;
+  tt.style.left=left+'px'; tt.style.top=Math.max(4,top)+'px';
+}
+
+function hideTT(){
+  _ttTm=setTimeout(()=>document.getElementById('tt').style.display='none', 80);
+}
+
+// ═══════════════ MOBILE ═══════════════
+// [버그수정] mobTab 함수 분리 (기존 addCardTouchTT에 잘못 혼입된 로직 분리)
+
+function mobTab(t){
+  _mobTab=t;
+  ['map-col','ctr-col','rgt-col'].forEach(id=>{
+    document.getElementById(id).classList.remove('mob-active');
+  });
+  const target=_tabMap[t]||'map-col';
+  document.getElementById(target).classList.add('mob-active');
+  ['map','deck','stat','help'].forEach(id=>{
+    const el=document.getElementById('mtab-'+id);
+    if(el) el.classList.toggle('active', id===t);
+  });
+  const badgeMap={deck:'badge-deck', stat:'badge-stat'};
+  if(badgeMap[t]){
+    const b=document.getElementById(badgeMap[t]);
+    if(b){b.classList.remove('show');b.textContent='';}
+  }
+  if(t==='help'){
+    setTimeout(()=>{
+      const sw=document.getElementById('stats-wrap');
+      if(sw) sw.scrollTo(0, sw.scrollHeight);
+    }, 50);
+  }
+}
+
+function addCardTouchTT(el, card){
+  if(window.innerWidth>700) return;
+  el.addEventListener('click', ()=>{
+    const tt=document.getElementById('tt');
+    if(tt.style.display==='block'){
+      tt.style.display='none';
+    } else {
+      showTT(card, el);
+    }
+  });
+}
+
+function initMobile(){
+  if(window.innerWidth<=700){
+    document.getElementById('map-col').classList.add('mob-active');
+    document.getElementById('ctr-col').classList.remove('mob-active');
+    document.getElementById('rgt-col').classList.remove('mob-active');
+  }
+}
+
+window.addEventListener('resize', ()=>{
+  if(window.innerWidth>700){
+    ['map-col','ctr-col','rgt-col'].forEach(id=>{
+      document.getElementById(id).classList.remove('mob-active');
+    });
+  } else {
+    mobTab(_mobTab);
+  }
+});
+
+// ═══════════════ MAP ═══════════════
+// [버그수정] apCost() 실제 이동에 반영
+
+function buildMap(){
+  G.tiles=[];
+  for(let i=0;i<50;i++){
+    const t=TILE_TYPES[Math.floor(Math.random()*TILE_TYPES.length)];
+    G.tiles.push({...t, revealed:false, hasPlayer:false, hasCamp:false, explored:false});
+  }
+  G.tiles[G.pos].revealed=true; G.tiles[G.pos].hasPlayer=true;
+  getAdj(G.pos).forEach(i=>G.tiles[i].revealed=true);
+}
+
+function getAdj(p){
+  const r=Math.floor(p/10), c=p%10, res=[];
+  if(r>0) res.push(p-10); if(r<4) res.push(p+10);
+  if(c>0) res.push(p-1);  if(c<9) res.push(p+1);
+  return res;
+}
+
+// 캠프에서 멀수록 이동 AP 증가 (3칸마다 +1)
+function apCost(to){
+  if(!G.camps.length) return 1;
+  let min=99;
+  G.camps.forEach(cp=>{
+    const dr=Math.abs(Math.floor(cp/10)-Math.floor(to/10));
+    const dc=Math.abs((cp%10)-(to%10));
+    min=Math.min(min, dr+dc);
+  });
+  return 1+Math.floor(min/3);
+}
+
+function clickTile(i){
+  if(G.over) return;
+  const t=G.tiles[i];
+  if(!t.revealed||i===G.pos) return;
+  const cost=apCost(i);
+  if(G.ap<cost){log(`AP부족 (이동:AP${cost})`, 'danger'); render(); return;}
+  G.tiles[G.pos].hasPlayer=false;
+  G.pos=i; t.hasPlayer=true; G.ap-=cost;
+  getAdj(i).forEach(j=>G.tiles[j].revealed=true);
+  log(`📍 ${t.name}으로 이동 (AP-${cost})`, '');
+  checkSurvival(); render();
+}
+
+// ═══════════════ EXPLORE ═══════════════
+
+function doExplore(){
+  if(G.over) return;
+  if(G.ap<2){log('AP부족 (탐색:AP2)','danger');render();return;}
+  const t=G.tiles[G.pos];
+  if(t.explored){log('이미 탐색한 지역이다.','');return;}
+  G.ap-=2; t.explored=true;
+  const evtId=t.events[Math.floor(Math.random()*t.events.length)];
+  if(ENEMIES[evtId]){ startCombat(evtId); return; }
+  const evt=EVENTS[evtId];
+  if(!evt){log('이벤트 오류','danger');return;}
+  showExploreChoice(evt);
+}
+
+function showExploreChoice(evt){
+  const all=[...G.deck,...G.disc];
+  document.getElementById('ex-title').textContent=`${G.tiles[G.pos].icon} ${evt.name}`;
+  document.getElementById('ex-flavor').textContent=evt.flavor;
+  const el=document.getElementById('ex-choices'); el.innerHTML='';
+  evt.choices.forEach(ch=>{
+    const matchCnt=ch.req?all.filter(c=>c.tag===ch.req).length:99;
+    const prob=ch.req?Math.min(99,Math.round(matchCnt/Math.max(1,all.length)*100)):100;
+    const div=document.createElement('div'); div.className='ex-choice fi';
+    const reqBadge=ch.req
+      ?`<span class="card-tag tag-${ch.req}" style="font-size:8px;">${ch.req}판정</span>`
+      :`<span style="color:var(--green);font-size:8px;">✓ 무조건</span>`;
+    const greatInfo=ch.greatCard
+      ?`<span style="color:var(--accent);font-size:8px;"> ★ ${CARDS.find(c=>c.id===ch.greatCard)?.name} 뽑으면 대성공</span>`:'';
+    const rTxt=fmtR(ch.reward), pTxt=ch.failPen?fmtP(ch.failPen):'', gTxt=ch.greatBonus?fmtR(ch.greatBonus):'';
+    div.innerHTML=`
+      <div class="ex-ci">${ch.icon}</div>
+      <div>
+        <div class="ex-cn">${ch.label}</div>
+        <div class="ex-cd">${reqBadge} <span style="color:var(--text3);">성공률≈${prob}%</span>${greatInfo}</div>
+        <div class="ex-cd">${ch.desc}</div>
+        <div style="font-size:8px;margin-top:3px;">
+          ${rTxt?`<span style="color:var(--green);">✓ ${rTxt}</span>`:''}
+          ${pTxt?`<span style="color:var(--red);margin-left:6px;">✗ ${pTxt}</span>`:''}
+          ${gTxt?`<span style="color:var(--accent);margin-left:6px;">★ ${gTxt}</span>`:''}
+        </div>
+      </div>`;
+    div.onclick=()=>{ document.getElementById('ex-mo').style.display='none'; doJudgment(evt,ch); };
+    el.appendChild(div);
+  });
+  document.getElementById('ex-mo').style.display='flex';
+}
+
+function fmtR(r){
+  if(!r) return '';
+  const p=[];
+  if(r.card){const d=CARDS.find(c=>c.id===r.card);if(d)p.push(`${d.icon}${d.name}×${r.n||1}`);}
+  if(r.san)   p.push(`정신력+${r.san}`);
+  if(r.escape)p.push(`탈출+${r.escape}%`);
+  if(r.hun)   p.push(`허기+${r.hun}`);
+  if(r.hp)    p.push(`HP+${r.hp}`);
+  if(r.ap)    p.push(`AP+${r.ap}`);
+  return p.join(' ');
+}
+
+function fmtP(p){
+  const a=[];
+  if(p.hp)    a.push(`HP${p.hp}`);
+  if(p.hun)   a.push(`허기${p.hun}`);
+  if(p.san)   a.push(`정신력${p.san}`);
+  if(p.escape)a.push(`탈출-${p.escape}%`);
+  return a.join(' ');
+}
+
+function doJudgment(evt, ch){
+  if(!G.deck.length&&G.disc.length){G.deck=shuffle([...G.disc]);G.disc=[];}
+  const top=G.deck.length?G.deck[G.deck.length-1]:null;
+  const success=!ch.req||(top&&top.tag===ch.req);
+  const isGreat=!!(ch.greatCard&&top&&top.id===ch.greatCard);
+  if(top) G.disc.push(G.deck.pop());
+
+  const cardEl=document.getElementById('jdg-card'), backEl=document.getElementById('jdg-back');
+  cardEl.classList.remove('flipped'); backEl.className='jdg-back';
+  ['jdg-res','jdg-det','jdg-bon','jdg-ok'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('jdg-title').textContent='🎴 덱 맨 위 카드를 뒤집는 중...';
+  document.getElementById('jdg-req').textContent=ch.req?`요구 태그: ${ch.req}`:'조건 없음 — 무조건 성공';
+  document.getElementById('jdg-cicon').textContent=top?top.icon:'?';
+  document.getElementById('jdg-cname').textContent=top?top.name:'덱 없음';
+  document.getElementById('jdg-ctag').innerHTML=top?`<span class="card-tag tag-${top.tag}" style="font-size:7px;">${top.tag}</span>`:'';
+  document.getElementById('jdg-mo').style.display='flex';
+
+  setTimeout(()=>{
+    cardEl.classList.add('flipped');
+    backEl.classList.add(isGreat?'great':success?'ok':'fail');
+    setTimeout(()=>{
+      const resEl=document.getElementById('jdg-res');
+      resEl.style.display='';
+      const lines=[], bonLines=[];
+      if(isGreat){
+        resEl.className='jdg-res great'; resEl.textContent='★ 대성공!';
+        applyR(ch.reward,lines); applyR(ch.greatBonus,lines);
+        bonLines.push(`★ ${CARDS.find(c=>c.id===ch.greatCard)?.name||ch.greatCard} 대성공 발동!`);
+      } else if(success){
+        resEl.className='jdg-res ok'; resEl.textContent='✓ 성공!';
+        applyR(ch.reward,lines);
+        if([...G.deck,...G.disc].some(c=>c.id==='torch')&&ch.req==='tool'){
+          if(!G.deck.length&&G.disc.length){G.deck=shuffle([...G.disc]);G.disc=[];}
+          if(G.deck.length){const b=G.deck.pop();G.disc.push(b);bonLines.push(`🔦 횃불 패시브: ${b.icon}${b.name} 추가`);}
+        }
+      } else {
+        resEl.className='jdg-res fail'; resEl.textContent='✗ 실패...';
+        if(ch.failPen) applyPen(ch.failPen,lines); else lines.push('별다른 피해 없음');
+      }
+      const detEl=document.getElementById('jdg-det');
+      detEl.style.display=''; detEl.textContent=lines.join('\n');
+      const bonEl=document.getElementById('jdg-bon');
+      if(bonLines.length){bonEl.style.display='';bonEl.textContent=bonLines.join(' · ');}
+      document.getElementById('jdg-ok').style.display='';
+      log(`[${isGreat?'대성공':success?'성공':'실패'}] ${evt.name} — ${lines.join(', ')}`,(isGreat||success)?'success':'danger');
+      checkSurvival(); checkWin(); render();
+    }, 500);
+  }, 400);
+}
+
+function applyR(r, lines){
+  if(!r) return;
+  if(r.card){addCard(r.card,r.n||1);const d=CARDS.find(c=>c.id===r.card);lines.push(`${d?.icon||''}${r.card}×${r.n||1}`);}
+  if(r.san)   {G.san=Math.min(100,G.san+r.san);  lines.push(`정신력+${r.san}`);}
+  if(r.escape){G.escape=Math.min(100,G.escape+r.escape);lines.push(`탈출+${r.escape}%`);}
+  if(r.hun)   {G.hun=Math.min(100,G.hun+r.hun);  lines.push(`허기+${r.hun}`);}
+  if(r.hp)    {G.hp=Math.min(100,G.hp+r.hp);     lines.push(`HP+${r.hp}`);}
+  if(r.ap)    {G.ap=Math.min(G.maxAP+4,G.ap+r.ap);lines.push(`AP+${r.ap}환급`);}
+}
+
+function applyPen(p, lines){
+  if(p.hp)    {G.hp=Math.max(0,G.hp+p.hp);     lines.push(`HP${p.hp}`);}
+  if(p.hun)   {G.hun=Math.max(0,G.hun+p.hun);  lines.push(`허기${p.hun}`);}
+  if(p.san)   {G.san=Math.max(0,G.san+p.san);  lines.push(`정신력${p.san}`);}
+  if(p.card)  {addCard(p.card,1);               lines.push(`${p.card}카드추가`);}
+  if(p.escape){G.escape=Math.max(0,G.escape-p.escape);lines.push(`탈출-${p.escape}%`);}
+}
+
+function closeJdg(){ document.getElementById('jdg-mo').style.display='none'; }
+
+// ═══════════════ GATHER ═══════════════
+
+function openGather(){
+  if(G.over) return;
+  const tile=G.tiles[G.pos];
+  if(!tile.explored){log('먼저 탐색을 완료해야 수집할 수 있다.','danger');render();return;}
+  if(G.ap<3){log('AP부족 (수집:AP3)','danger');render();return;}
+  const opts=tile.gather||[];
+  const allCards=[...G.deck,...G.disc];
+  const avail=opts.filter(o=>allCards.some(c=>c.id===o.tool));
+  if(!avail.length){
+    const needed=opts.map(o=>CARDS.find(c=>c.id===o.tool)?.name||o.tool).join(', ');
+    log(`수집 장비 없음. 필요: ${needed}`,'danger'); render(); return;
+  }
+  document.getElementById('ga-title').textContent=`🎒 ${tile.name} 수집활동`;
+  document.getElementById('ga-flavor').textContent=tile.flavor||`${tile.name}에서 자원을 수집한다.`;
+  const opEl=document.getElementById('ga-opts'); opEl.innerHTML='';
+  avail.forEach(o=>{
+    const key=`${G.pos}_${o.tool}`;
+    const cnt=G.gatherCnt[key]||0;
+    const rate=Math.max(20,90-cnt*15);
+    const resDef=CARDS.find(c=>c.id===o.res);
+    const toolDef=CARDS.find(c=>c.id===o.tool);
+    const div=document.createElement('div'); div.className='ex-choice fi';
+    div.innerHTML=`
+      <div class="ex-ci">${toolDef?.icon||'?'}</div>
+      <div style="flex:1;">
+        <div class="ex-cn">${o.label} <span class="card-tag tag-tool" style="font-size:7px;">${toolDef?.name||o.tool}</span></div>
+        <div class="ex-cd">${o.flavor}</div>
+        <div style="font-size:8px;margin-top:3px;">
+          획득: ${resDef?.icon||''}${resDef?.name||o.res} ×1~2
+          <span style="margin-left:7px;color:${rate>60?'var(--green)':rate>35?'var(--accent)':'var(--red)'};">성공률 ${rate}%</span>
+          <span style="color:var(--text3);margin-left:7px;">(이곳 ${cnt}회 수집)</span>
+        </div>
+      </div>`;
+    div.onclick=()=>doGather(o,key,rate);
+    opEl.appendChild(div);
+  });
+  document.getElementById('ga-note').textContent='반복할수록 성공률 감소 (최소 20%)';
+  document.getElementById('ga-mo').style.display='flex';
+}
+
+function doGather(opt, key, rate){
+  document.getElementById('ga-mo').style.display='none';
+  G.ap-=3; G.gatherCnt[key]=(G.gatherCnt[key]||0)+1;
+  G.hun-=5; G.thi-=6;
+  if(Math.random()*100<rate){
+    const n=Math.random()<0.28?2:1;
+    addCard(opt.res, n);
+    const d=CARDS.find(c=>c.id===opt.res);
+    log(`🎒 ${opt.label} 성공! ${d?.icon||''}${d?.name||opt.res}×${n} 획득 (AP-3)`,'gather');
+  } else {
+    log(`🎒 ${opt.label} 실패... 빈손 (AP-3)`,'danger');
+  }
+  checkSurvival(); render();
+}
+
+// ═══════════════ CAMP ═══════════════
+
+function doCamp(){
+  if(G.over) return;
+  if(G.ap<8){log('AP부족 (캠프:AP8)','danger');render();return;}
+  if(G.tiles[G.pos].hasCamp){log('이미 캠프가 있다.','');return;}
+  G.tiles[G.pos].hasCamp=true; G.camps.push(G.pos); G.ap-=8;
+  const t=G.tiles[G.pos];
+  const bns={beach:'허기감소 완화',forest:'매일 식량 자동생성',cave:'매일 정신력+5',ruins:'탐색확률 향상',shore:'매일 물 자동생성'};
+  log(`🏕️ ${t.name} 캠프 건설! (AP-8) — ${bns[t.id]||''}`, 'success');
+  render();
+}
+
+// ═══════════════ CRAFT ═══════════════
+// [버그수정] 뗏목 UI에서 escapeBonus undefined 표시 제거
+
+function openCraft(){
+  if(G.over) return;
+  if(!G.tiles[G.pos].hasCamp){log('제작은 캠프 위치에서만 가능.','danger');render();return;}
+  document.getElementById('cr-msg').style.display='none';
+  document.getElementById('cr-mo').style.display='flex';
+  renderCraft();
+}
+
+function closeCraft(){ document.getElementById('cr-mo').style.display='none'; render(); }
+
+function renderCraft(){
+  const mEl=document.getElementById('cr-mats');
+  mEl.innerHTML='<span style="color:var(--text3);margin-right:3px;">재료:</span>';
+  ['wood','metal','food','water'].forEach(id=>{
+    const d=CARDS.find(c=>c.id===id); const cnt=cntInDeck(id);
+    mEl.innerHTML+=`<span style="background:var(--bg4);padding:2px 6px;border-radius:3px;margin-right:3px;color:${cnt>0?'var(--text)':'var(--text3)'};">${d.icon}${d.name}<b style="color:var(--accent);margin-left:2px;">×${cnt}</b></span>`;
+  });
+  mEl.innerHTML+=`<span style="margin-left:auto;color:var(--text3);">총 ${G.deck.length+G.disc.length}장</span>`;
+
+  const lEl=document.getElementById('cr-list'); lEl.innerHTML='';
+  RECIPES.forEach(rec=>{
+    const ok=canCraft(rec), hasAP=G.ap>=rec.ap, canDo=ok&&hasAP;
+    const resultDef=rec.result?CARDS.find(c=>c.id===rec.result):null;
+    const costHtml=rec.cost.map(c=>{
+      const d=CARDS.find(x=>x.id===c.id); const have=cntInDeck(c.id);
+      return `<span style="color:${have>=c.n?'var(--green)':'var(--red)'};">${d.icon}${d.name}×${c.n}(${have})</span>`;
+    }).join('+');
+    const resHtml=rec.raftLottery
+      ?`<span style="color:var(--green);">🎲 뽑기 (대성공+30%/성공+15%/실패-10%)</span>`
+      :`<span style="color:var(--accent);">${resultDef?.icon||''}${resultDef?.name||rec.result}</span>`;
+    const div=document.createElement('div');
+    div.className='cr-recipe'+(ok?' avail':'');
+    div.innerHTML=`
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:20px;">${rec.icon}</span>
+        <div>
+          <div style="font-family:var(--font-t);font-size:12px;color:${ok?'var(--text)':'var(--text3)'};">${rec.name}</div>
+          <div style="font-size:8px;font-family:var(--font-m);color:var(--text3);">${rec.raftLottery?'🛶탈출':'📦아이템'}</div>
+        </div>
+        <span style="margin-left:auto;font-size:8px;font-family:var(--font-m);color:${hasAP?'var(--text3)':'var(--red)'};">AP${rec.ap}</span>
+      </div>
+      <div style="font-size:8px;color:var(--text2);line-height:1.5;">${rec.desc}</div>
+      <div style="font-size:8px;font-family:var(--font-m);">재료: ${costHtml} → ${resHtml}</div>
+      <button class="btn" style="${canDo?'border-color:var(--purple);color:var(--purple);':''}" onclick="doCraft('${rec.id}')" ${canDo?'':'disabled'}>
+        🔨 제작 (AP${rec.ap})${!ok?' — 재료부족':!hasAP?' — AP부족':''}
+      </button>`;
+    if(resultDef){ div.addEventListener('mouseenter',()=>showTT(resultDef,div)); div.addEventListener('mouseleave',hideTT); }
+    lEl.appendChild(div);
+  });
+}
+
+function doCraft(id){
+  const rec=RECIPES.find(r=>r.id===id);
+  if(!rec||!canCraft(rec)) return;
+  if(G.ap<rec.ap){log('AP부족','danger');return;}
+  G.ap-=rec.ap;
+  rec.cost.forEach(c=>rmFromDeck(c.id,c.n));
+
+  if(rec.raftLottery){
+    closeCraft();
+    showRaftLottery();
+    return;
+  }
+
+  const msgEl=document.getElementById('cr-msg');
+  msgEl.style.display='block';
+  addCard(rec.result, rec.rn);
+  const d=CARDS.find(c=>c.id===rec.result);
+  msgEl.style.color='var(--purple)';
+  msgEl.textContent=`✓ ${rec.name} 완료! ${d?.icon||''}${d?.name||rec.result}×${rec.rn} 획득`;
+  log(`🔨 ${rec.name}. ${d?.icon||''}${d?.name||''}×${rec.rn} (AP-${rec.ap})`,'success');
+  if(rec.result==='compass'){
+    G.escape=Math.min(100,G.escape+20);
+    log('🧭 유물나침반: 탈출도 즉시+20%!','success');
+  }
+  renderCraft(); checkWin(); render();
+}
+
+// ═══════════════ USE CARD ═══════════════
+
+function openUseCard(){
+  if(G.over) return;
+  if(G.ap<1){log('AP부족 (카드사용:AP1)','danger');render();return;}
+  G.ap-=1;
+  if(G.deck.length<5&&G.disc.length){ G.deck=shuffle([...G.deck,...G.disc]); G.disc=[]; }
+  _ucHand=[];
+  let drawN=Math.min(5,G.deck.length);
+  if(hasTool('rope')&&G.deck.length>drawN) drawN=Math.min(drawN+1,G.deck.length);
+  for(let i=0;i<drawN;i++) _ucHand.push(G.deck.pop());
+  if(!_ucHand.length){log('덱이 비어있다.','danger');G.ap+=1;render();return;}
+  document.getElementById('uc-sub').textContent=`${_ucHand.length}장 드로우${hasTool('rope')?' (🪢밧줄+1장)':''} — 사용할 카드 선택`;
+  document.getElementById('uc-result').textContent='';
+  document.getElementById('uc-mo').style.display='flex';
+  renderUcCards(); render();
+}
+
+function renderUcCards(){
+  const el=document.getElementById('uc-cards'); el.innerHTML='';
+  _ucHand.forEach((card,i)=>{
+    const usable=!!card.use;
+    const kBoost=hasTool('knife')?8:0;
+    const durStr=card.dur?`<div style="font-size:8px;color:var(--accent);font-family:var(--font-m);">🔋${card.curDur||card.dur}/${card.dur}</div>`:'';
+    const useLabels={eat:`🍗허기+${22+kBoost}`,drink:'💧갈증+28',heal:'🌿HP+10'};
+    const div=document.createElement('div');
+    div.style.cssText=`background:var(--bg3);border:1px solid ${usable?'var(--green2)':'var(--border)'};border-radius:9px;padding:10px 8px;width:90px;text-align:center;cursor:${usable?'pointer':'default'};opacity:${usable?1:0.5};transition:all .12s;`;
+    div.innerHTML=`<div style="font-size:24px;margin-bottom:4px;">${card.icon}</div>
+      <div style="font-size:8px;font-weight:700;color:var(--text);margin-bottom:2px;">${card.name}</div>
+      <div class="card-tag tag-${card.tag}" style="font-size:6px;display:inline-block;margin-bottom:4px;">${card.tag}</div>
+      <div style="font-size:7px;color:var(--text3);font-family:var(--font-m);">A${card.atk} D${card.def}</div>
+      ${durStr}
+      ${usable?`<div style="margin-top:4px;font-size:8px;color:var(--green);font-family:var(--font-m);">${useLabels[card.use]||''}</div>`
+              :'<div style="font-size:7px;color:var(--text3);margin-top:4px;">사용불가</div>'}`;
+    if(usable) div.onclick=()=>ucUse(i);
+    div.addEventListener('mouseenter',()=>showTT(card,div));
+    div.addEventListener('mouseleave',hideTT);
+    el.appendChild(div);
+  });
+}
+
+function ucUse(i){
+  const card=_ucHand[i]; if(!card||!card.use) return;
+  const resEl=document.getElementById('uc-result');
+  const kBoost=hasTool('knife')?8:0;
+  if(card.use==='eat'){
+    const g=22+kBoost; G.hun=Math.min(100,G.hun+g);
+    resEl.textContent=`🍗 ${card.name} — 허기+${g}${kBoost?` (🔪+${kBoost})`:''}`;
+    resEl.style.color='var(--accent)';
+    log(`🍗 섭취. 허기+${g}`,'success');
+  } else if(card.use==='drink'){
+    G.thi=Math.min(100,G.thi+28);
+    resEl.textContent='💧 물 음용 — 갈증+28';
+    resEl.style.color='var(--blue)';
+    log('💧 음용. 갈증+28','success');
+  } else if(card.use==='heal'){
+    G.hp=Math.min(100,G.hp+10);
+    resEl.textContent='🌿 약초 — HP+10';
+    resEl.style.color='var(--green)';
+    log('🌿 약초. HP+10','success');
+  }
+  if(card.dur){
+    card.curDur=(card.curDur||card.dur)-1;
+    if(card.curDur<=0){
+      _ucHand.splice(i,1);
+      log(`${card.icon} ${card.name} 소진 — 덱에서 제거`,'');
+    } else {
+      G.disc.push(..._ucHand.splice(i,1));
+      log(`${card.icon} 내구도 ${card.curDur}/${card.dur} 남음`,'');
+    }
+  } else {
+    G.disc.push(..._ucHand.splice(i,1));
+  }
+  renderUcCards(); checkSurvival(); render();
+}
+
+function closeUseCard(){
+  G.disc.push(..._ucHand); _ucHand=[];
+  document.getElementById('uc-mo').style.display='none';
+  document.getElementById('tt').style.display='none';
+  render();
+}
+
+// ═══════════════ SLEEP ═══════════════
+
+function doSleep(){
+  if(G.over) return;
+  const early=G.ap>=4;
+  G.day++; G.doom+=G.day>5?Math.min(12,G.day-3):2;
+  let hpR=early?15:9, sanR=early?11:6;
+  G.camps.forEach(cp=>{
+    const t=G.tiles[cp];
+    if(t.id==='cave')   { sanR+=5; }
+    if(t.id==='forest') { addCard('food',1); log('🌲 숲캠프: 식량 자동생성','success'); }
+    if(t.id==='shore')  { addCard('water',1); log('🌊 해안캠프: 물 자동생성','success'); }
+  });
+  const fatigueN=[...G.deck,...G.disc].filter(c=>c.id==='fatigue').length;
+  G.hun=Math.max(0,G.hun-14); G.thi=Math.max(0,G.thi-18);
+  const poisonN=[...G.deck,...G.disc].filter(c=>c.id==='poison_status').length;
+  if(poisonN>0){ G.hp=Math.max(0,G.hp-5*poisonN); log(`☠️ 중독 피해: HP-${5*poisonN}`,'danger'); }
+  G.hp=Math.min(100,G.hp+hpR); G.san=Math.min(100,G.san+sanR);
+  const bonAP=early?2:0;
+  G.weather=G.tomorrow;
+  G.tomorrow=WEATHER[Math.floor(Math.random()*WEATHER.length)];
+  G.ap=Math.max(1,G.maxAP+bonAP-fatigueN*2);
+  applyWeather();
+  if(G.day>5){
+    const fog=G.tiles.filter((t,i)=>t.revealed&&!t.hasCamp&&i!==G.pos);
+    const n=Math.floor(fog.length*.08);
+    for(let i=0;i<n;i++){const idx=Math.floor(Math.random()*fog.length);const ti=G.tiles.indexOf(fog[idx]);if(ti>=0)G.tiles[ti].revealed=false;fog.splice(idx,1);}
+  }
+  drawCards(2);
+  log(`🌙 ${G.day-1}일→${G.day}일. HP+${hpR} 정신력+${sanR}${bonAP?` 이른취침AP+${bonAP}`:''}${fatigueN?` 피로AP-${fatigueN*2}`:''}`, 'important');
+  if(Math.random()*100<calcSleepEvtChance(early)){
+    showSleepEvt();
+  } else {
+    checkSurvival(); checkWin(); render();
+  }
+}
+
+function calcSleepEvtChance(early){
+  if(early) return 8;
+  let c=15;
+  if(!G.camps.length){
+    c+=40;
+  } else {
+    const minD=Math.min(...G.camps.map(cp=>{
+      return Math.abs(Math.floor(cp/10)-Math.floor(G.pos/10))+Math.abs((cp%10)-(G.pos%10));
+    }));
+    c+=minD*5;
+  }
+  const stN=[...G.deck,...G.disc].filter(c=>c.tag==='status').length;
+  c+=stN*6;
+  if(G.hp<40) c+=10; if(G.hun<30) c+=8; if(G.thi<30) c+=8; if(G.ap<=2) c+=5;
+  return Math.min(c,95);
+}
+
+function applyWeather(){
+  const w=G.weather;
+  if(!w.eff){log(`${w.icon} 날씨: ${w.name}`,'');return;}
+  const [s,v]=w.eff.split('_'); const val=parseInt(v);
+  if(s==='ap') { G.ap=Math.max(0,G.ap+val);  log(`${w.icon} ${w.name}: AP${val}`,'danger'); }
+  else if(s==='thi'){ G.thi=Math.max(0,G.thi+val); log(`${w.icon} ${w.name}: 갈증${val}`,'danger'); }
+  else if(s==='hp') { G.hp=Math.max(0,G.hp+val);   log(`${w.icon} ${w.name}: HP${val}`,'danger'); }
+  else               log(`${w.icon} ${w.name}: 안개`,'danger');
+}
+
+function showRaftLottery(){
+  const deck5=shuffle(['great','ok','ok','ok','fail']);
+  document.getElementById('se-title').textContent='🛶 뗏목 부품 제작 — 뽑기!';
+  document.getElementById('se-flavor').textContent='부품을 조립하다 보니 결과가 어떻게 될지 알 수 없다. 5장 중 1장을 선택하라.';
+  document.getElementById('se-hint').textContent='대성공(1): 탈출+30% | 성공(3): 탈출+15% | 실패(1): 탈출-10%';
+  document.getElementById('se-result').textContent='';
+  document.getElementById('se-ok').style.display='none';
+  const cardsEl=document.getElementById('se-cards'); cardsEl.innerHTML='';
+  deck5.forEach(type=>{
+    const div=document.createElement('div'); div.className='sc';
+    div.dataset.type=type;
+    div.onclick=()=>revealRaft(div,type);
+    cardsEl.appendChild(div);
+  });
+  document.getElementById('se-mo').style.display='flex';
+}
+
+function revealRaft(el, type){
+  if(el.classList.contains('revealed')) return;
+  document.querySelectorAll('.sc:not(.revealed)').forEach(c=>c.onclick=null);
+  el.classList.add('revealed');
+  const resEl=document.getElementById('se-result');
+  if(type==='great'){
+    el.classList.add('sc-ok'); el.textContent='🌟';
+    G.escape=Math.min(100,G.escape+30);
+    resEl.style.color='var(--accent)';
+    resEl.textContent='★ 대성공! 뛰어난 부품 완성. 탈출도 +30%';
+    log('🛶 뗏목 제작 대성공! 탈출도+30%','success');
+  } else if(type==='ok'){
+    el.classList.add('sc-ok'); el.textContent='✅';
+    G.escape=Math.min(100,G.escape+15);
+    resEl.style.color='var(--green)';
+    resEl.textContent='✓ 성공. 괜찮은 부품 완성. 탈출도 +15%';
+    log('🛶 뗏목 제작 성공. 탈출도+15%','success');
+  } else {
+    el.classList.add('sc-fail'); el.textContent='💥';
+    G.escape=Math.max(0,G.escape-10);
+    resEl.style.color='var(--red)';
+    resEl.textContent='✗ 실패. 부품이 망가졌다. 탈출도 -10%';
+    log('🛶 뗏목 제작 실패. 탈출도-10%','danger');
+  }
+  document.getElementById('se-ok').style.display='';
+  checkWin(); render();
+}
+
+function showSleepEvt(){
+  const stN=[...G.deck,...G.disc].filter(c=>c.tag==='status').length;
+  const bad=(G.hp<40||G.hun<20||G.thi<20||G.ap<=2);
+  let okN=3, failN=1, badN=1;
+  if(stN>=2||bad){ okN=2; failN=1; badN=2; }
+  if(stN>=4||(stN>=2&&bad)){ okN=1; failN=1; badN=3; }
+  const deck5=shuffle([...Array(okN).fill('ok'),...Array(failN).fill('fail'),...Array(badN).fill('bad')]);
+  document.getElementById('se-title').textContent='🌙 취침 이벤트';
+  document.getElementById('se-flavor').textContent=
+    !G.camps.length
+      ?'아무 곳에나 눕자 불안함이 엄습한다. 잠을 잘 잘 수 있을까?'
+      :'오늘 하루가 무거웠다. 잠자리에 드는 순간 여러 생각이 밀려온다.';
+  document.getElementById('se-hint').textContent=`덱 상태: 성공${okN} 실패${failN} 대실패${badN} (5장 중 1장 선택)`;
+  document.getElementById('se-result').textContent='';
+  document.getElementById('se-ok').style.display='none';
+  const cardsEl=document.getElementById('se-cards'); cardsEl.innerHTML='';
+  deck5.forEach(type=>{
+    const div=document.createElement('div'); div.className='sc';
+    div.dataset.type=type; div.onclick=()=>revealSC(div,type);
+    cardsEl.appendChild(div);
+  });
+  document.getElementById('se-mo').style.display='flex';
+}
+
+function revealSC(el, type){
+  if(el.classList.contains('revealed')) return;
+  document.querySelectorAll('.sc:not(.revealed)').forEach(c=>c.onclick=null);
+  el.classList.add('revealed');
+  const resEl=document.getElementById('se-result');
+  if(type==='ok'){
+    el.classList.add('sc-ok'); el.textContent='😴';
+    resEl.style.color='var(--green)';
+    resEl.textContent='✓ 푹 잤다! 덱의 상태이상 카드 1장이 사라졌다.';
+    rmStatusCard();
+    log('😴 취침이벤트: 숙면 — 상태이상 1장 제거','success');
+  } else if(type==='fail'){
+    el.classList.add('sc-fail'); el.textContent='😓';
+    resEl.style.color='var(--red)';
+    resEl.textContent='✗ 잠을 설쳤다. AP -2.';
+    G.ap=Math.max(1,G.ap-2);
+    log('😓 취침이벤트: 잠설침 — AP-2','danger');
+  } else {
+    el.classList.add('sc-bad'); el.textContent='💀';
+    resEl.style.color='var(--red)';
+    resEl.textContent='💀 악몽에 시달렸다! 피로 카드가 덱에 추가됐다.';
+    addCard('fatigue',1);
+    log('💀 취침이벤트: 악몽 — 피로카드 추가','danger');
+  }
+  document.getElementById('se-ok').style.display='';
+}
+
+function rmStatusCard(){
+  let i=G.disc.findIndex(c=>c.tag==='status');
+  if(i>=0){G.disc.splice(i,1);return;}
+  i=G.deck.findIndex(c=>c.tag==='status');
+  if(i>=0) G.deck.splice(i,1);
+}
+
+function closeSleepEvt(){
+  document.getElementById('se-mo').style.display='none';
+  checkSurvival(); checkWin(); render();
+}
+
+// ═══════════════ COMBAT ═══════════════
+// [버그수정] 창 관통 방어무시 구현 / 뱀·박쥐 패널티 적용 / 유령 패널티는 패배 시에만
+
+function drawCombatHand(){
+  if(G.deck.length<5&&G.disc.length){G.deck=shuffle([...G.deck,...G.disc]);G.disc=[];}
+  const h=[]; for(let i=0;i<Math.min(5,G.deck.length);i++) h.push(G.deck.pop());
+  return h;
+}
+
+function startCombat(evtId){
+  const enemy=ENEMIES[evtId];
+  CBT={enemy:{...enemy,curHp:enemy.hp},hand:[],atkZone:[],defZone:[],resolved:false,turn:1,stunned:false,poisoned:false};
+  CBT.hand=drawCombatHand(); _cbtMode=null;
+  ['btn-cbt-resolve','btn-cbt-flee'].forEach(id=>document.getElementById(id).style.display='');
+  document.getElementById('btn-cbt-close').style.display='none';
+  document.getElementById('cbt-res').style.display='none';
+  document.getElementById('cbt-mo').style.display='flex';
+  renderCombat();
+  log(`⚔️ ${enemy.name} 출현! 전투 시작.`,'danger');
+}
+
+function setCbtMode(m){
+  _cbtMode=m;
+  document.getElementById('btn-matk').style.background=m==='atk'?'rgba(224,80,80,.2)':'';
+  document.getElementById('btn-mdef').style.background=m==='def'?'rgba(74,144,212,.2)':'';
+}
+
+function smartAssign(){
+  CBT.atkZone=[]; CBT.defZone=[];
+  CBT.hand.forEach(c=>{
+    if(c.atk>0&&c.def<=0)      CBT.atkZone.push(c);
+    else if(c.def>0&&c.atk<=0) CBT.defZone.push(c);
+    else if(c.atk>0)           CBT.atkZone.push(c);
+  });
+  renderCombat();
+}
+
+function clearAssign(){ CBT.atkZone=[]; CBT.defZone=[]; renderCombat(); }
+
+function cbtCardClick(i){
+  const c=CBT.hand[i]; if(!c) return;
+  const inA=CBT.atkZone.some(x=>x.uid===c.uid);
+  const inD=CBT.defZone.some(x=>x.uid===c.uid);
+  if(inA||inD){
+    CBT.atkZone=CBT.atkZone.filter(x=>x.uid!==c.uid);
+    CBT.defZone=CBT.defZone.filter(x=>x.uid!==c.uid);
+    renderCombat(); return;
+  }
+  if(_cbtMode==='atk'){ CBT.atkZone.push(c); renderCombat(); return; }
+  if(_cbtMode==='def'){ CBT.defZone.push(c); renderCombat(); return; }
+  // 팝업
+  const ep=document.getElementById('cbt-popup'); if(ep) ep.remove();
+  const pop=document.createElement('div'); pop.id='cbt-popup';
+  pop.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:9px;padding:13px;z-index:300;min-width:200px;text-align:center;';
+  pop.innerHTML=`<div style="font-size:22px;">${c.icon}</div>
+    <div style="font-family:var(--font-t);font-size:14px;margin:4px 0;">${c.name}</div>
+    <div style="font-size:8px;color:var(--text3);font-family:var(--font-m);margin-bottom:9px;">ATK${c.atk} DEF${c.def} [${c.tag}]${c.cbtFx?`<br><span style="color:var(--blue)">★${c.cbtFx}</span>`:''}</div>
+    <div style="display:flex;gap:6px;justify-content:center;">
+      <button class="btn" style="color:var(--red);border-color:var(--red2);" onclick="assignCard(${i},'atk')">⚔️ 공격</button>
+      <button class="btn" style="color:var(--blue);border-color:var(--blue2);" onclick="assignCard(${i},'def')">🛡️ 방어</button>
+      <button class="btn" onclick="document.getElementById('cbt-popup').remove()">취소</button>
+    </div>`;
+  document.body.appendChild(pop);
+}
+
+function assignCard(i, zone){
+  const pop=document.getElementById('cbt-popup'); if(pop) pop.remove();
+  const c=CBT.hand[i]; if(!c) return;
+  CBT.atkZone=CBT.atkZone.filter(x=>x.uid!==c.uid);
+  CBT.defZone=CBT.defZone.filter(x=>x.uid!==c.uid);
+  if(zone==='atk') CBT.atkZone.push(c); else CBT.defZone.push(c);
+  renderCombat();
+}
+
+function renderCombat(){
+  const e=CBT.enemy;
+  document.getElementById('cbt-title').textContent=`⚔️ ${e.name} 출현!`;
+  document.getElementById('cbt-sub').textContent=`라운드${CBT.turn} | 적 다음행동: ${CBT.stunned?'기절(피해없음)':`공격-${e.atk}HP`}`;
+  document.getElementById('cbt-eicon').textContent=e.icon;
+  document.getElementById('cbt-ename').textContent=e.name;
+  document.getElementById('cbt-ehp').textContent=Math.max(0,e.curHp);
+  document.getElementById('cbt-emhp').textContent=e.hp;
+  document.getElementById('cbt-ehpbar').style.width=Math.max(0,e.curHp/e.hp*100)+'%';
+  document.getElementById('cbt-intent').textContent=CBT.stunned?'💫 기절':`💥 공격: ${e.atk}`;
+  const aT=CBT.atkZone.reduce((s,c)=>s+Math.max(0,c.atk),0);
+  const dT=CBT.defZone.reduce((s,c)=>s+Math.max(0,c.def),0);
+  document.getElementById('atk-tot').textContent=aT;
+  document.getElementById('def-tot').textContent=dT;
+  renderZone('atk-zone',CBT.atkZone,'atk');
+  renderZone('def-zone',CBT.defZone,'def');
+  const hEl=document.getElementById('cbt-hand'); hEl.innerHTML='';
+  CBT.hand.forEach((c,i)=>{
+    const inA=CBT.atkZone.some(x=>x.uid===c.uid);
+    const inD=CBT.defZone.some(x=>x.uid===c.uid);
+    const div=document.createElement('div');
+    div.className='c-card'+(inA?' a-atk':inD?' a-def':'');
+    div.innerHTML=`<div style="font-size:16px;">${c.icon}</div><div style="font-size:7px;font-weight:700;margin:2px 0;">${c.name}</div><div style="font-size:6px;font-family:var(--font-m);color:var(--text3);">A${c.atk} D${c.def}</div><div class="card-tag tag-${c.tag}" style="font-size:5px;">${c.tag}</div>`;
+    div.onclick=()=>cbtCardClick(i);
+    div.addEventListener('mouseenter',()=>showTT(c,div));
+    div.addEventListener('mouseleave',hideTT);
+    hEl.appendChild(div);
+  });
+}
+
+function renderZone(id, arr, t){
+  const el=document.getElementById(id); el.innerHTML='';
+  arr.forEach(c=>{
+    const mc=document.createElement('span'); mc.className='mini-card';
+    mc.innerHTML=`${c.icon} ${c.name} ${t==='atk'?`⚔️${Math.max(0,c.atk)}`:`🛡️${Math.max(0,c.def)}`}`;
+    mc.onclick=()=>{ CBT.atkZone=CBT.atkZone.filter(x=>x.uid!==c.uid); CBT.defZone=CBT.defZone.filter(x=>x.uid!==c.uid); renderCombat(); };
+    el.appendChild(mc);
+  });
+}
+
+function resolveCombat(){
+  const e=CBT.enemy;
+  let pD=0, normalAtk=0, pierceAtk=0;
+  const lines=[]; let stun=false, poisonApplied=false;
+  const hasArmor=[...G.deck,...G.disc].some(c=>c.id==='leather_armor');
+
+  [...CBT.atkZone,...CBT.defZone].forEach(c=>{
+    if(c.cbtFx==='pierce'&&CBT.atkZone.some(x=>x.uid===c.uid)){
+      // 관통: 적 방어 완전무시 (별도 집계)
+      pierceAtk+=c.atk+4;
+      lines.push({t:`★ 창 관통: 방어무시 ATK${c.atk+4}`,cls:'good'});
+    } else if(c.cbtFx==='block'&&CBT.defZone.some(x=>x.uid===c.uid)){
+      pD+=c.def+5; lines.push({t:`★ 방패 완전방어+5`,cls:'good'});
+    } else if(c.cbtFx==='stun'){
+      stun=true; normalAtk+=c.atk+3; pD+=c.def;
+      lines.push({t:`★ 함정: 기절+추가ATK3`,cls:'good'});
+    } else if(c.cbtFx==='poison'&&CBT.atkZone.some(x=>x.uid===c.uid)){
+      normalAtk+=c.atk; poisonApplied=true;
+      lines.push({t:`★ 독칼: 독상태 부여(매라운드+3)`,cls:'good'});
+    } else {
+      if(CBT.atkZone.some(x=>x.uid===c.uid)) normalAtk+=Math.max(0,c.atk);
+      if(CBT.defZone.some(x=>x.uid===c.uid)) pD+=Math.max(0,c.def);
+    }
+  });
+
+  const poisonDmg=CBT.poisoned?3:0;
+  if(CBT.poisoned) lines.push({t:`☠️ 독 지속피해: 적 -3`,cls:'good'});
+  if(poisonApplied) CBT.poisoned=true;
+
+  // 일반 공격은 적 방어를 뺌, 관통 공격은 방어 무시
+  const dmgE=Math.max(0,normalAtk-e.def)+pierceAtk+poisonDmg;
+  const eA=CBT.stunned?0:e.atk;
+  let dmgP=Math.max(0,eA-pD);
+  if(hasArmor&&dmgP>0){ dmgP=Math.max(0,dmgP-2); lines.push({t:`🧥 가죽갑옷: 피해-2`,cls:'good'}); }
+
+  e.curHp=Math.max(0,e.curHp-dmgE); G.hp=Math.max(0,G.hp-dmgP);
+  lines.unshift({t:`⚔️ 내공격: 일반${normalAtk}-방어${e.def}+관통${pierceAtk}+독${poisonDmg}=${dmgE}피해`,cls:'good'});
+  lines.unshift({t:`🛡️ 내방어:${pD}${hasArmor?'(갑옷-2)':''}-적공격${eA}=${dmgP}피해`,cls:dmgP>0?'bad':'good'});
+  CBT.stunned=stun;
+
+  const resEl=document.getElementById('cbt-res');
+  resEl.style.display='block';
+  resEl.innerHTML=lines.map(l=>`<div class="rl ${l.cls}">${l.t}</div>`).join('');
+
+  if(e.curHp<=0){
+    // 승리 처리
+    const rewardLines=[];
+    if(e.reward?.cards){ e.reward.cards.forEach(r=>{ addCard(r.id,r.n); const d=CARDS.find(c=>c.id===r.id); rewardLines.push(`${d?.icon||''}${d?.name||r.id}×${r.n}`); }); }
+    if(e.reward?.san){ G.san=Math.min(100,G.san+e.reward.san); rewardLines.push(`정신력+${e.reward.san}`); }
+    resEl.innerHTML+=`<div class="rl good" style="font-size:13px;margin-top:5px;">🏆 ${e.name} 처치!</div>`;
+    resEl.innerHTML+=`<div class="rl good">💎 보상: ${e.rewardDesc||rewardLines.join(' ')}</div>`;
+    G.kills++; CBT.resolved=true;
+    log(`⚔️ ${e.name} 처치! 보상: ${e.rewardDesc}`,'success');
+    document.getElementById('btn-cbt-resolve').style.display='none';
+    document.getElementById('btn-cbt-flee').style.display='none';
+    document.getElementById('btn-cbt-close').style.display='';
+  } else if(G.hp<=0){
+    // 패배 — 패널티 적용
+    if(e.penalty){
+      if(e.penalty.card){ addCard(e.penalty.card,1); log(`${e.penalty.desc||e.penalty.card+' 추가'}`, 'danger'); }
+      if(e.penalty.san){ G.san=Math.max(0,G.san+e.penalty.san); log(`${e.penalty.desc||'정신력'+e.penalty.san}`, 'danger'); }
+    }
+    resEl.innerHTML+=`<div class="rl bad" style="margin-top:5px;">💀 사망...</div>`;
+    document.getElementById('btn-cbt-resolve').style.display='none';
+    document.getElementById('btn-cbt-flee').style.display='none';
+    document.getElementById('btn-cbt-close').style.display=''; CBT.resolved=true;
+  } else {
+    // 피해를 입었을 때 패널티 (독사, 박쥐)
+    if(dmgP>0&&e.penalty&&!CBT.penaltyApplied){
+      CBT.penaltyApplied=true;
+      if(e.penalty.card){ addCard(e.penalty.card,1); resEl.innerHTML+=`<div class="rl bad">⚠️ ${e.penalty.desc||e.penalty.card+' 추가'}</div>`; log(`${e.penalty.desc||e.penalty.card+' 추가'}`, 'danger'); }
+      if(e.penalty.san){ G.san=Math.max(0,G.san+e.penalty.san); resEl.innerHTML+=`<div class="rl bad">⚠️ ${e.penalty.desc||'정신력'+e.penalty.san}</div>`; log(`${e.penalty.desc||'정신력'+e.penalty.san}`, 'danger'); }
+    }
+    CBT.turn++;
+    CBT.atkZone=[]; CBT.defZone=[];
+    G.disc.push(...CBT.hand); CBT.hand=[];
+    CBT.hand=drawCombatHand();
+    resEl.innerHTML+=`<div class="rl neutral">— 라운드${CBT.turn}: ${CBT.hand.length}장 드로우 —</div>`;
+    log(`⚔️ 라운드${CBT.turn} (내HP:${G.hp} 적HP:${e.curHp})`,'combat');
+  }
+  renderCombat(); render();
+}
+
+function fleeCombat(){
+  const hasCloak=[...G.deck,...G.disc].some(c=>c.id==='feather_cloak');
+  const cost=hasCloak?2:8;
+  G.hp=Math.max(0,G.hp-cost);
+  log(`💨 도망. HP-${cost}${hasCloak?' (🧣깃털망토 효과)':''}`, 'danger');
+  closeCombat();
+}
+
+function closeCombat(){
+  document.getElementById('cbt-mo').style.display='none';
+  const p=document.getElementById('cbt-popup'); if(p) p.remove();
+  if(CBT.hand?.length){ G.disc.push(...CBT.hand); CBT.hand=[]; }
+  if(G.hp<=0) triggerGameOver('전투 중 사망했습니다.');
+  checkSurvival(); checkWin(); render();
+}
+
+// ═══════════════ DECK VIEWER ═══════════════
+
+function openDv(){ document.getElementById('dv-mo').style.display='flex'; renderDv(_dvTab); }
+function closeDv(){ document.getElementById('dv-mo').style.display='none'; }
+
+function dvSwitch(t){
+  _dvTab=t;
+  ['all','deck','disc'].forEach(x=>document.getElementById('dvt-'+x).className='dv-tab'+(x===t?' active':''));
+  renderDv(t);
+}
+
+function renderDv(tab){
+  const all=[...G.deck,...G.disc];
+  document.getElementById('dvn-all').textContent=all.length;
+  document.getElementById('dvn-deck').textContent=G.deck.length;
+  document.getElementById('dvn-disc').textContent=G.disc.length;
+  const grid=document.getElementById('dv-grid'); grid.innerHTML='';
+  const cards=tab==='all'?all:tab==='deck'?[...G.deck].reverse():G.disc;
+  if(!cards.length){grid.innerHTML='<div class="dv-empty">카드 없음</div>';return;}
+  if(tab==='all'){
+    const cnt={}; cards.forEach(c=>cnt[c.id]=(cnt[c.id]||0)+1);
+    const seen=new Set();
+    const uniq=cards.filter(c=>{if(seen.has(c.id))return false;seen.add(c.id);return true;});
+    uniq.sort((a,b)=>['resource','tool','combat','status'].indexOf(a.tag)-['resource','tool','combat','status'].indexOf(b.tag));
+    let lastTag=null;
+    uniq.forEach(c=>{
+      if(c.tag!==lastTag){
+        lastTag=c.tag;
+        const h=document.createElement('div');
+        h.style.cssText='grid-column:1/-1;font-size:8px;color:var(--text3);font-family:var(--font-m);text-transform:uppercase;padding:4px 2px 2px;border-bottom:1px solid var(--border);margin-bottom:2px;';
+        h.textContent={resource:'🌿자원',tool:'🔧도구',combat:'⚔️전투',status:'⚠️상태이상'}[c.tag]||c.tag;
+        grid.appendChild(h);
+      }
+      grid.appendChild(makeDvCard(c, cnt[c.id]));
+    });
+  } else {
+    cards.forEach(c=>grid.appendChild(makeDvCard(c, null)));
+  }
+}
+
+function makeDvCard(c, cnt){
+  const d=document.createElement('div'); d.className='dv-card';
+  d.innerHTML=`<div class="dc-icon">${c.icon}${cnt>1?`<sup style="font-size:7px;color:var(--accent);">×${cnt}</sup>`:''}</div>
+    <div class="dc-name">${c.name}</div>
+    <div class="card-tag tag-${c.tag}" style="font-size:6px;">${c.tag}</div>
+    <div class="dc-atk">A${c.atk} D${c.def}${c.dur?`<br><span style="color:var(--accent);">🔋${c.curDur||c.dur}/${c.dur}</span>`:''}</div>`;
+  d.addEventListener('mouseenter',()=>showTT(c,d));
+  d.addEventListener('mouseleave',hideTT);
+  return d;
+}
+
+// ═══════════════ RENDER ═══════════════
+
+function render(){
+  const p=G;
+
+  // 헤더
+  const hpEl=document.getElementById('hv-hp');
+  hpEl.textContent=p.hp; hpEl.className='val'+(p.hp<30?' low':'');
+  ['san','hun','thi'].forEach(k=>document.getElementById('hv-'+k).textContent=p[k]);
+  document.getElementById('hv-wx').textContent=`${p.weather.icon} ${p.weather.name}`;
+  document.getElementById('hv-tmrw').textContent=`${p.tomorrow.icon} ${p.tomorrow.name}`;
+  document.getElementById('hv-day').textContent=p.day;
+  document.getElementById('hv-ap').textContent=p.ap;
+  document.getElementById('doom-pct').textContent=Math.min(100,p.doom);
+  document.getElementById('doom-fill').style.width=Math.min(100,p.doom)+'%';
+  document.getElementById('hv-esc').textContent=p.escape;
+
+  // 스탯 바
+  ['hp','san','hun','thi'].forEach(k=>{
+    document.getElementById('sv-'+k).textContent=p[k];
+    document.getElementById('bar-'+k).style.width=p[k]+'%';
+  });
+  document.getElementById('sv-esc').textContent=p.escape+'%';
+  document.getElementById('bar-esc').style.width=p.escape+'%';
+
+  // 캠프 정보
+  const ci=document.getElementById('camp-info');
+  ci.textContent=p.camps.length?`캠프 ${p.camps.length}곳 (제작 가능)`:'캠프 없음 (취침이벤트↑)';
+  ci.style.color=p.camps.length?'var(--green)':'var(--red)';
+
+  // 패시브 목록
+  const allCards=[...p.deck,...p.disc];
+  const passives=[...new Set(allCards.filter(c=>c.passiveDesc).map(c=>c.passiveDesc))];
+  document.getElementById('passive-info').textContent=passives.length?passives.join(' / '):'없음';
+
+  // 맵
+  const grid=document.getElementById('grid'); grid.innerHTML='';
+  p.tiles.forEach((t,i)=>{
+    const d=document.createElement('div');
+    d.className='tile'
+      +(t.revealed?` revealed ${t.cls}`:'fog')
+      +(i===p.pos?' player':'')
+      +(t.hasCamp?' camp-t':'')
+      +(t.revealed&&t.explored?' explored':'');
+    if(t.revealed) d.textContent=i===p.pos?'🧍':(t.hasCamp?'🏕️':t.icon);
+    d.title=t.revealed?`${t.name}${t.explored?' ✓':''}`:' ';
+    d.onclick=()=>clickTile(i);
+    grid.appendChild(d);
+  });
+
+  // 덱 표시
+  const dg=document.getElementById('deck-grid'); dg.innerHTML='';
+  allCards.forEach(c=>{
+    const div=document.createElement('div'); div.className='card';
+    const durDisp=c.dur?`<br><span style="color:var(--accent);font-size:6px;">🔋${c.curDur||c.dur}/${c.dur}</span>`:'';
+    div.innerHTML=`<div class="card-icon">${c.icon}</div>
+      <div class="card-name">${c.name}</div>
+      <div class="card-tag tag-${c.tag}">${c.tag}</div>
+      <div class="card-stats">A${c.atk} D${c.def}${durDisp}</div>`;
+    div.addEventListener('mouseenter',()=>showTT(c,div));
+    div.addEventListener('mouseleave',hideTT);
+    addCardTouchTT(div, c);
+    dg.appendChild(div);
+  });
+  document.getElementById('dk-total').textContent=allCards.length;
+  document.getElementById('dk-deck').textContent=p.deck.length;
+  document.getElementById('dk-disc').textContent=p.disc.length;
+
+  // 로그
+  document.getElementById('log-main').innerHTML=
+    p.logs.slice(0,25).map(l=>`<div class="le ${l.type||''}">${l.msg}</div>`).join('');
+
+  // 버튼 활성화
+  document.getElementById('btn-exp').disabled=p.ap<2||p.over;
+  document.getElementById('btn-ga').disabled=p.ap<3||p.over||!p.tiles[p.pos].explored;
+  document.getElementById('btn-camp').disabled=p.ap<8||p.over||p.tiles[p.pos].hasCamp;
+  document.getElementById('btn-craft').disabled=p.over||!p.tiles[p.pos].hasCamp;
+  document.getElementById('btn-use').disabled=p.ap<1||p.over;
+  document.getElementById('btn-sleep').disabled=p.over;
+}
+
+
+initGame();
+</script>
+
+</body>
+</html>
