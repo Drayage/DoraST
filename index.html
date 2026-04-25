@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>무인도 탈출 v0.2</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="hdr">
+  <h1>🏝 무인도 탈출</h1>
+  <div class="hs"><span class="lbl">HP</span><span class="val" id="hv-hp">100</span></div>
+  <div class="hs"><span class="lbl">정신력</span><span class="val" id="hv-san">100</span></div>
+  <div class="hs"><span class="lbl">허기</span><span class="val" id="hv-hun">80</span></div>
+  <div class="hs"><span class="lbl">갈증</span><span class="val" id="hv-thi">80</span></div>
+  <div class="wpill" id="hv-wx">☀️ 맑음</div>
+  <span style="font-size:9px;color:var(--text3);">내일: <span id="hv-tmrw" style="color:var(--text2);">?</span></span>
+  <div style="margin-left:auto;font-family:var(--font-m);font-size:11px;">
+    <span style="color:var(--text3);">DAY </span><span id="hv-day" style="color:var(--accent);font-weight:600;">1</span>
+    &nbsp;&nbsp;<span style="color:var(--text3);">AP </span><span id="hv-ap" style="font-weight:600;">10</span>
+  </div>
+  <div id="doom-wrap">
+    <div class="doom-lbl">DOOM <span id="doom-pct">0</span>%</div>
+    <div class="doom-trk"><div class="doom-fill" id="doom-fill" style="width:0%"></div></div>
+  </div>
+  <span style="font-size:9px;color:var(--text3);">탈출 <span id="hv-esc" style="color:var(--green);">0</span>%</span>
+</div>
+
+<div id="layout">
+
+  <!-- MAP -->
+  <div id="map-col">
+    <div class="col-hdr">🗺 탐색 맵 <span>난파선 섬</span></div>
+    <div id="map-wrap">
+      <div id="grid"></div>
+      <div style="margin-top:7px;font-size:8px;color:var(--text3);font-family:var(--font-m);display:flex;gap:7px;flex-wrap:wrap;">
+        <span>🏖️해변</span><span>🌲숲</span><span>🪨동굴</span><span>🏚️폐허</span><span>🌊해안</span>
+        <span style="color:var(--accent);">🧍나</span><span style="color:var(--green);">🏕️캠프</span>
+      </div>
+    </div>
+    <div id="act-panel">
+      <div class="act-grid">
+        <button class="btn" id="btn-exp" onclick="doExplore()">🔍 탐색 <span class="apb">AP2</span></button>
+        <button class="btn" id="btn-ga" onclick="openGather()">🎒 수집 <span class="apb">AP3</span></button>
+        <button class="btn" id="btn-camp" onclick="doCamp()">🏕️ 캠프 건설 <span class="apb">AP8</span></button>
+        <button class="btn purple-btn" id="btn-craft" onclick="openCraft()">🔨 제작 <span style="font-size:8px;color:var(--text3);">캠프·AP1~</span></button>
+        <button class="btn green-btn full" id="btn-use" onclick="openUseCard()">✨ 카드 사용 — 5장 드로우 <span class="apb">AP1</span></button>
+        <button class="btn primary full" id="btn-sleep" onclick="doSleep()">🌙 취침 → 다음날</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER -->
+  <div id="ctr-col">
+    <div class="col-hdr">📦 덱 <span id="dk-total">0</span>장
+      <span style="margin-left:4px;font-size:8px;">잔여:<span id="dk-deck">0</span> 버림:<span id="dk-disc">0</span></span>
+      <button class="btn" onclick="openDv()" style="padding:1px 6px;font-size:8px;margin-left:auto;">🔎 덱 보기</button>
+    </div>
+    <div id="deck-area">
+      <div id="deck-scroll">
+        <div class="dk-grid" id="deck-grid"></div>
+        <div style="margin-top:8px;padding:7px;background:var(--bg3);border-radius:5px;font-size:8px;color:var(--text3);font-family:var(--font-m);line-height:1.8;">
+          🍗💧🌿 내구도 소진 시 영구 제거 | 🔨 제작 캠프(AP1~) | 🎒 수집 탐색완료+장비 필요 | AP10으로 시작
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="col-hdr">📋 게임 로그</div>
+      <div id="log-main"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div id="rgt-col">
+    <div class="col-hdr">📊 생존 수치</div>
+    <div id="stats-wrap">
+      <div class="sb"><div class="srh"><span class="sn">❤️ 체력</span><span class="sv" id="sv-hp">100</span></div><div class="strk"><div class="bar bar-hp" id="bar-hp" style="width:100%"></div></div></div>
+      <div class="sb"><div class="srh"><span class="sn">🧠 정신력</span><span class="sv" id="sv-san">100</span></div><div class="strk"><div class="bar bar-san" id="bar-san" style="width:100%"></div></div></div>
+      <div class="sb"><div class="srh"><span class="sn">🍗 허기</span><span class="sv" id="sv-hun">80</span></div><div class="strk"><div class="bar bar-hun" id="bar-hun" style="width:80%"></div></div></div>
+      <div class="sb"><div class="srh"><span class="sn">💧 갈증</span><span class="sv" id="sv-thi">80</span></div><div class="strk"><div class="bar bar-thi" id="bar-thi" style="width:80%"></div></div></div>
+      <div class="info-box">
+        <div class="lbl">탈출 진행도</div>
+        <div class="strk" style="height:7px;"><div class="bar" id="bar-esc" style="width:0%;background:var(--green);height:7px;border-radius:3px;"></div></div>
+        <div style="margin-top:3px;color:var(--green);font-size:11px;font-weight:600;" id="sv-esc">0%</div>
+      </div>
+      <div class="info-box">
+        <div class="lbl">캠프 현황</div>
+        <div id="camp-info" style="color:var(--text2);">캠프 없음</div>
+      </div>
+      <div class="info-box">
+        <div class="lbl">활성 패시브</div>
+        <div id="passive-info" style="color:var(--text3);line-height:1.6;">없음</div>
+      </div>
+      <div class="info-box" style="line-height:1.8;">
+        <div class="lbl">조작</div>
+        <span style="color:var(--text3);">타일클릭→이동(AP1~, 캠프 거리 비례) | 탐색→이벤트+판정<br>수집→탐색완료+장비(반복 시 성공률 감소) | 제작→캠프(AP소모)<br>카드사용(AP1)→🔋내구도 소진 시 영구제거 | 캠프건설AP8<br>취침→허기갈증 소모 | 일찍자면 노숙이벤트↓</span>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /layout -->
+
+<!-- 모바일 탭바 -->
+<div id="mob-tabs">
+  <button class="mob-tab active" id="mtab-map" onclick="mobTab('map')">
+    <span class="mt-icon">🗺️</span>맵·행동
+  </button>
+  <button class="mob-tab" id="mtab-deck" onclick="mobTab('deck')">
+    <span class="mt-icon">📦</span>덱·로그
+    <span class="tab-badge" id="badge-deck"></span>
+  </button>
+  <button class="mob-tab" id="mtab-stat" onclick="mobTab('stat')">
+    <span class="mt-icon">📊</span>생존수치
+    <span class="tab-badge" id="badge-stat"></span>
+  </button>
+  <button class="mob-tab" id="mtab-help" onclick="mobTab('help')">
+    <span class="mt-icon">❓</span>도움말
+  </button>
+</div>
+
+<!-- TOOLTIP -->
+<div id="tt"><div class="tt-inner">
+  <div class="tt-icon" id="tt-icon"></div>
+  <div class="tt-name" id="tt-name"></div>
+  <div style="text-align:center;margin-bottom:6px;" id="tt-tag"></div>
+  <div class="tt-sts">
+    <div class="tt-st"><div class="tt-sl">공격</div><div class="tt-sv" id="tt-atk">0</div></div>
+    <div class="tt-st"><div class="tt-sl">방어</div><div class="tt-sv" id="tt-def">0</div></div>
+  </div>
+  <div class="tt-desc" id="tt-desc"></div>
+  <div class="tt-fx tt-consumable" id="tt-con" style="display:none;"></div>
+  <div class="tt-fx tt-use" id="tt-use" style="display:none;"></div>
+  <div class="tt-fx tt-passive" id="tt-pass" style="display:none;"></div>
+  <div class="tt-fx tt-cbt" id="tt-cbt" style="display:none;"></div>
+  <div class="tt-fx tt-gather" id="tt-ga" style="display:none;"></div>
+</div></div>
+
+<!-- DECK VIEWER -->
+<div id="dv-mo" class="mo">
+  <div id="dv-box" class="mb">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;">
+      <div style="font-family:var(--font-t);font-size:16px;color:var(--accent);">📦 덱 구성</div>
+      <button class="btn" onclick="closeDv()">✕ 닫기</button>
+    </div>
+    <div class="dv-tabs">
+      <button class="dv-tab active" id="dvt-all" onclick="dvSwitch('all')">전체 (<span id="dvn-all">0</span>)</button>
+      <button class="dv-tab" id="dvt-deck" onclick="dvSwitch('deck')">잔여 (<span id="dvn-deck">0</span>)</button>
+      <button class="dv-tab" id="dvt-disc" onclick="dvSwitch('disc')">버림 (<span id="dvn-disc">0</span>)</button>
+    </div>
+    <div class="dv-grid" id="dv-grid"></div>
+  </div>
+</div>
+
+<!-- EXPLORE CHOICE -->
+<div id="ex-mo" class="mo">
+  <div id="ex-box" class="mb">
+    <div class="mo-title ex-title" id="ex-title"></div>
+    <div class="ex-flavor" id="ex-flavor"></div>
+    <div id="ex-choices"></div>
+    <div style="font-size:8px;color:var(--text3);font-family:var(--font-m);text-align:right;margin-top:3px;">★ 특정 카드 뽑히면 대성공!</div>
+  </div>
+</div>
+
+<!-- JUDGMENT -->
+<div id="jdg-mo" class="mo">
+  <div id="jdg-box" class="mb">
+    <div class="jdg-title" id="jdg-title">판정 중...</div>
+    <div class="jdg-req" id="jdg-req"></div>
+    <div class="jdg-wrap"><div class="jdg-card" id="jdg-card">
+      <div class="jdg-front"></div>
+      <div class="jdg-back" id="jdg-back">
+        <div class="jdg-cicon" id="jdg-cicon"></div>
+        <div class="jdg-cname" id="jdg-cname"></div>
+        <div id="jdg-ctag"></div>
+      </div>
+    </div></div>
+    <div class="jdg-res" id="jdg-res" style="display:none;"></div>
+    <div class="jdg-detail" id="jdg-det" style="display:none;"></div>
+    <div class="jdg-bonus" id="jdg-bon" style="display:none;"></div>
+    <button class="btn primary" id="jdg-ok" onclick="closeJdg()" style="display:none;">확인</button>
+  </div>
+</div>
+
+<!-- GATHER -->
+<div id="ga-mo" class="mo">
+  <div id="ga-box" class="mb">
+    <div class="mo-title" id="ga-title" style="font-size:17px;color:#70b0e0;margin-bottom:3px;"></div>
+    <div style="font-size:10px;color:var(--text2);margin-bottom:11px;" id="ga-flavor"></div>
+    <div id="ga-opts" style="display:flex;flex-direction:column;gap:6px;"></div>
+    <div style="margin-top:8px;font-size:9px;color:var(--text3);font-family:var(--font-m);" id="ga-note"></div>
+  </div>
+</div>
+
+<!-- CRAFT -->
+<div id="cr-mo" class="mo">
+  <div id="cr-box" class="mb">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <div style="font-family:var(--font-t);font-size:17px;color:var(--purple);">🔨 캠프 제작소</div>
+      <button class="btn" onclick="closeCraft()">✕ 닫기</button>
+    </div>
+    <div id="cr-mats" style="display:flex;gap:5px;flex-wrap:wrap;padding:7px;background:var(--bg3);border-radius:6px;font-family:var(--font-m);font-size:9px;margin-bottom:10px;"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;" id="cr-list"></div>
+    <div id="cr-msg" style="margin-top:8px;padding:6px 8px;background:var(--bg3);border-radius:4px;font-size:9px;font-family:var(--font-m);display:none;"></div>
+  </div>
+</div>
+
+<!-- USE CARD -->
+<div id="uc-mo" class="mo">
+  <div id="uc-box" class="mb">
+    <div style="font-family:var(--font-t);font-size:16px;color:var(--green);margin-bottom:3px;">✨ 카드 사용</div>
+    <div style="font-size:9px;color:var(--text3);font-family:var(--font-m);margin-bottom:10px;" id="uc-sub"></div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin-bottom:10px;" id="uc-cards"></div>
+    <div id="uc-result" style="font-size:10px;font-family:var(--font-m);min-height:16px;margin-bottom:8px;"></div>
+    <div style="display:flex;justify-content:flex-end;">
+      <button class="btn primary" onclick="closeUseCard()">완료 (나머지 버림)</button>
+    </div>
+  </div>
+</div>
+
+<!-- SLEEP EVENT -->
+<div id="se-mo" class="mo">
+  <div id="se-box" class="mb">
+    <div style="font-family:var(--font-t);font-size:18px;color:var(--text2);margin-bottom:7px;" id="se-title"></div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:12px;line-height:1.6;" id="se-flavor"></div>
+    <div style="font-size:9px;color:var(--text3);font-family:var(--font-m);margin-bottom:8px;" id="se-hint"></div>
+    <div class="sc-row" id="se-cards"></div>
+    <div id="se-result" style="min-height:34px;font-family:var(--font-m);font-size:11px;margin-bottom:10px;"></div>
+    <button class="btn primary" id="se-ok" onclick="closeSleepEvt()" style="display:none;">다음날로 →</button>
+  </div>
+</div>
+
+<!-- COMBAT -->
+<div id="cbt-mo" class="mo">
+  <div id="cbt-box" class="mb">
+    <div class="cbt-title" id="cbt-title">⚔️ 전투!</div>
+    <div style="font-size:9px;color:var(--text3);font-family:var(--font-m);margin-bottom:9px;" id="cbt-sub"></div>
+    <div class="enemy-area">
+      <div class="enemy-card">
+        <div class="enemy-icon" id="cbt-eicon"></div>
+        <div class="enemy-name" id="cbt-ename"></div>
+        <div style="font-size:9px;font-family:var(--font-m);color:var(--text3);">HP <span id="cbt-ehp">0</span>/<span id="cbt-emhp">0</span></div>
+        <div class="ehp-trk"><div class="ehp-fill" id="cbt-ehpbar" style="width:100%"></div></div>
+        <div style="font-size:9px;color:var(--text2);font-family:var(--font-m);margin-top:4px;" id="cbt-intent"></div>
+      </div>
+      <div style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:9px;font-family:var(--font-m);line-height:1.9;color:var(--text2);">
+        카드 클릭→팝업에서 공/방 지정<br>
+        <b style="color:var(--red);">⚔️ 공격모드</b> 클릭 후 카드클릭=공격 일괄<br>
+        <b style="color:var(--blue);">🛡️ 방어모드</b> 클릭 후 카드클릭=방어 일괄<br>
+        <b style="color:var(--accent);">⚡ 스마트</b> = ATK>0→공격, DEF>0→방어 자동배정
+        <div id="cbt-sfx" style="margin-top:5px;"></div>
+      </div>
+    </div>
+    <div class="smart-row">
+      <button class="btn" onclick="smartAssign()" style="font-size:9px;">⚡ 스마트 자동배정</button>
+      <button class="btn" id="btn-matk" onclick="setCbtMode('atk')" style="font-size:9px;border-color:var(--red2);color:var(--red);">⚔️ 공격모드</button>
+      <button class="btn" id="btn-mdef" onclick="setCbtMode('def')" style="font-size:9px;border-color:var(--blue2);color:var(--blue);">🛡️ 방어모드</button>
+      <button class="btn" onclick="setCbtMode(null)" style="font-size:9px;">모드해제</button>
+      <button class="btn" onclick="clearAssign()" style="font-size:9px;margin-left:auto;">초기화</button>
+    </div>
+    <div class="cbt-zones">
+      <div class="zone atk-z"><div class="zone-title">⚔️ 공격 합계: <span id="atk-tot">0</span></div><div id="atk-zone"></div></div>
+      <div class="zone def-z"><div class="zone-title">🛡️ 방어 합계: <span id="def-tot">0</span></div><div id="def-zone"></div></div>
+    </div>
+    <div style="font-size:8px;color:var(--text3);font-family:var(--font-m);margin-bottom:5px;">핸드 — 클릭하여 배정 | 배정된 카드 재클릭 시 해제</div>
+    <div class="cbt-hd" id="cbt-hand"></div>
+    <div class="res-area" id="cbt-res" style="display:none;"></div>
+    <div class="cbt-btn-row">
+      <button class="btn" id="btn-cbt-resolve" onclick="resolveCombat()">⚔️ 전투 해결</button>
+      <button class="btn primary" id="btn-cbt-flee" onclick="fleeCombat()">💨 도망 (HP-8)</button>
+      <button class="btn green-btn" id="btn-cbt-close" onclick="closeCombat()" style="display:none;">✓ 전투 종료</button>
+    </div>
+  </div>
+</div>
+
+<!-- GAMEOVER -->
+<div id="go-scr">
+  <div class="go-title" id="go-title">💀 게임 오버</div>
+  <div class="go-sub" id="go-sub"></div>
+  <div class="go-stats" id="go-stats"></div>
+  <button class="btn primary" onclick="initGame()" style="font-size:13px;padding:9px 20px;">🔄 다시 시작</button>
+</div>
+
+<!-- JS: 로드 순서 중요 -->
+<script src="js/data.js"></script>
+<script src="js/state.js"></script>
+<script src="js/helpers.js"></script>
+<script src="js/survival.js"></script>
+<script src="js/tooltip.js"></script>
+<script src="js/mobile.js"></script>
+<script src="js/map.js"></script>
+<script src="js/explore.js"></script>
+<script src="js/gather.js"></script>
+<script src="js/camp.js"></script>
+<script src="js/craft.js"></script>
+<script src="js/usecard.js"></script>
+<script src="js/sleep.js"></script>
+<script src="js/combat.js"></script>
+<script src="js/deckviewer.js"></script>
+<script src="js/render.js"></script>
+<script>initGame();</script>
+
+</body>
+</html>
