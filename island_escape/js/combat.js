@@ -2,7 +2,7 @@
 // [버그수정] 창 관통 방어무시 구현 / 뱀·박쥐 패널티 적용 / 유령 패널티는 패배 시에만
 
 function drawCombatHand(){
-  if(G.deck.length<5&&G.disc.length){G.deck=shuffle([...G.deck,...G.disc]);G.disc=[];}
+  if(G.deck.length<5&&G.disc.length){G.deck=shuffle(G.deck.concat(G.disc));G.disc=[];}
   const h=[]; for(let i=0;i<Math.min(5,G.deck.length);i++) h.push(G.deck.pop());
   return h;
 }
@@ -116,7 +116,7 @@ function resolveCombat(){
   const e=CBT.enemy;
   let pD=0, normalAtk=0, pierceAtk=0;
   const lines=[]; let stun=false, poisonApplied=false;
-  const hasArmor=[...G.deck,...G.disc].some(c=>c.id==='leather_armor');
+  const hasArmor=allCards().some(c=>c.id==='leather_armor');
 
   [...CBT.atkZone,...CBT.defZone].forEach(c=>{
     if(c.cbtFx==='pierce'&&CBT.atkZone.some(x=>x.uid===c.uid)){
@@ -196,7 +196,7 @@ function resolveCombat(){
 }
 
 function fleeCombat(){
-  const hasCloak=[...G.deck,...G.disc].some(c=>c.id==='feather_cloak');
+  const hasCloak=allCards().some(c=>c.id==='feather_cloak');
   const cost=hasCloak?2:8;
   G.hp=Math.max(0,G.hp-cost);
   log(`💨 도망. HP-${cost}${hasCloak?' (🧣깃털망토 효과)':''}`, 'danger');

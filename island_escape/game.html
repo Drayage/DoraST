@@ -767,6 +767,11 @@ const RECIPES=[
    desc:'대성공(1/5): +30%  성공(3/5): +15%  실패(1/5): -10%', raftLottery:true},
 ];
 
+// O(1) 카드 조회 맵 — CARDS.find() 대신 CARD_MAP[id] 사용
+const CARD_MAP = Object.fromEntries(CARDS.map(c=>[c.id,c]));
+
+</script></script>
+<script>
 // ═══════════════ STATE ═══════════════
 
 let G={}, CBT={};
@@ -805,10 +810,15 @@ function buildDeck(){
   G.deck=shuffle(c);
 }
 
+</script></script>
+<script>
 // ═══════════════ HELPERS ═══════════════
 
 function uid(){ return Math.random().toString(36).slice(2); }
 function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+// [...G.deck,...G.disc] 반복 스프레드 대신 이걸 쓸 것
+function allCards(){ return G.deck.concat(G.disc); }
 
 function log(msg, type){
   G.logs.unshift({msg, type});
@@ -824,7 +834,7 @@ function log(msg, type){
 }
 
 function addCard(id, n){
-  const def=CARDS.find(c=>c.id===id); if(!def) return;
+  const def=CARD_MAP[id]; if(!def) return;   // O(1) 조회
   for(let i=0;i<n;i++){
     const card={...def, uid:uid()};
     if(def.dur) card.curDur=def.dur;
@@ -832,25 +842,31 @@ function addCard(id, n){
   }
 }
 
+// 취침 시 덱 상단 n장을 버림더미로 이동 (덱 사이클링)
 function drawCards(n){
   for(let i=0;i<n;i++){
-    if(!G.deck.length){ if(!G.disc.length) break; G.deck=shuffle([...G.disc]); G.disc=[]; }
-    if(G.deck.length) G.disc.push(G.deck.pop());
+    if(!G.deck.length){
+      if(!G.disc.length) break;
+      G.deck=shuffle(G.disc); G.disc=[];
+    }
+    G.disc.push(G.deck.pop());
   }
 }
 
-function cntInDeck(id){ return [...G.deck,...G.disc].filter(c=>c.id===id).length; }
+function cntInDeck(id){ return allCards().reduce((s,c)=>s+(c.id===id?1:0),0); }
 
 function rmFromDeck(id, n){
   let r=n;
   G.disc=G.disc.filter(c=>{ if(c.id===id&&r>0){r--;return false;} return true; });
-  G.deck=G.deck.filter(c=>{ if(c.id===id&&r>0){r--;return false;} return true; });
+  if(r>0) G.deck=G.deck.filter(c=>{ if(c.id===id&&r>0){r--;return false;} return true; });
 }
 
 function canCraft(rec){ return rec.cost.every(c=>cntInDeck(c.id)>=c.n); }
 
-function hasTool(id){ return [...G.deck,...G.disc].some(c=>c.id===id); }
+function hasTool(id){ return allCards().some(c=>c.id===id); }
 
+</script></script>
+<script>
 // ═══════════════ SURVIVAL ═══════════════
 
 function checkSurvival(){
@@ -883,6 +899,8 @@ function triggerGameOver(reason){
   document.getElementById('go-scr').style.display='flex';
 }
 
+</script></script>
+<script>
 // ═══════════════ TOOLTIP ═══════════════
 // [버그수정] eat +22(not +20), heal +10(not +8), pierce +4(not +3), block +5(not +4)
 
@@ -940,6 +958,8 @@ function hideTT(){
   _ttTm=setTimeout(()=>document.getElementById('tt').style.display='none', 80);
 }
 
+</script></script>
+<script>
 // ═══════════════ MOBILE ═══════════════
 // [버그수정] mobTab 함수 분리 (기존 addCardTouchTT에 잘못 혼입된 로직 분리)
 
@@ -997,6 +1017,8 @@ window.addEventListener('resize', ()=>{
   }
 });
 
+</script></script>
+<script>
 // ═══════════════ MAP ═══════════════
 // [버그수정] apCost() 실제 이동에 반영
 
@@ -1042,6 +1064,8 @@ function clickTile(i){
   checkSurvival(); render();
 }
 
+</script></script>
+<script>
 // ═══════════════ EXPLORE ═══════════════
 
 function doExplore(){
@@ -1058,19 +1082,19 @@ function doExplore(){
 }
 
 function showExploreChoice(evt){
-  const all=[...G.deck,...G.disc];
+  const cards=allCards();
   document.getElementById('ex-title').textContent=`${G.tiles[G.pos].icon} ${evt.name}`;
   document.getElementById('ex-flavor').textContent=evt.flavor;
   const el=document.getElementById('ex-choices'); el.innerHTML='';
   evt.choices.forEach(ch=>{
-    const matchCnt=ch.req?all.filter(c=>c.tag===ch.req).length:99;
-    const prob=ch.req?Math.min(99,Math.round(matchCnt/Math.max(1,all.length)*100)):100;
+    const matchCnt=ch.req?cards.reduce((s,c)=>s+(c.tag===ch.req?1:0),0):99;
+    const prob=ch.req?Math.min(99,Math.round(matchCnt/Math.max(1,cards.length)*100)):100;
     const div=document.createElement('div'); div.className='ex-choice fi';
     const reqBadge=ch.req
       ?`<span class="card-tag tag-${ch.req}" style="font-size:8px;">${ch.req}판정</span>`
       :`<span style="color:var(--green);font-size:8px;">✓ 무조건</span>`;
     const greatInfo=ch.greatCard
-      ?`<span style="color:var(--accent);font-size:8px;"> ★ ${CARDS.find(c=>c.id===ch.greatCard)?.name} 뽑으면 대성공</span>`:'';
+      ?`<span style="color:var(--accent);font-size:8px;"> ★ ${CARD_MAP[ch.greatCard]?.name} 뽑으면 대성공</span>`:'';
     const rTxt=fmtR(ch.reward), pTxt=ch.failPen?fmtP(ch.failPen):'', gTxt=ch.greatBonus?fmtR(ch.greatBonus):'';
     div.innerHTML=`
       <div class="ex-ci">${ch.icon}</div>
@@ -1093,7 +1117,7 @@ function showExploreChoice(evt){
 function fmtR(r){
   if(!r) return '';
   const p=[];
-  if(r.card){const d=CARDS.find(c=>c.id===r.card);if(d)p.push(`${d.icon}${d.name}×${r.n||1}`);}
+  if(r.card){const d=CARD_MAP[r.card];if(d)p.push(`${d.icon}${d.name}×${r.n||1}`);}
   if(r.san)   p.push(`정신력+${r.san}`);
   if(r.escape)p.push(`탈출+${r.escape}%`);
   if(r.hun)   p.push(`허기+${r.hun}`);
@@ -1112,7 +1136,7 @@ function fmtP(p){
 }
 
 function doJudgment(evt, ch){
-  if(!G.deck.length&&G.disc.length){G.deck=shuffle([...G.disc]);G.disc=[];}
+  if(!G.deck.length&&G.disc.length){G.deck=shuffle(G.disc);G.disc=[];}
   const top=G.deck.length?G.deck[G.deck.length-1]:null;
   const success=!ch.req||(top&&top.tag===ch.req);
   const isGreat=!!(ch.greatCard&&top&&top.id===ch.greatCard);
@@ -1138,12 +1162,12 @@ function doJudgment(evt, ch){
       if(isGreat){
         resEl.className='jdg-res great'; resEl.textContent='★ 대성공!';
         applyR(ch.reward,lines); applyR(ch.greatBonus,lines);
-        bonLines.push(`★ ${CARDS.find(c=>c.id===ch.greatCard)?.name||ch.greatCard} 대성공 발동!`);
+        bonLines.push(`★ ${CARD_MAP[ch.greatCard]?.name||ch.greatCard} 대성공 발동!`);
       } else if(success){
         resEl.className='jdg-res ok'; resEl.textContent='✓ 성공!';
         applyR(ch.reward,lines);
-        if([...G.deck,...G.disc].some(c=>c.id==='torch')&&ch.req==='tool'){
-          if(!G.deck.length&&G.disc.length){G.deck=shuffle([...G.disc]);G.disc=[];}
+        if(hasTool('torch')&&ch.req==='tool'){
+          if(!G.deck.length&&G.disc.length){G.deck=shuffle(G.disc);G.disc=[];}
           if(G.deck.length){const b=G.deck.pop();G.disc.push(b);bonLines.push(`🔦 횃불 패시브: ${b.icon}${b.name} 추가`);}
         }
       } else {
@@ -1163,7 +1187,7 @@ function doJudgment(evt, ch){
 
 function applyR(r, lines){
   if(!r) return;
-  if(r.card){addCard(r.card,r.n||1);const d=CARDS.find(c=>c.id===r.card);lines.push(`${d?.icon||''}${r.card}×${r.n||1}`);}
+  if(r.card){addCard(r.card,r.n||1);const d=CARD_MAP[r.card];lines.push(`${d?.icon||''}${r.card}×${r.n||1}`);}
   if(r.san)   {G.san=Math.min(100,G.san+r.san);  lines.push(`정신력+${r.san}`);}
   if(r.escape){G.escape=Math.min(100,G.escape+r.escape);lines.push(`탈출+${r.escape}%`);}
   if(r.hun)   {G.hun=Math.min(100,G.hun+r.hun);  lines.push(`허기+${r.hun}`);}
@@ -1181,6 +1205,8 @@ function applyPen(p, lines){
 
 function closeJdg(){ document.getElementById('jdg-mo').style.display='none'; }
 
+</script></script>
+<script>
 // ═══════════════ GATHER ═══════════════
 
 function openGather(){
@@ -1189,10 +1215,10 @@ function openGather(){
   if(!tile.explored){log('먼저 탐색을 완료해야 수집할 수 있다.','danger');render();return;}
   if(G.ap<3){log('AP부족 (수집:AP3)','danger');render();return;}
   const opts=tile.gather||[];
-  const allCards=[...G.deck,...G.disc];
-  const avail=opts.filter(o=>allCards.some(c=>c.id===o.tool));
+  const cards=allCards();
+  const avail=opts.filter(o=>cards.some(c=>c.id===o.tool));
   if(!avail.length){
-    const needed=opts.map(o=>CARDS.find(c=>c.id===o.tool)?.name||o.tool).join(', ');
+    const needed=opts.map(o=>CARD_MAP[o.tool]?.name||o.tool).join(', ');
     log(`수집 장비 없음. 필요: ${needed}`,'danger'); render(); return;
   }
   document.getElementById('ga-title').textContent=`🎒 ${tile.name} 수집활동`;
@@ -1202,8 +1228,8 @@ function openGather(){
     const key=`${G.pos}_${o.tool}`;
     const cnt=G.gatherCnt[key]||0;
     const rate=Math.max(20,90-cnt*15);
-    const resDef=CARDS.find(c=>c.id===o.res);
-    const toolDef=CARDS.find(c=>c.id===o.tool);
+    const resDef=CARD_MAP[o.res];
+    const toolDef=CARD_MAP[o.tool];
     const div=document.createElement('div'); div.className='ex-choice fi';
     div.innerHTML=`
       <div class="ex-ci">${toolDef?.icon||'?'}</div>
@@ -1230,7 +1256,7 @@ function doGather(opt, key, rate){
   if(Math.random()*100<rate){
     const n=Math.random()<0.28?2:1;
     addCard(opt.res, n);
-    const d=CARDS.find(c=>c.id===opt.res);
+    const d=CARD_MAP[opt.res];
     log(`🎒 ${opt.label} 성공! ${d?.icon||''}${d?.name||opt.res}×${n} 획득 (AP-3)`,'gather');
   } else {
     log(`🎒 ${opt.label} 실패... 빈손 (AP-3)`,'danger');
@@ -1238,6 +1264,8 @@ function doGather(opt, key, rate){
   checkSurvival(); render();
 }
 
+</script></script>
+<script>
 // ═══════════════ CAMP ═══════════════
 
 function doCamp(){
@@ -1251,6 +1279,8 @@ function doCamp(){
   render();
 }
 
+</script></script>
+<script>
 // ═══════════════ CRAFT ═══════════════
 // [버그수정] 뗏목 UI에서 escapeBonus undefined 표시 제거
 
@@ -1268,7 +1298,7 @@ function renderCraft(){
   const mEl=document.getElementById('cr-mats');
   mEl.innerHTML='<span style="color:var(--text3);margin-right:3px;">재료:</span>';
   ['wood','metal','food','water'].forEach(id=>{
-    const d=CARDS.find(c=>c.id===id); const cnt=cntInDeck(id);
+    const d=CARD_MAP[id]; const cnt=cntInDeck(id);
     mEl.innerHTML+=`<span style="background:var(--bg4);padding:2px 6px;border-radius:3px;margin-right:3px;color:${cnt>0?'var(--text)':'var(--text3)'};">${d.icon}${d.name}<b style="color:var(--accent);margin-left:2px;">×${cnt}</b></span>`;
   });
   mEl.innerHTML+=`<span style="margin-left:auto;color:var(--text3);">총 ${G.deck.length+G.disc.length}장</span>`;
@@ -1276,9 +1306,9 @@ function renderCraft(){
   const lEl=document.getElementById('cr-list'); lEl.innerHTML='';
   RECIPES.forEach(rec=>{
     const ok=canCraft(rec), hasAP=G.ap>=rec.ap, canDo=ok&&hasAP;
-    const resultDef=rec.result?CARDS.find(c=>c.id===rec.result):null;
+    const resultDef=rec.result?CARD_MAP[rec.result]:null;
     const costHtml=rec.cost.map(c=>{
-      const d=CARDS.find(x=>x.id===c.id); const have=cntInDeck(c.id);
+      const d=CARD_MAP[c.id]; const have=cntInDeck(c.id);
       return `<span style="color:${have>=c.n?'var(--green)':'var(--red)'};">${d.icon}${d.name}×${c.n}(${have})</span>`;
     }).join('+');
     const resHtml=rec.raftLottery
@@ -1332,13 +1362,15 @@ function doCraft(id){
   renderCraft(); checkWin(); render();
 }
 
+</script></script>
+<script>
 // ═══════════════ USE CARD ═══════════════
 
 function openUseCard(){
   if(G.over) return;
   if(G.ap<1){log('AP부족 (카드사용:AP1)','danger');render();return;}
   G.ap-=1;
-  if(G.deck.length<5&&G.disc.length){ G.deck=shuffle([...G.deck,...G.disc]); G.disc=[]; }
+  if(G.deck.length<5&&G.disc.length){ G.deck=shuffle(G.deck.concat(G.disc)); G.disc=[]; }
   _ucHand=[];
   let drawN=Math.min(5,G.deck.length);
   if(hasTool('rope')&&G.deck.length>drawN) drawN=Math.min(drawN+1,G.deck.length);
@@ -1415,6 +1447,8 @@ function closeUseCard(){
   render();
 }
 
+</script></script>
+<script>
 // ═══════════════ SLEEP ═══════════════
 
 function doSleep(){
@@ -1428,9 +1462,9 @@ function doSleep(){
     if(t.id==='forest') { addCard('food',1); log('🌲 숲캠프: 식량 자동생성','success'); }
     if(t.id==='shore')  { addCard('water',1); log('🌊 해안캠프: 물 자동생성','success'); }
   });
-  const fatigueN=[...G.deck,...G.disc].filter(c=>c.id==='fatigue').length;
+  const fatigueN=allCards().filter(c=>c.id==='fatigue').length;
   G.hun=Math.max(0,G.hun-14); G.thi=Math.max(0,G.thi-18);
-  const poisonN=[...G.deck,...G.disc].filter(c=>c.id==='poison_status').length;
+  const poisonN=allCards().filter(c=>c.id==='poison_status').length;
   if(poisonN>0){ G.hp=Math.max(0,G.hp-5*poisonN); log(`☠️ 중독 피해: HP-${5*poisonN}`,'danger'); }
   G.hp=Math.min(100,G.hp+hpR); G.san=Math.min(100,G.san+sanR);
   const bonAP=early?2:0;
@@ -1463,7 +1497,7 @@ function calcSleepEvtChance(early){
     }));
     c+=minD*5;
   }
-  const stN=[...G.deck,...G.disc].filter(c=>c.tag==='status').length;
+  const stN=allCards().filter(c=>c.tag==='status').length;
   c+=stN*6;
   if(G.hp<40) c+=10; if(G.hun<30) c+=8; if(G.thi<30) c+=8; if(G.ap<=2) c+=5;
   return Math.min(c,95);
@@ -1525,7 +1559,7 @@ function revealRaft(el, type){
 }
 
 function showSleepEvt(){
-  const stN=[...G.deck,...G.disc].filter(c=>c.tag==='status').length;
+  const stN=allCards().filter(c=>c.tag==='status').length;
   const bad=(G.hp<40||G.hun<20||G.thi<20||G.ap<=2);
   let okN=3, failN=1, badN=1;
   if(stN>=2||bad){ okN=2; failN=1; badN=2; }
@@ -1587,11 +1621,13 @@ function closeSleepEvt(){
   checkSurvival(); checkWin(); render();
 }
 
+</script></script>
+<script>
 // ═══════════════ COMBAT ═══════════════
 // [버그수정] 창 관통 방어무시 구현 / 뱀·박쥐 패널티 적용 / 유령 패널티는 패배 시에만
 
 function drawCombatHand(){
-  if(G.deck.length<5&&G.disc.length){G.deck=shuffle([...G.deck,...G.disc]);G.disc=[];}
+  if(G.deck.length<5&&G.disc.length){G.deck=shuffle(G.deck.concat(G.disc));G.disc=[];}
   const h=[]; for(let i=0;i<Math.min(5,G.deck.length);i++) h.push(G.deck.pop());
   return h;
 }
@@ -1705,7 +1741,7 @@ function resolveCombat(){
   const e=CBT.enemy;
   let pD=0, normalAtk=0, pierceAtk=0;
   const lines=[]; let stun=false, poisonApplied=false;
-  const hasArmor=[...G.deck,...G.disc].some(c=>c.id==='leather_armor');
+  const hasArmor=allCards().some(c=>c.id==='leather_armor');
 
   [...CBT.atkZone,...CBT.defZone].forEach(c=>{
     if(c.cbtFx==='pierce'&&CBT.atkZone.some(x=>x.uid===c.uid)){
@@ -1785,7 +1821,7 @@ function resolveCombat(){
 }
 
 function fleeCombat(){
-  const hasCloak=[...G.deck,...G.disc].some(c=>c.id==='feather_cloak');
+  const hasCloak=allCards().some(c=>c.id==='feather_cloak');
   const cost=hasCloak?2:8;
   G.hp=Math.max(0,G.hp-cost);
   log(`💨 도망. HP-${cost}${hasCloak?' (🧣깃털망토 효과)':''}`, 'danger');
@@ -1800,6 +1836,8 @@ function closeCombat(){
   checkSurvival(); checkWin(); render();
 }
 
+</script></script>
+<script>
 // ═══════════════ DECK VIEWER ═══════════════
 
 function openDv(){ document.getElementById('dv-mo').style.display='flex'; renderDv(_dvTab); }
@@ -1812,7 +1850,7 @@ function dvSwitch(t){
 }
 
 function renderDv(tab){
-  const all=[...G.deck,...G.disc];
+  const all=allCards();
   document.getElementById('dvn-all').textContent=all.length;
   document.getElementById('dvn-deck').textContent=G.deck.length;
   document.getElementById('dvn-disc').textContent=G.disc.length;
@@ -1851,59 +1889,80 @@ function makeDvCard(c, cnt){
   return d;
 }
 
+</script></script>
+<script>
 // ═══════════════ RENDER ═══════════════
 
+let _dom=null;
+function getDOM(){
+  if(_dom) return _dom;
+  const $=id=>document.getElementById(id);
+  _dom={
+    hvHp:$('hv-hp'),hvSan:$('hv-san'),hvHun:$('hv-hun'),hvThi:$('hv-thi'),
+    hvWx:$('hv-wx'),hvTmrw:$('hv-tmrw'),hvDay:$('hv-day'),hvAp:$('hv-ap'),
+    doomPct:$('doom-pct'),doomFill:$('doom-fill'),hvEsc:$('hv-esc'),
+    svHp:$('sv-hp'),svSan:$('sv-san'),svHun:$('sv-hun'),svThi:$('sv-thi'),
+    barHp:$('bar-hp'),barSan:$('bar-san'),barHun:$('bar-hun'),barThi:$('bar-thi'),
+    svEsc:$('sv-esc'),barEsc:$('bar-esc'),
+    campInfo:$('camp-info'),passiveInfo:$('passive-info'),
+    grid:$('grid'),deckGrid:$('deck-grid'),
+    dkTotal:$('dk-total'),dkDeck:$('dk-deck'),dkDisc:$('dk-disc'),
+    logMain:$('log-main'),
+    btnExp:$('btn-exp'),btnGa:$('btn-ga'),btnCamp:$('btn-camp'),
+    btnCraft:$('btn-craft'),btnUse:$('btn-use'),btnSleep:$('btn-sleep'),
+  };
+  return _dom;
+}
+
 function render(){
-  const p=G;
+  const p=G, d=getDOM();
 
   // 헤더
-  const hpEl=document.getElementById('hv-hp');
-  hpEl.textContent=p.hp; hpEl.className='val'+(p.hp<30?' low':'');
-  ['san','hun','thi'].forEach(k=>document.getElementById('hv-'+k).textContent=p[k]);
-  document.getElementById('hv-wx').textContent=`${p.weather.icon} ${p.weather.name}`;
-  document.getElementById('hv-tmrw').textContent=`${p.tomorrow.icon} ${p.tomorrow.name}`;
-  document.getElementById('hv-day').textContent=p.day;
-  document.getElementById('hv-ap').textContent=p.ap;
-  document.getElementById('doom-pct').textContent=Math.min(100,p.doom);
-  document.getElementById('doom-fill').style.width=Math.min(100,p.doom)+'%';
-  document.getElementById('hv-esc').textContent=p.escape;
+  d.hvHp.textContent=p.hp; d.hvHp.className='val'+(p.hp<30?' low':'');
+  d.hvSan.textContent=p.san; d.hvHun.textContent=p.hun; d.hvThi.textContent=p.thi;
+  d.hvWx.textContent=`${p.weather.icon} ${p.weather.name}`;
+  d.hvTmrw.textContent=`${p.tomorrow.icon} ${p.tomorrow.name}`;
+  d.hvDay.textContent=p.day;
+  d.hvAp.textContent=p.ap;
+  const doom=Math.min(100,p.doom);
+  d.doomPct.textContent=doom; d.doomFill.style.width=doom+'%';
+  d.hvEsc.textContent=p.escape;
 
   // 스탯 바
-  ['hp','san','hun','thi'].forEach(k=>{
-    document.getElementById('sv-'+k).textContent=p[k];
-    document.getElementById('bar-'+k).style.width=p[k]+'%';
-  });
-  document.getElementById('sv-esc').textContent=p.escape+'%';
-  document.getElementById('bar-esc').style.width=p.escape+'%';
+  d.svHp.textContent=p.hp;   d.barHp.style.width=p.hp+'%';
+  d.svSan.textContent=p.san; d.barSan.style.width=p.san+'%';
+  d.svHun.textContent=p.hun; d.barHun.style.width=p.hun+'%';
+  d.svThi.textContent=p.thi; d.barThi.style.width=p.thi+'%';
+  d.svEsc.textContent=p.escape+'%'; d.barEsc.style.width=p.escape+'%';
 
   // 캠프 정보
-  const ci=document.getElementById('camp-info');
-  ci.textContent=p.camps.length?`캠프 ${p.camps.length}곳 (제작 가능)`:'캠프 없음 (취침이벤트↑)';
-  ci.style.color=p.camps.length?'var(--green)':'var(--red)';
+  d.campInfo.textContent=p.camps.length?`캠프 ${p.camps.length}곳 (제작 가능)`:'캠프 없음 (취침이벤트↑)';
+  d.campInfo.style.color=p.camps.length?'var(--green)':'var(--red)';
 
   // 패시브 목록
-  const allCards=[...p.deck,...p.disc];
-  const passives=[...new Set(allCards.filter(c=>c.passiveDesc).map(c=>c.passiveDesc))];
-  document.getElementById('passive-info').textContent=passives.length?passives.join(' / '):'없음';
+  const cards=allCards();
+  const passives=[...new Set(cards.filter(c=>c.passiveDesc).map(c=>c.passiveDesc))];
+  d.passiveInfo.textContent=passives.length?passives.join(' / '):'없음';
 
   // 맵
-  const grid=document.getElementById('grid'); grid.innerHTML='';
+  const mapFrag=document.createDocumentFragment();
   p.tiles.forEach((t,i)=>{
-    const d=document.createElement('div');
-    d.className='tile'
+    const el=document.createElement('div');
+    el.className='tile'
       +(t.revealed?` revealed ${t.cls}`:'fog')
       +(i===p.pos?' player':'')
       +(t.hasCamp?' camp-t':'')
       +(t.revealed&&t.explored?' explored':'');
-    if(t.revealed) d.textContent=i===p.pos?'🧍':(t.hasCamp?'🏕️':t.icon);
-    d.title=t.revealed?`${t.name}${t.explored?' ✓':''}`:' ';
-    d.onclick=()=>clickTile(i);
-    grid.appendChild(d);
+    if(t.revealed) el.textContent=i===p.pos?'🧍':(t.hasCamp?'🏕️':t.icon);
+    el.title=t.revealed?`${t.name}${t.explored?' ✓':''}`:' ';
+    el.onclick=()=>clickTile(i);
+    mapFrag.appendChild(el);
   });
+  d.grid.innerHTML=''; d.grid.appendChild(mapFrag);
 
   // 덱 표시
-  const dg=document.getElementById('deck-grid'); dg.innerHTML='';
-  allCards.forEach(c=>{
+  const deckFrag=document.createDocumentFragment();
+  cards.forEach(c=>{
     const div=document.createElement('div'); div.className='card';
     const durDisp=c.dur?`<br><span style="color:var(--accent);font-size:6px;">🔋${c.curDur||c.dur}/${c.dur}</span>`:'';
     div.innerHTML=`<div class="card-icon">${c.icon}</div>
@@ -1913,28 +1972,28 @@ function render(){
     div.addEventListener('mouseenter',()=>showTT(c,div));
     div.addEventListener('mouseleave',hideTT);
     addCardTouchTT(div, c);
-    dg.appendChild(div);
+    deckFrag.appendChild(div);
   });
-  document.getElementById('dk-total').textContent=allCards.length;
-  document.getElementById('dk-deck').textContent=p.deck.length;
-  document.getElementById('dk-disc').textContent=p.disc.length;
+  d.deckGrid.innerHTML=''; d.deckGrid.appendChild(deckFrag);
+  d.dkTotal.textContent=cards.length;
+  d.dkDeck.textContent=p.deck.length;
+  d.dkDisc.textContent=p.disc.length;
 
   // 로그
-  document.getElementById('log-main').innerHTML=
+  d.logMain.innerHTML=
     p.logs.slice(0,25).map(l=>`<div class="le ${l.type||''}">${l.msg}</div>`).join('');
 
   // 버튼 활성화
-  document.getElementById('btn-exp').disabled=p.ap<2||p.over;
-  document.getElementById('btn-ga').disabled=p.ap<3||p.over||!p.tiles[p.pos].explored;
-  document.getElementById('btn-camp').disabled=p.ap<8||p.over||p.tiles[p.pos].hasCamp;
-  document.getElementById('btn-craft').disabled=p.over||!p.tiles[p.pos].hasCamp;
-  document.getElementById('btn-use').disabled=p.ap<1||p.over;
-  document.getElementById('btn-sleep').disabled=p.over;
+  d.btnExp.disabled=p.ap<2||p.over;
+  d.btnGa.disabled=p.ap<3||p.over||!p.tiles[p.pos].explored;
+  d.btnCamp.disabled=p.ap<8||p.over||p.tiles[p.pos].hasCamp;
+  d.btnCraft.disabled=p.over||!p.tiles[p.pos].hasCamp;
+  d.btnUse.disabled=p.ap<1||p.over;
+  d.btnSleep.disabled=p.over;
 }
 
-
-initGame();
-</script>
+</script></script>
+<script>initGame();</script>
 
 </body>
 </html>

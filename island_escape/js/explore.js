@@ -14,19 +14,19 @@ function doExplore(){
 }
 
 function showExploreChoice(evt){
-  const all=[...G.deck,...G.disc];
+  const cards=allCards();
   document.getElementById('ex-title').textContent=`${G.tiles[G.pos].icon} ${evt.name}`;
   document.getElementById('ex-flavor').textContent=evt.flavor;
   const el=document.getElementById('ex-choices'); el.innerHTML='';
   evt.choices.forEach(ch=>{
-    const matchCnt=ch.req?all.filter(c=>c.tag===ch.req).length:99;
-    const prob=ch.req?Math.min(99,Math.round(matchCnt/Math.max(1,all.length)*100)):100;
+    const matchCnt=ch.req?cards.reduce((s,c)=>s+(c.tag===ch.req?1:0),0):99;
+    const prob=ch.req?Math.min(99,Math.round(matchCnt/Math.max(1,cards.length)*100)):100;
     const div=document.createElement('div'); div.className='ex-choice fi';
     const reqBadge=ch.req
       ?`<span class="card-tag tag-${ch.req}" style="font-size:8px;">${ch.req}판정</span>`
       :`<span style="color:var(--green);font-size:8px;">✓ 무조건</span>`;
     const greatInfo=ch.greatCard
-      ?`<span style="color:var(--accent);font-size:8px;"> ★ ${CARDS.find(c=>c.id===ch.greatCard)?.name} 뽑으면 대성공</span>`:'';
+      ?`<span style="color:var(--accent);font-size:8px;"> ★ ${CARD_MAP[ch.greatCard]?.name} 뽑으면 대성공</span>`:'';
     const rTxt=fmtR(ch.reward), pTxt=ch.failPen?fmtP(ch.failPen):'', gTxt=ch.greatBonus?fmtR(ch.greatBonus):'';
     div.innerHTML=`
       <div class="ex-ci">${ch.icon}</div>
@@ -49,7 +49,7 @@ function showExploreChoice(evt){
 function fmtR(r){
   if(!r) return '';
   const p=[];
-  if(r.card){const d=CARDS.find(c=>c.id===r.card);if(d)p.push(`${d.icon}${d.name}×${r.n||1}`);}
+  if(r.card){const d=CARD_MAP[r.card];if(d)p.push(`${d.icon}${d.name}×${r.n||1}`);}
   if(r.san)   p.push(`정신력+${r.san}`);
   if(r.escape)p.push(`탈출+${r.escape}%`);
   if(r.hun)   p.push(`허기+${r.hun}`);
@@ -68,7 +68,7 @@ function fmtP(p){
 }
 
 function doJudgment(evt, ch){
-  if(!G.deck.length&&G.disc.length){G.deck=shuffle([...G.disc]);G.disc=[];}
+  if(!G.deck.length&&G.disc.length){G.deck=shuffle(G.disc);G.disc=[];}
   const top=G.deck.length?G.deck[G.deck.length-1]:null;
   const success=!ch.req||(top&&top.tag===ch.req);
   const isGreat=!!(ch.greatCard&&top&&top.id===ch.greatCard);
@@ -94,12 +94,12 @@ function doJudgment(evt, ch){
       if(isGreat){
         resEl.className='jdg-res great'; resEl.textContent='★ 대성공!';
         applyR(ch.reward,lines); applyR(ch.greatBonus,lines);
-        bonLines.push(`★ ${CARDS.find(c=>c.id===ch.greatCard)?.name||ch.greatCard} 대성공 발동!`);
+        bonLines.push(`★ ${CARD_MAP[ch.greatCard]?.name||ch.greatCard} 대성공 발동!`);
       } else if(success){
         resEl.className='jdg-res ok'; resEl.textContent='✓ 성공!';
         applyR(ch.reward,lines);
-        if([...G.deck,...G.disc].some(c=>c.id==='torch')&&ch.req==='tool'){
-          if(!G.deck.length&&G.disc.length){G.deck=shuffle([...G.disc]);G.disc=[];}
+        if(hasTool('torch')&&ch.req==='tool'){
+          if(!G.deck.length&&G.disc.length){G.deck=shuffle(G.disc);G.disc=[];}
           if(G.deck.length){const b=G.deck.pop();G.disc.push(b);bonLines.push(`🔦 횃불 패시브: ${b.icon}${b.name} 추가`);}
         }
       } else {
@@ -119,7 +119,7 @@ function doJudgment(evt, ch){
 
 function applyR(r, lines){
   if(!r) return;
-  if(r.card){addCard(r.card,r.n||1);const d=CARDS.find(c=>c.id===r.card);lines.push(`${d?.icon||''}${r.card}×${r.n||1}`);}
+  if(r.card){addCard(r.card,r.n||1);const d=CARD_MAP[r.card];lines.push(`${d?.icon||''}${r.card}×${r.n||1}`);}
   if(r.san)   {G.san=Math.min(100,G.san+r.san);  lines.push(`정신력+${r.san}`);}
   if(r.escape){G.escape=Math.min(100,G.escape+r.escape);lines.push(`탈출+${r.escape}%`);}
   if(r.hun)   {G.hun=Math.min(100,G.hun+r.hun);  lines.push(`허기+${r.hun}`);}

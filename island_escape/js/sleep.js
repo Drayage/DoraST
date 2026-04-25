@@ -11,9 +11,9 @@ function doSleep(){
     if(t.id==='forest') { addCard('food',1); log('🌲 숲캠프: 식량 자동생성','success'); }
     if(t.id==='shore')  { addCard('water',1); log('🌊 해안캠프: 물 자동생성','success'); }
   });
-  const fatigueN=[...G.deck,...G.disc].filter(c=>c.id==='fatigue').length;
+  const fatigueN=allCards().filter(c=>c.id==='fatigue').length;
   G.hun=Math.max(0,G.hun-14); G.thi=Math.max(0,G.thi-18);
-  const poisonN=[...G.deck,...G.disc].filter(c=>c.id==='poison_status').length;
+  const poisonN=allCards().filter(c=>c.id==='poison_status').length;
   if(poisonN>0){ G.hp=Math.max(0,G.hp-5*poisonN); log(`☠️ 중독 피해: HP-${5*poisonN}`,'danger'); }
   G.hp=Math.min(100,G.hp+hpR); G.san=Math.min(100,G.san+sanR);
   const bonAP=early?2:0;
@@ -46,7 +46,7 @@ function calcSleepEvtChance(early){
     }));
     c+=minD*5;
   }
-  const stN=[...G.deck,...G.disc].filter(c=>c.tag==='status').length;
+  const stN=allCards().filter(c=>c.tag==='status').length;
   c+=stN*6;
   if(G.hp<40) c+=10; if(G.hun<30) c+=8; if(G.thi<30) c+=8; if(G.ap<=2) c+=5;
   return Math.min(c,95);
@@ -108,7 +108,7 @@ function revealRaft(el, type){
 }
 
 function showSleepEvt(){
-  const stN=[...G.deck,...G.disc].filter(c=>c.tag==='status').length;
+  const stN=allCards().filter(c=>c.tag==='status').length;
   const bad=(G.hp<40||G.hun<20||G.thi<20||G.ap<=2);
   let okN=3, failN=1, badN=1;
   if(stN>=2||bad){ okN=2; failN=1; badN=2; }

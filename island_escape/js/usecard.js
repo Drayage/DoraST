@@ -4,7 +4,7 @@ function openUseCard(){
   if(G.over) return;
   if(G.ap<1){log('AP부족 (카드사용:AP1)','danger');render();return;}
   G.ap-=1;
-  if(G.deck.length<5&&G.disc.length){ G.deck=shuffle([...G.deck,...G.disc]); G.disc=[]; }
+  if(G.deck.length<5&&G.disc.length){ G.deck=shuffle(G.deck.concat(G.disc)); G.disc=[]; }
   _ucHand=[];
   let drawN=Math.min(5,G.deck.length);
   if(hasTool('rope')&&G.deck.length>drawN) drawN=Math.min(drawN+1,G.deck.length);

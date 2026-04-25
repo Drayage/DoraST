@@ -15,7 +15,7 @@ function renderCraft(){
   const mEl=document.getElementById('cr-mats');
   mEl.innerHTML='<span style="color:var(--text3);margin-right:3px;">재료:</span>';
   ['wood','metal','food','water'].forEach(id=>{
-    const d=CARDS.find(c=>c.id===id); const cnt=cntInDeck(id);
+    const d=CARD_MAP[id]; const cnt=cntInDeck(id);
     mEl.innerHTML+=`<span style="background:var(--bg4);padding:2px 6px;border-radius:3px;margin-right:3px;color:${cnt>0?'var(--text)':'var(--text3)'};">${d.icon}${d.name}<b style="color:var(--accent);margin-left:2px;">×${cnt}</b></span>`;
   });
   mEl.innerHTML+=`<span style="margin-left:auto;color:var(--text3);">총 ${G.deck.length+G.disc.length}장</span>`;
@@ -23,9 +23,9 @@ function renderCraft(){
   const lEl=document.getElementById('cr-list'); lEl.innerHTML='';
   RECIPES.forEach(rec=>{
     const ok=canCraft(rec), hasAP=G.ap>=rec.ap, canDo=ok&&hasAP;
-    const resultDef=rec.result?CARDS.find(c=>c.id===rec.result):null;
+    const resultDef=rec.result?CARD_MAP[rec.result]:null;
     const costHtml=rec.cost.map(c=>{
-      const d=CARDS.find(x=>x.id===c.id); const have=cntInDeck(c.id);
+      const d=CARD_MAP[c.id]; const have=cntInDeck(c.id);
       return `<span style="color:${have>=c.n?'var(--green)':'var(--red)'};">${d.icon}${d.name}×${c.n}(${have})</span>`;
     }).join('+');
     const resHtml=rec.raftLottery

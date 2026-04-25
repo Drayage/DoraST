@@ -10,7 +10,7 @@ function dvSwitch(t){
 }
 
 function renderDv(tab){
-  const all=[...G.deck,...G.disc];
+  const all=allCards();
   document.getElementById('dvn-all').textContent=all.length;
   document.getElementById('dvn-deck').textContent=G.deck.length;
   document.getElementById('dvn-disc').textContent=G.disc.length;

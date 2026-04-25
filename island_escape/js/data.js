@@ -195,3 +195,6 @@ const RECIPES=[
   {id:'r_raft',    name:'뗏목 부품',icon:'🛶',result:null,             rn:0,ap:2,cost:[{id:'wood',n:3},{id:'metal',n:1}],
    desc:'대성공(1/5): +30%  성공(3/5): +15%  실패(1/5): -10%', raftLottery:true},
 ];
+
+// O(1) 카드 조회 맵 — CARDS.find() 대신 CARD_MAP[id] 사용
+const CARD_MAP = Object.fromEntries(CARDS.map(c=>[c.id,c]));
