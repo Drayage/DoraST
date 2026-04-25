@@ -91,7 +91,7 @@ function render(){
     p.logs.slice(0,25).map(l=>`<div class="le ${l.type||''}">${l.msg}</div>`).join('');
 
   // 버튼 활성화
-  d.btnExp.disabled=p.ap<2||p.over;
+  d.btnExp.disabled=p.ap<2||p.over||p.tiles[p.pos].explored;
   d.btnGa.disabled=p.ap<3||p.over||!p.tiles[p.pos].explored;
   d.btnCamp.disabled=p.ap<8||p.over||p.tiles[p.pos].hasCamp;
   d.btnCraft.disabled=p.over||!p.tiles[p.pos].hasCamp;

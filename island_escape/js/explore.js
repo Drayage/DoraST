@@ -68,6 +68,7 @@ function fmtP(p){
 }
 
 function doJudgment(evt, ch){
+  _pendingItems=[];
   if(!G.deck.length&&G.disc.length){G.deck=shuffle(G.disc);G.disc=[];}
   const top=G.deck.length?G.deck[G.deck.length-1]:null;
   const success=!ch.req||(top&&top.tag===ch.req);
@@ -119,7 +120,7 @@ function doJudgment(evt, ch){
 
 function applyR(r, lines){
   if(!r) return;
-  if(r.card){addCard(r.card,r.n||1);const d=CARD_MAP[r.card];lines.push(`${d?.icon||''}${r.card}×${r.n||1}`);}
+  if(r.card){addCard(r.card,r.n||1);const d=CARD_MAP[r.card];lines.push(`${d?.icon||''}${d?.name||r.card}×${r.n||1}`);if(_pendingItems)_pendingItems.push({icon:d?.icon||'📦',name:d?.name||r.card,n:r.n||1});}
   if(r.san)   {G.san=Math.min(100,G.san+r.san);  lines.push(`정신력+${r.san}`);}
   if(r.escape){G.escape=Math.min(100,G.escape+r.escape);lines.push(`탈출+${r.escape}%`);}
   if(r.hun)   {G.hun=Math.min(100,G.hun+r.hun);  lines.push(`허기+${r.hun}`);}
@@ -128,11 +129,19 @@ function applyR(r, lines){
 }
 
 function applyPen(p, lines){
-  if(p.hp)    {G.hp=Math.max(0,G.hp+p.hp);     lines.push(`HP${p.hp}`);}
+  if(p.hp)    {G.hp=Math.max(0,G.hp+p.hp);     lines.push(`HP${p.hp}`);if(p.hp<0)flashDamage();}
   if(p.hun)   {G.hun=Math.max(0,G.hun+p.hun);  lines.push(`허기${p.hun}`);}
-  if(p.san)   {G.san=Math.max(0,G.san+p.san);  lines.push(`정신력${p.san}`);}
+  if(p.san)   {G.san=Math.max(0,G.san+p.san);  lines.push(`정신력${p.san}`);if(p.san<0)flashDamage();}
   if(p.card)  {addCard(p.card,1);               lines.push(`${p.card}카드추가`);}
   if(p.escape){G.escape=Math.max(0,G.escape-p.escape);lines.push(`탈출-${p.escape}%`);}
 }
 
-function closeJdg(){ document.getElementById('jdg-mo').style.display='none'; }
+function closeJdg(){
+  document.getElementById('jdg-mo').style.display='none';
+  if(_pendingItems&&_pendingItems.length){
+    const items=[..._pendingItems]; _pendingItems=null;
+    showItemPopup(items,'🎁 탐색 획득!',null);
+  } else {
+    _pendingItems=null;
+  }
+}

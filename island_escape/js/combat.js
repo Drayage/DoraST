@@ -1,11 +1,7 @@
 // ═══════════════ COMBAT ═══════════════
 // [버그수정] 창 관통 방어무시 구현 / 뱀·박쥐 패널티 적용 / 유령 패널티는 패배 시에만
 
-function drawCombatHand(){
-  if(G.deck.length<5&&G.disc.length){G.deck=shuffle(G.deck.concat(G.disc));G.disc=[];}
-  const h=[]; for(let i=0;i<Math.min(5,G.deck.length);i++) h.push(G.deck.pop());
-  return h;
-}
+function drawCombatHand(){ return drawToHand(5); }
 
 function startCombat(evtId){
   const enemy=ENEMIES[evtId];
@@ -147,7 +143,10 @@ function resolveCombat(){
   let dmgP=Math.max(0,eA-pD);
   if(hasArmor&&dmgP>0){ dmgP=Math.max(0,dmgP-2); lines.push({t:`🧥 가죽갑옷: 피해-2`,cls:'good'}); }
 
-  e.curHp=Math.max(0,e.curHp-dmgE); G.hp=Math.max(0,G.hp-dmgP);
+  e.curHp=Math.max(0,e.curHp-dmgE);
+  const prevHp=G.hp;
+  G.hp=Math.max(0,G.hp-dmgP);
+  if(dmgP>0) flashDamage();
   lines.unshift({t:`⚔️ 내공격: 일반${normalAtk}-방어${e.def}+관통${pierceAtk}+독${poisonDmg}=${dmgE}피해`,cls:'good'});
   lines.unshift({t:`🛡️ 내방어:${pD}${hasArmor?'(갑옷-2)':''}-적공격${eA}=${dmgP}피해`,cls:dmgP>0?'bad':'good'});
   CBT.stunned=stun;
@@ -158,18 +157,20 @@ function resolveCombat(){
 
   if(e.curHp<=0){
     // 승리 처리
-    const rewardLines=[];
-    if(e.reward?.cards){ e.reward.cards.forEach(r=>{ addCard(r.id,r.n); const d=CARDS.find(c=>c.id===r.id); rewardLines.push(`${d?.icon||''}${d?.name||r.id}×${r.n}`); }); }
-    if(e.reward?.san){ G.san=Math.min(100,G.san+e.reward.san); rewardLines.push(`정신력+${e.reward.san}`); }
+    const rewardItems=[];
+    if(e.reward?.cards){ e.reward.cards.forEach(r=>{ addCard(r.id,r.n); const d=CARD_MAP[r.id]; rewardItems.push({icon:d?.icon||'📦',name:d?.name||r.id,n:r.n}); }); }
+    if(e.reward?.san){ G.san=Math.min(100,G.san+e.reward.san); }
     resEl.innerHTML+=`<div class="rl good" style="font-size:13px;margin-top:5px;">🏆 ${e.name} 처치!</div>`;
-    resEl.innerHTML+=`<div class="rl good">💎 보상: ${e.rewardDesc||rewardLines.join(' ')}</div>`;
+    resEl.innerHTML+=`<div class="rl good">💎 보상: ${e.rewardDesc}</div>`;
     G.kills++; CBT.resolved=true;
     log(`⚔️ ${e.name} 처치! 보상: ${e.rewardDesc}`,'success');
     document.getElementById('btn-cbt-resolve').style.display='none';
     document.getElementById('btn-cbt-flee').style.display='none';
     document.getElementById('btn-cbt-close').style.display='';
+    if(rewardItems.length) showItemPopup(rewardItems,`🏆 ${e.name} 처치!`,null);
   } else if(G.hp<=0){
     // 패배 — 패널티 적용
+    flashDamage();
     if(e.penalty){
       if(e.penalty.card){ addCard(e.penalty.card,1); log(`${e.penalty.desc||e.penalty.card+' 추가'}`, 'danger'); }
       if(e.penalty.san){ G.san=Math.max(0,G.san+e.penalty.san); log(`${e.penalty.desc||'정신력'+e.penalty.san}`, 'danger'); }

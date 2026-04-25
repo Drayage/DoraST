@@ -4,11 +4,7 @@ function openUseCard(){
   if(G.over) return;
   if(G.ap<1){log('AP부족 (카드사용:AP1)','danger');render();return;}
   G.ap-=1;
-  if(G.deck.length<5&&G.disc.length){ G.deck=shuffle(G.deck.concat(G.disc)); G.disc=[]; }
-  _ucHand=[];
-  let drawN=Math.min(5,G.deck.length);
-  if(hasTool('rope')&&G.deck.length>drawN) drawN=Math.min(drawN+1,G.deck.length);
-  for(let i=0;i<drawN;i++) _ucHand.push(G.deck.pop());
+  _ucHand=drawToHand(hasTool('rope')?6:5);
   if(!_ucHand.length){log('덱이 비어있다.','danger');G.ap+=1;render();return;}
   document.getElementById('uc-sub').textContent=`${_ucHand.length}장 드로우${hasTool('rope')?' (🪢밧줄+1장)':''} — 사용할 카드 선택`;
   document.getElementById('uc-result').textContent='';

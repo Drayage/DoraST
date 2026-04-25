@@ -280,3 +280,34 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   .btn{font-size:11px;}
   .sc{width:48px;height:66px;}
 }
+
+/* ══ TITLE SCREEN ══ */
+#title-scr{display:flex;position:fixed;inset:0;background:linear-gradient(160deg,#060a10 0%,#0a1520 60%,#061018 100%);z-index:250;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+.title-logo{font-family:var(--font-t);font-size:54px;color:var(--accent);text-shadow:0 0 40px rgba(232,184,75,.6),0 0 80px rgba(232,184,75,.2);}
+.title-sub{font-size:10px;color:var(--text3);font-family:var(--font-m);letter-spacing:.28em;text-transform:uppercase;}
+.title-story{background:rgba(17,23,32,.9);border:1px solid var(--border2);border-radius:14px;padding:20px 26px;max-width:460px;width:92%;font-size:11px;color:var(--text2);line-height:2.1;text-align:center;}
+.title-story b{color:var(--accent);}
+.title-story .ts-head{font-family:var(--font-t);font-size:14px;color:var(--text);margin-bottom:10px;display:block;}
+.title-tip{font-size:8px;color:var(--text3);font-family:var(--font-m);}
+
+/* ══ DAMAGE FLASH ══ */
+#dmg-fx{position:fixed;inset:0;background:rgba(224,80,80,.3);pointer-events:none;z-index:9998;opacity:0;transition:opacity .14s ease-out;}
+#dmg-fx.hit{opacity:1;}
+
+/* ══ ITEM POPUP ══ */
+#item-mo{z-index:200;}
+#item-box{width:400px;text-align:center;}
+.item-title{font-family:var(--font-t);font-size:20px;color:var(--green);margin-bottom:2px;}
+.item-flavor{font-size:9px;color:var(--text3);font-family:var(--font-m);margin-bottom:12px;}
+.item-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:4px 0 16px;}
+.item-card{background:var(--bg3);border:1px solid var(--green2);border-radius:10px;padding:14px 18px;display:flex;flex-direction:column;align-items:center;gap:5px;animation:itemPop .35s cubic-bezier(.34,1.56,.64,1) both;}
+.item-card-icon{font-size:32px;}
+.item-card-name{font-size:10px;font-weight:700;color:var(--text);}
+.item-card-n{font-size:15px;font-weight:700;color:var(--green);font-family:var(--font-m);}
+@keyframes itemPop{from{transform:scale(0.4) translateY(8px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+
+/* ══ HELP SECTION ══ */
+.help-section{margin-top:12px;border-top:1px solid var(--border);padding-top:10px;}
+.help-h{font-family:var(--font-t);font-size:13px;color:var(--accent);margin-bottom:8px;}
+.help-row{background:var(--bg3);border-radius:6px;padding:7px 10px;margin-bottom:5px;font-size:9px;color:var(--text2);line-height:1.8;font-family:var(--font-m);}
+.help-row b{color:var(--text);}

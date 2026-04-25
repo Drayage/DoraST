@@ -20,8 +20,9 @@ function mobTab(t){
   if(t==='help'){
     setTimeout(()=>{
       const sw=document.getElementById('stats-wrap');
-      if(sw) sw.scrollTo(0, sw.scrollHeight);
-    }, 50);
+      const hs=document.getElementById('help-section');
+      if(sw&&hs) sw.scrollTop=hs.offsetTop;
+    }, 80);
   }
 }
 

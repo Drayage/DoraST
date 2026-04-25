@@ -40,7 +40,7 @@ function showTT(c, el){
   } else cEl.style.display='none';
 
   const gEl=document.getElementById('tt-ga');
-  if(c.gatherTool){gEl.style.display='';gEl.textContent='🎒 수집장비 — '+c.desc;}
+  if(c.gatherTool){gEl.style.display='';gEl.textContent='🎒 '+(c.gatherDesc||c.desc);}
   else gEl.style.display='none';
 
   tt.style.display='block';

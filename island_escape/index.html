@@ -9,6 +9,25 @@
 </head>
 <body>
 
+<!-- TITLE SCREEN -->
+<div id="title-scr">
+  <div class="title-logo">🏝 무인도 탈출</div>
+  <div class="title-sub">Island Escape · v0.2</div>
+  <div class="title-story">
+    <span class="ts-head">2025년 봄, 태평양 항해 도중 폭풍을 만났다</span>
+    거대한 파도가 배를 덮쳤고, 탈출 보트조차 소용없었다.<br>
+    정신을 차리자 <b>낯선 모래사장 위</b>에 혼자 쓰러져 있었다.<br><br>
+    사방은 바다. 섬은 작고, 문명의 흔적은 없다.<br>
+    하지만 포기할 수 없다. 어딘가에 <b>탈출의 실마리</b>가 있을 것이다.<br><br>
+    <span style="color:var(--text3);font-size:9px;font-family:var(--font-m);">
+      탐색하고 · 수집하고 · 제작하라<br>
+      탈출도 100%를 달성하면 구조된다 · DOOM이 100%에 달하면 최후가 찾아온다
+    </span>
+  </div>
+  <button class="btn primary" style="font-size:14px;padding:12px 32px;" onclick="startGame()">▶ 시작하기</button>
+  <div class="title-tip">화면 크기에 따라 모바일/PC 레이아웃 자동 전환</div>
+</div>
+
 <!-- HEADER -->
 <div id="hdr">
   <h1>🏝 무인도 탈출</h1>
@@ -97,6 +116,20 @@
       <div class="info-box" style="line-height:1.8;">
         <div class="lbl">조작</div>
         <span style="color:var(--text3);">타일클릭→이동(AP1~, 캠프 거리 비례) | 탐색→이벤트+판정<br>수집→탐색완료+장비(반복 시 성공률 감소) | 제작→캠프(AP소모)<br>카드사용(AP1)→🔋내구도 소진 시 영구제거 | 캠프건설AP8<br>취침→허기갈증 소모 | 일찍자면 노숙이벤트↓</span>
+      </div>
+      <!-- 도움말 (모바일 도움말 탭용) -->
+      <div id="help-section" class="help-section">
+        <div class="help-h">📖 도움말</div>
+        <div class="help-row"><b>🔍 탐색 (AP2)</b> — 새 타일 첫 방문 시 이벤트 발생. 덱 맨 위 카드 태그로 성공/실패 판정. 이미 탐색한 곳은 비활성화.</div>
+        <div class="help-row"><b>🎒 수집 (AP3)</b> — 탐색 완료된 타일에서만 가능. 수집 장비 필요. 같은 곳 반복 수집 시 성공률 감소 (최소 20%).</div>
+        <div class="help-row"><b>🏕️ 캠프 건설 (AP8)</b> — 현재 타일에 캠프 설치. 제작 가능 + 취침 회복 증가. 숲/해안 캠프는 매일 자원 자동생성.</div>
+        <div class="help-row"><b>🔨 제작 (AP1~)</b> — 캠프 위치에서만 사용 가능. 재료 소모해 도구·장비 제작. 뗏목 제작으로 탈출도 대폭 상승.</div>
+        <div class="help-row"><b>✨ 카드 사용 (AP1)</b> — 덱에서 5장 드로우. 식량(허기+22)/물(갈증+28)/약초(HP+10) 즉시 사용. 🪢밧줄 보유 시 +1장.</div>
+        <div class="help-row"><b>🌙 취침</b> — 다음날로 이동. 허기-14·갈증-18 소모. AP4 이상 남기고 자면 이른 취침 보너스(HP·정신력·AP 추가 회복).</div>
+        <div class="help-row"><b>🗺️ 이동</b> — 안개 걷힌 타일 클릭. 거리 1칸당 AP1 소모. 캠프 지나치면 할인 없음.</div>
+        <div class="help-row"><b>⚔️ 전투</b> — 탐색 중 적 조우 시 자동 시작. 카드를 공격/방어에 배정 후 라운드 해결. 도망(HP-8, 망토 있으면 HP-2).</div>
+        <div class="help-row"><b>🃏 덱 순환</b> — 카드 사용/전투 후 버림더미로 이동. 덱이 소진되면 버림더미를 섞어 자동 재순환. 내구도 있는 카드는 소진 시 영구 제거.</div>
+        <div class="help-row"><b>📊 위기 지표</b> — HP·정신력 0 또는 DOOM 100% 시 게임오버. 탈출도 100% 달성 시 탈출 성공.</div>
       </div>
     </div>
   </div>
@@ -275,6 +308,21 @@
   </div>
 </div>
 
+<!-- ITEM POPUP -->
+<div id="item-mo" class="mo">
+  <div id="item-box" class="mb">
+    <div class="item-title" id="item-title">🎁 획득!</div>
+    <div class="item-row" id="item-row"></div>
+    <div style="display:flex;gap:8px;justify-content:center;">
+      <button class="btn" onclick="confirmItemPopup()">⏩ 스킵</button>
+      <button class="btn primary" onclick="confirmItemPopup()">✓ 획득 확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- DAMAGE FX -->
+<div id="dmg-fx"></div>
+
 <!-- GAMEOVER -->
 <div id="go-scr">
   <div class="go-title" id="go-title">💀 게임 오버</div>
@@ -300,7 +348,7 @@
 <script src="js/combat.js"></script>
 <script src="js/deckviewer.js"></script>
 <script src="js/render.js"></script>
-<script>initGame();</script>
+<script>/* 게임은 타이틀 화면의 startGame()으로 시작 */</script>
 
 </body>
 </html>

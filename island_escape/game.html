@@ -289,9 +289,59 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   .sc{width:48px;height:66px;}
 }
 
+/* ══ TITLE SCREEN ══ */
+#title-scr{display:flex;position:fixed;inset:0;background:linear-gradient(160deg,#060a10 0%,#0a1520 60%,#061018 100%);z-index:250;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+.title-logo{font-family:var(--font-t);font-size:54px;color:var(--accent);text-shadow:0 0 40px rgba(232,184,75,.6),0 0 80px rgba(232,184,75,.2);}
+.title-sub{font-size:10px;color:var(--text3);font-family:var(--font-m);letter-spacing:.28em;text-transform:uppercase;}
+.title-story{background:rgba(17,23,32,.9);border:1px solid var(--border2);border-radius:14px;padding:20px 26px;max-width:460px;width:92%;font-size:11px;color:var(--text2);line-height:2.1;text-align:center;}
+.title-story b{color:var(--accent);}
+.title-story .ts-head{font-family:var(--font-t);font-size:14px;color:var(--text);margin-bottom:10px;display:block;}
+.title-tip{font-size:8px;color:var(--text3);font-family:var(--font-m);}
+
+/* ══ DAMAGE FLASH ══ */
+#dmg-fx{position:fixed;inset:0;background:rgba(224,80,80,.3);pointer-events:none;z-index:9998;opacity:0;transition:opacity .14s ease-out;}
+#dmg-fx.hit{opacity:1;}
+
+/* ══ ITEM POPUP ══ */
+#item-mo{z-index:200;}
+#item-box{width:400px;text-align:center;}
+.item-title{font-family:var(--font-t);font-size:20px;color:var(--green);margin-bottom:2px;}
+.item-flavor{font-size:9px;color:var(--text3);font-family:var(--font-m);margin-bottom:12px;}
+.item-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:4px 0 16px;}
+.item-card{background:var(--bg3);border:1px solid var(--green2);border-radius:10px;padding:14px 18px;display:flex;flex-direction:column;align-items:center;gap:5px;animation:itemPop .35s cubic-bezier(.34,1.56,.64,1) both;}
+.item-card-icon{font-size:32px;}
+.item-card-name{font-size:10px;font-weight:700;color:var(--text);}
+.item-card-n{font-size:15px;font-weight:700;color:var(--green);font-family:var(--font-m);}
+@keyframes itemPop{from{transform:scale(0.4) translateY(8px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+
+/* ══ HELP SECTION ══ */
+.help-section{margin-top:12px;border-top:1px solid var(--border);padding-top:10px;}
+.help-h{font-family:var(--font-t);font-size:13px;color:var(--accent);margin-bottom:8px;}
+.help-row{background:var(--bg3);border-radius:6px;padding:7px 10px;margin-bottom:5px;font-size:9px;color:var(--text2);line-height:1.8;font-family:var(--font-m);}
+.help-row b{color:var(--text);}
+
 </style>
 </head>
 <body>
+
+<!-- TITLE SCREEN -->
+<div id="title-scr">
+  <div class="title-logo">🏝 무인도 탈출</div>
+  <div class="title-sub">Island Escape · v0.2</div>
+  <div class="title-story">
+    <span class="ts-head">2025년 봄, 태평양 항해 도중 폭풍을 만났다</span>
+    거대한 파도가 배를 덮쳤고, 탈출 보트조차 소용없었다.<br>
+    정신을 차리자 <b>낯선 모래사장 위</b>에 혼자 쓰러져 있었다.<br><br>
+    사방은 바다. 섬은 작고, 문명의 흔적은 없다.<br>
+    하지만 포기할 수 없다. 어딘가에 <b>탈출의 실마리</b>가 있을 것이다.<br><br>
+    <span style="color:var(--text3);font-size:9px;font-family:var(--font-m);">
+      탐색하고 · 수집하고 · 제작하라<br>
+      탈출도 100%를 달성하면 구조된다 · DOOM이 100%에 달하면 최후가 찾아온다
+    </span>
+  </div>
+  <button class="btn primary" style="font-size:14px;padding:12px 32px;" onclick="startGame()">▶ 시작하기</button>
+  <div class="title-tip">화면 크기에 따라 모바일/PC 레이아웃 자동 전환</div>
+</div>
 
 <!-- HEADER -->
 <div id="hdr">
@@ -381,6 +431,20 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
       <div class="info-box" style="line-height:1.8;">
         <div class="lbl">조작</div>
         <span style="color:var(--text3);">타일클릭→이동(AP1~, 캠프 거리 비례) | 탐색→이벤트+판정<br>수집→탐색완료+장비(반복 시 성공률 감소) | 제작→캠프(AP소모)<br>카드사용(AP1)→🔋내구도 소진 시 영구제거 | 캠프건설AP8<br>취침→허기갈증 소모 | 일찍자면 노숙이벤트↓</span>
+      </div>
+      <!-- 도움말 (모바일 도움말 탭용) -->
+      <div id="help-section" class="help-section">
+        <div class="help-h">📖 도움말</div>
+        <div class="help-row"><b>🔍 탐색 (AP2)</b> — 새 타일 첫 방문 시 이벤트 발생. 덱 맨 위 카드 태그로 성공/실패 판정. 이미 탐색한 곳은 비활성화.</div>
+        <div class="help-row"><b>🎒 수집 (AP3)</b> — 탐색 완료된 타일에서만 가능. 수집 장비 필요. 같은 곳 반복 수집 시 성공률 감소 (최소 20%).</div>
+        <div class="help-row"><b>🏕️ 캠프 건설 (AP8)</b> — 현재 타일에 캠프 설치. 제작 가능 + 취침 회복 증가. 숲/해안 캠프는 매일 자원 자동생성.</div>
+        <div class="help-row"><b>🔨 제작 (AP1~)</b> — 캠프 위치에서만 사용 가능. 재료 소모해 도구·장비 제작. 뗏목 제작으로 탈출도 대폭 상승.</div>
+        <div class="help-row"><b>✨ 카드 사용 (AP1)</b> — 덱에서 5장 드로우. 식량(허기+22)/물(갈증+28)/약초(HP+10) 즉시 사용. 🪢밧줄 보유 시 +1장.</div>
+        <div class="help-row"><b>🌙 취침</b> — 다음날로 이동. 허기-14·갈증-18 소모. AP4 이상 남기고 자면 이른 취침 보너스(HP·정신력·AP 추가 회복).</div>
+        <div class="help-row"><b>🗺️ 이동</b> — 안개 걷힌 타일 클릭. 거리 1칸당 AP1 소모. 캠프 지나치면 할인 없음.</div>
+        <div class="help-row"><b>⚔️ 전투</b> — 탐색 중 적 조우 시 자동 시작. 카드를 공격/방어에 배정 후 라운드 해결. 도망(HP-8, 망토 있으면 HP-2).</div>
+        <div class="help-row"><b>🃏 덱 순환</b> — 카드 사용/전투 후 버림더미로 이동. 덱이 소진되면 버림더미를 섞어 자동 재순환. 내구도 있는 카드는 소진 시 영구 제거.</div>
+        <div class="help-row"><b>📊 위기 지표</b> — HP·정신력 0 또는 DOOM 100% 시 게임오버. 탈출도 100% 달성 시 탈출 성공.</div>
       </div>
     </div>
   </div>
@@ -559,6 +623,21 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   </div>
 </div>
 
+<!-- ITEM POPUP -->
+<div id="item-mo" class="mo">
+  <div id="item-box" class="mb">
+    <div class="item-title" id="item-title">🎁 획득!</div>
+    <div class="item-row" id="item-row"></div>
+    <div style="display:flex;gap:8px;justify-content:center;">
+      <button class="btn" onclick="confirmItemPopup()">⏩ 스킵</button>
+      <button class="btn primary" onclick="confirmItemPopup()">✓ 획득 확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- DAMAGE FX -->
+<div id="dmg-fx"></div>
+
 <!-- GAMEOVER -->
 <div id="go-scr">
   <div class="go-title" id="go-title">💀 게임 오버</div>
@@ -622,20 +701,26 @@ const CARDS=[
    desc:'패시브: 식량 회복 증가. 전투 공격력 4.'},
   {id:'torch',    name:'횃불',  icon:'🔦',tag:'tool',atk:2,def:1,n:0,gatherTool:true,
    passiveDesc:'탐색 tool 판정 성공 시 추가 보상 1장',
-   desc:'패시브: 탐색 보너스. 폐허 유물탐색 수집장비.'},
+   desc:'패시브: 탐색 tool 성공 시 추가보상 1장 드로우. ATK2 DEF1.',
+   gatherDesc:'🏚️ 폐허에서 수집 가능 → ⚙️고철 1~2개 획득'},
   {id:'rope',     name:'밧줄',  icon:'🪢',tag:'tool',atk:0,def:3,n:0,
    passiveDesc:'카드사용 시 드로우 +1장',
-   desc:'패시브: 드로우 보너스. 방어력 3.'},
+   desc:'패시브: 카드사용 드로우 +1장. DEF3.'},
   {id:'axe',      name:'도끼',  icon:'🪓',tag:'tool',atk:3,def:1,n:0,gatherTool:true,
-   desc:'숲 나무베기 수집 전용. 전투 ATK3.'},
+   desc:'🌲 숲에서 나무베기 수집 가능. 전투 ATK3 DEF1.',
+   gatherDesc:'🌲 숲에서 수집 가능 → 🪵목재 1~2개 획득'},
   {id:'gathering_knife',name:'채집칼',icon:'🗡️',tag:'tool',atk:2,def:1,n:0,gatherTool:true,
-   desc:'숲 약초채집 수집 전용. 전투 ATK2.'},
+   desc:'🌲 숲에서 약초채집 수집 가능. 전투 ATK2 DEF1.',
+   gatherDesc:'🌲 숲에서 수집 가능 → 🌿약초 1~2개 획득'},
   {id:'fishing_rod',name:'낚싯대',icon:'🎣',tag:'tool',atk:0,def:2,n:0,gatherTool:true,
-   desc:'해변·해안 낚시 수집 전용. 방어력 2.'},
+   desc:'🏖️해변·🌊해안에서 낚시 수집 가능. DEF2.',
+   gatherDesc:'🏖️ 해변·🌊 해안에서 수집 가능 → 🍗식량 1~2개 획득'},
   {id:'canteen',  name:'물통',  icon:'🫙',tag:'tool',atk:0,def:2,n:0,gatherTool:true,
-   desc:'해안 물 채집 전용. 방어력 2.'},
+   desc:'🌊 해안에서 물 채집 수집 가능. DEF2.',
+   gatherDesc:'🌊 해안에서 수집 가능 → 💧물 1~2개 획득'},
   {id:'pickaxe',  name:'곡괭이',icon:'⛏️',tag:'tool',atk:3,def:0,n:0,gatherTool:true,
-   desc:'동굴 채굴 수집 전용. 전투 ATK3.'},
+   desc:'🪨 동굴에서 채굴 수집 가능. 전투 ATK3.',
+   gatherDesc:'🪨 동굴에서 수집 가능 → ⚙️고철 1~2개 획득'},
   // 전투
   {id:'spear', name:'창',  icon:'🗡️',tag:'combat',atk:8,def:0,n:1,cbtFx:'pierce',
    desc:'관통: 공격배정 시 적 방어 완전무시 +4 추가공격.'},
@@ -778,6 +863,12 @@ let G={}, CBT={};
 let _dvTab='all', _ttTm=null, _cbtMode=null, _ucHand=[];
 let _mobTab='map';
 const _tabMap={map:'map-col',deck:'ctr-col',stat:'rgt-col',help:'rgt-col'};
+let _pendingItems=null, _itemCb=null;
+
+function startGame(){
+  document.getElementById('title-scr').style.display='none';
+  initGame();
+}
 
 function initGame(){
   G={
@@ -790,6 +881,7 @@ function initGame(){
     over:false, win:false, logs:[], kills:0,
     gatherCnt:{},
   };
+  _pendingItems=null; _itemCb=null;
   buildDeck(); buildMap();
   document.getElementById('go-scr').style.display='none';
   initMobile();
@@ -864,6 +956,45 @@ function rmFromDeck(id, n){
 function canCraft(rec){ return rec.cost.every(c=>cntInDeck(c.id)>=c.n); }
 
 function hasTool(id){ return allCards().some(c=>c.id===id); }
+
+// 덱에서 n장 드로우 (부족하면 버림더미 섞어 보충)
+function drawToHand(n){
+  const hand=[];
+  for(let i=0;i<n;i++){
+    if(!G.deck.length){
+      if(!G.disc.length) break;
+      G.deck=shuffle(G.disc); G.disc=[];
+    }
+    hand.push(G.deck.pop());
+  }
+  return hand;
+}
+
+function flashDamage(){
+  const el=document.getElementById('dmg-fx');
+  if(!el) return;
+  el.classList.add('hit');
+  setTimeout(()=>el.classList.remove('hit'),180);
+}
+
+function showItemPopup(items, title, cb){
+  _itemCb=cb;
+  document.getElementById('item-title').textContent=title;
+  const row=document.getElementById('item-row'); row.innerHTML='';
+  items.forEach(({icon,name,n},idx)=>{
+    const div=document.createElement('div'); div.className='item-card';
+    div.style.animationDelay=`${idx*0.1}s`;
+    div.innerHTML=`<div class="item-card-icon">${icon}</div><div class="item-card-name">${name}</div><div class="item-card-n">×${n}</div>`;
+    row.appendChild(div);
+  });
+  document.getElementById('item-mo').style.display='flex';
+}
+
+function confirmItemPopup(){
+  document.getElementById('item-mo').style.display='none';
+  const cb=_itemCb; _itemCb=null;
+  if(cb) cb();
+}
 
 </script></script>
 <script>
@@ -943,7 +1074,7 @@ function showTT(c, el){
   } else cEl.style.display='none';
 
   const gEl=document.getElementById('tt-ga');
-  if(c.gatherTool){gEl.style.display='';gEl.textContent='🎒 수집장비 — '+c.desc;}
+  if(c.gatherTool){gEl.style.display='';gEl.textContent='🎒 '+(c.gatherDesc||c.desc);}
   else gEl.style.display='none';
 
   tt.style.display='block';
@@ -982,8 +1113,9 @@ function mobTab(t){
   if(t==='help'){
     setTimeout(()=>{
       const sw=document.getElementById('stats-wrap');
-      if(sw) sw.scrollTo(0, sw.scrollHeight);
-    }, 50);
+      const hs=document.getElementById('help-section');
+      if(sw&&hs) sw.scrollTop=hs.offsetTop;
+    }, 80);
   }
 }
 
@@ -1136,6 +1268,7 @@ function fmtP(p){
 }
 
 function doJudgment(evt, ch){
+  _pendingItems=[];
   if(!G.deck.length&&G.disc.length){G.deck=shuffle(G.disc);G.disc=[];}
   const top=G.deck.length?G.deck[G.deck.length-1]:null;
   const success=!ch.req||(top&&top.tag===ch.req);
@@ -1187,7 +1320,7 @@ function doJudgment(evt, ch){
 
 function applyR(r, lines){
   if(!r) return;
-  if(r.card){addCard(r.card,r.n||1);const d=CARD_MAP[r.card];lines.push(`${d?.icon||''}${r.card}×${r.n||1}`);}
+  if(r.card){addCard(r.card,r.n||1);const d=CARD_MAP[r.card];lines.push(`${d?.icon||''}${d?.name||r.card}×${r.n||1}`);if(_pendingItems)_pendingItems.push({icon:d?.icon||'📦',name:d?.name||r.card,n:r.n||1});}
   if(r.san)   {G.san=Math.min(100,G.san+r.san);  lines.push(`정신력+${r.san}`);}
   if(r.escape){G.escape=Math.min(100,G.escape+r.escape);lines.push(`탈출+${r.escape}%`);}
   if(r.hun)   {G.hun=Math.min(100,G.hun+r.hun);  lines.push(`허기+${r.hun}`);}
@@ -1196,14 +1329,22 @@ function applyR(r, lines){
 }
 
 function applyPen(p, lines){
-  if(p.hp)    {G.hp=Math.max(0,G.hp+p.hp);     lines.push(`HP${p.hp}`);}
+  if(p.hp)    {G.hp=Math.max(0,G.hp+p.hp);     lines.push(`HP${p.hp}`);if(p.hp<0)flashDamage();}
   if(p.hun)   {G.hun=Math.max(0,G.hun+p.hun);  lines.push(`허기${p.hun}`);}
-  if(p.san)   {G.san=Math.max(0,G.san+p.san);  lines.push(`정신력${p.san}`);}
+  if(p.san)   {G.san=Math.max(0,G.san+p.san);  lines.push(`정신력${p.san}`);if(p.san<0)flashDamage();}
   if(p.card)  {addCard(p.card,1);               lines.push(`${p.card}카드추가`);}
   if(p.escape){G.escape=Math.max(0,G.escape-p.escape);lines.push(`탈출-${p.escape}%`);}
 }
 
-function closeJdg(){ document.getElementById('jdg-mo').style.display='none'; }
+function closeJdg(){
+  document.getElementById('jdg-mo').style.display='none';
+  if(_pendingItems&&_pendingItems.length){
+    const items=[..._pendingItems]; _pendingItems=null;
+    showItemPopup(items,'🎁 탐색 획득!',null);
+  } else {
+    _pendingItems=null;
+  }
+}
 
 </script></script>
 <script>
@@ -1258,10 +1399,13 @@ function doGather(opt, key, rate){
     addCard(opt.res, n);
     const d=CARD_MAP[opt.res];
     log(`🎒 ${opt.label} 성공! ${d?.icon||''}${d?.name||opt.res}×${n} 획득 (AP-3)`,'gather');
+    showItemPopup([{icon:d?.icon||'📦',name:d?.name||opt.res,n}],`🎒 ${opt.label} 성공!`,()=>{
+      checkSurvival(); render();
+    });
   } else {
     log(`🎒 ${opt.label} 실패... 빈손 (AP-3)`,'danger');
+    checkSurvival(); render();
   }
-  checkSurvival(); render();
 }
 
 </script></script>
@@ -1370,11 +1514,7 @@ function openUseCard(){
   if(G.over) return;
   if(G.ap<1){log('AP부족 (카드사용:AP1)','danger');render();return;}
   G.ap-=1;
-  if(G.deck.length<5&&G.disc.length){ G.deck=shuffle(G.deck.concat(G.disc)); G.disc=[]; }
-  _ucHand=[];
-  let drawN=Math.min(5,G.deck.length);
-  if(hasTool('rope')&&G.deck.length>drawN) drawN=Math.min(drawN+1,G.deck.length);
-  for(let i=0;i<drawN;i++) _ucHand.push(G.deck.pop());
+  _ucHand=drawToHand(hasTool('rope')?6:5);
   if(!_ucHand.length){log('덱이 비어있다.','danger');G.ap+=1;render();return;}
   document.getElementById('uc-sub').textContent=`${_ucHand.length}장 드로우${hasTool('rope')?' (🪢밧줄+1장)':''} — 사용할 카드 선택`;
   document.getElementById('uc-result').textContent='';
@@ -1626,11 +1766,7 @@ function closeSleepEvt(){
 // ═══════════════ COMBAT ═══════════════
 // [버그수정] 창 관통 방어무시 구현 / 뱀·박쥐 패널티 적용 / 유령 패널티는 패배 시에만
 
-function drawCombatHand(){
-  if(G.deck.length<5&&G.disc.length){G.deck=shuffle(G.deck.concat(G.disc));G.disc=[];}
-  const h=[]; for(let i=0;i<Math.min(5,G.deck.length);i++) h.push(G.deck.pop());
-  return h;
-}
+function drawCombatHand(){ return drawToHand(5); }
 
 function startCombat(evtId){
   const enemy=ENEMIES[evtId];
@@ -1772,7 +1908,10 @@ function resolveCombat(){
   let dmgP=Math.max(0,eA-pD);
   if(hasArmor&&dmgP>0){ dmgP=Math.max(0,dmgP-2); lines.push({t:`🧥 가죽갑옷: 피해-2`,cls:'good'}); }
 
-  e.curHp=Math.max(0,e.curHp-dmgE); G.hp=Math.max(0,G.hp-dmgP);
+  e.curHp=Math.max(0,e.curHp-dmgE);
+  const prevHp=G.hp;
+  G.hp=Math.max(0,G.hp-dmgP);
+  if(dmgP>0) flashDamage();
   lines.unshift({t:`⚔️ 내공격: 일반${normalAtk}-방어${e.def}+관통${pierceAtk}+독${poisonDmg}=${dmgE}피해`,cls:'good'});
   lines.unshift({t:`🛡️ 내방어:${pD}${hasArmor?'(갑옷-2)':''}-적공격${eA}=${dmgP}피해`,cls:dmgP>0?'bad':'good'});
   CBT.stunned=stun;
@@ -1783,18 +1922,20 @@ function resolveCombat(){
 
   if(e.curHp<=0){
     // 승리 처리
-    const rewardLines=[];
-    if(e.reward?.cards){ e.reward.cards.forEach(r=>{ addCard(r.id,r.n); const d=CARDS.find(c=>c.id===r.id); rewardLines.push(`${d?.icon||''}${d?.name||r.id}×${r.n}`); }); }
-    if(e.reward?.san){ G.san=Math.min(100,G.san+e.reward.san); rewardLines.push(`정신력+${e.reward.san}`); }
+    const rewardItems=[];
+    if(e.reward?.cards){ e.reward.cards.forEach(r=>{ addCard(r.id,r.n); const d=CARD_MAP[r.id]; rewardItems.push({icon:d?.icon||'📦',name:d?.name||r.id,n:r.n}); }); }
+    if(e.reward?.san){ G.san=Math.min(100,G.san+e.reward.san); }
     resEl.innerHTML+=`<div class="rl good" style="font-size:13px;margin-top:5px;">🏆 ${e.name} 처치!</div>`;
-    resEl.innerHTML+=`<div class="rl good">💎 보상: ${e.rewardDesc||rewardLines.join(' ')}</div>`;
+    resEl.innerHTML+=`<div class="rl good">💎 보상: ${e.rewardDesc}</div>`;
     G.kills++; CBT.resolved=true;
     log(`⚔️ ${e.name} 처치! 보상: ${e.rewardDesc}`,'success');
     document.getElementById('btn-cbt-resolve').style.display='none';
     document.getElementById('btn-cbt-flee').style.display='none';
     document.getElementById('btn-cbt-close').style.display='';
+    if(rewardItems.length) showItemPopup(rewardItems,`🏆 ${e.name} 처치!`,null);
   } else if(G.hp<=0){
     // 패배 — 패널티 적용
+    flashDamage();
     if(e.penalty){
       if(e.penalty.card){ addCard(e.penalty.card,1); log(`${e.penalty.desc||e.penalty.card+' 추가'}`, 'danger'); }
       if(e.penalty.san){ G.san=Math.max(0,G.san+e.penalty.san); log(`${e.penalty.desc||'정신력'+e.penalty.san}`, 'danger'); }
@@ -1984,7 +2125,7 @@ function render(){
     p.logs.slice(0,25).map(l=>`<div class="le ${l.type||''}">${l.msg}</div>`).join('');
 
   // 버튼 활성화
-  d.btnExp.disabled=p.ap<2||p.over;
+  d.btnExp.disabled=p.ap<2||p.over||p.tiles[p.pos].explored;
   d.btnGa.disabled=p.ap<3||p.over||!p.tiles[p.pos].explored;
   d.btnCamp.disabled=p.ap<8||p.over||p.tiles[p.pos].hasCamp;
   d.btnCraft.disabled=p.over||!p.tiles[p.pos].hasCamp;
@@ -1993,7 +2134,7 @@ function render(){
 }
 
 </script></script>
-<script>initGame();</script>
+<script>/* 게임은 타이틀 화면의 startGame()으로 시작 */</script>
 
 </body>
 </html>

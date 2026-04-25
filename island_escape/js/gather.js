@@ -49,8 +49,11 @@ function doGather(opt, key, rate){
     addCard(opt.res, n);
     const d=CARD_MAP[opt.res];
     log(`🎒 ${opt.label} 성공! ${d?.icon||''}${d?.name||opt.res}×${n} 획득 (AP-3)`,'gather');
+    showItemPopup([{icon:d?.icon||'📦',name:d?.name||opt.res,n}],`🎒 ${opt.label} 성공!`,()=>{
+      checkSurvival(); render();
+    });
   } else {
     log(`🎒 ${opt.label} 실패... 빈손 (AP-3)`,'danger');
+    checkSurvival(); render();
   }
-  checkSurvival(); render();
 }

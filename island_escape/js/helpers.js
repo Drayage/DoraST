@@ -50,3 +50,42 @@ function rmFromDeck(id, n){
 function canCraft(rec){ return rec.cost.every(c=>cntInDeck(c.id)>=c.n); }
 
 function hasTool(id){ return allCards().some(c=>c.id===id); }
+
+// 덱에서 n장 드로우 (부족하면 버림더미 섞어 보충)
+function drawToHand(n){
+  const hand=[];
+  for(let i=0;i<n;i++){
+    if(!G.deck.length){
+      if(!G.disc.length) break;
+      G.deck=shuffle(G.disc); G.disc=[];
+    }
+    hand.push(G.deck.pop());
+  }
+  return hand;
+}
+
+function flashDamage(){
+  const el=document.getElementById('dmg-fx');
+  if(!el) return;
+  el.classList.add('hit');
+  setTimeout(()=>el.classList.remove('hit'),180);
+}
+
+function showItemPopup(items, title, cb){
+  _itemCb=cb;
+  document.getElementById('item-title').textContent=title;
+  const row=document.getElementById('item-row'); row.innerHTML='';
+  items.forEach(({icon,name,n},idx)=>{
+    const div=document.createElement('div'); div.className='item-card';
+    div.style.animationDelay=`${idx*0.1}s`;
+    div.innerHTML=`<div class="item-card-icon">${icon}</div><div class="item-card-name">${name}</div><div class="item-card-n">×${n}</div>`;
+    row.appendChild(div);
+  });
+  document.getElementById('item-mo').style.display='flex';
+}
+
+function confirmItemPopup(){
+  document.getElementById('item-mo').style.display='none';
+  const cb=_itemCb; _itemCb=null;
+  if(cb) cb();
+}
