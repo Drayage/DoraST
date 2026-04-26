@@ -585,11 +585,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 <div id="cbt-mo" class="mo">
   <div id="cbt-box" class="mb">
     <div class="cbt-title" id="cbt-title">⚔️ 전투!</div>
-    <div style="display:flex;align-items:center;gap:6px;font-family:var(--font-m);font-size:9px;margin-bottom:6px;">
-      <span id="cbt-sub" style="color:var(--text3);flex:1;"></span>
-      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:3px 8px;">❤️ <span id="cbt-php" style="font-weight:700;color:var(--green);">100</span></span>
-      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:3px 8px;">🧠 <span id="cbt-psan" style="font-weight:700;color:var(--purple);">100</span></span>
-    </div>
+    <div style="font-size:9px;color:var(--text3);font-family:var(--font-m);margin-bottom:9px;" id="cbt-sub"></div>
     <div class="enemy-area">
       <div class="enemy-card">
         <div class="enemy-icon" id="cbt-eicon"></div>
@@ -604,6 +600,28 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
         <b style="color:var(--blue);">🛡️ 방어모드</b> 클릭 후 카드클릭=방어 일괄<br>
         <b style="color:var(--accent);">⚡ 스마트</b> = ATK>0→공격, DEF>0→방어 자동배정
         <div id="cbt-sfx" style="margin-top:5px;"></div>
+      </div>
+    </div>
+    <!-- 플레이어 상태 게이지 -->
+    <div id="cbt-pstatus" style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:8px 12px;margin-bottom:9px;">
+      <div style="font-size:7px;color:var(--text3);font-family:var(--font-m);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">내 상태</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:9px;font-family:var(--font-m);margin-bottom:3px;">
+            <span>❤️ 체력</span><span id="cbt-php" style="font-weight:700;">100</span>
+          </div>
+          <div style="height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;">
+            <div id="cbt-php-bar" style="height:6px;background:var(--green);border-radius:3px;width:100%;transition:width .4s;"></div>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:9px;font-family:var(--font-m);margin-bottom:3px;">
+            <span>🧠 정신력</span><span id="cbt-psan" style="font-weight:700;">100</span>
+          </div>
+          <div style="height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;">
+            <div id="cbt-psan-bar" style="height:6px;background:var(--purple);border-radius:3px;width:100%;transition:width .4s;"></div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="smart-row">
@@ -1134,12 +1152,15 @@ function mobTab(t){
     const b=document.getElementById(badgeMap[t]);
     if(b){b.classList.remove('show');b.textContent='';}
   }
+  const sw=document.getElementById('stats-wrap');
   if(t==='help'){
     setTimeout(()=>{
-      const sw=document.getElementById('stats-wrap');
       const hs=document.getElementById('help-section');
       if(sw&&hs) sw.scrollTop=hs.offsetTop;
     }, 80);
+  } else if(t==='stat'){
+    // stat과 help 모두 rgt-col이므로 stat 클릭 시 명시적으로 맨 위로 스크롤
+    setTimeout(()=>{ if(sw) sw.scrollTop=0; }, 80);
   }
 }
 
@@ -1861,9 +1882,15 @@ function renderCombat(){
   document.getElementById('cbt-title').textContent=`⚔️ ${e.name} 출현!`;
   document.getElementById('cbt-sub').textContent=`라운드${CBT.turn} | 적 다음행동: ${CBT.stunned?'기절(피해없음)':`공격-${e.atk}HP`}`;
   const phpEl=document.getElementById('cbt-php');
-  phpEl.textContent=G.hp; phpEl.style.color=G.hp<30?'var(--red)':'var(--green)';
+  const phpClr=G.hp<30?'var(--red)':'var(--green)';
+  phpEl.textContent=G.hp; phpEl.style.color=phpClr;
+  const phpBar=document.getElementById('cbt-php-bar');
+  phpBar.style.width=G.hp+'%'; phpBar.style.background=phpClr;
   const psanEl=document.getElementById('cbt-psan');
-  psanEl.textContent=G.san; psanEl.style.color=G.san<30?'var(--red)':'var(--purple)';
+  const psanClr=G.san<30?'var(--red)':'var(--purple)';
+  psanEl.textContent=G.san; psanEl.style.color=psanClr;
+  const psanBar=document.getElementById('cbt-psan-bar');
+  psanBar.style.width=G.san+'%'; psanBar.style.background=psanClr;
   document.getElementById('cbt-eicon').textContent=e.icon;
   document.getElementById('cbt-ename').textContent=e.name;
   document.getElementById('cbt-ehp').textContent=Math.max(0,e.curHp);

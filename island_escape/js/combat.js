@@ -73,9 +73,15 @@ function renderCombat(){
   document.getElementById('cbt-title').textContent=`⚔️ ${e.name} 출현!`;
   document.getElementById('cbt-sub').textContent=`라운드${CBT.turn} | 적 다음행동: ${CBT.stunned?'기절(피해없음)':`공격-${e.atk}HP`}`;
   const phpEl=document.getElementById('cbt-php');
-  phpEl.textContent=G.hp; phpEl.style.color=G.hp<30?'var(--red)':'var(--green)';
+  const phpClr=G.hp<30?'var(--red)':'var(--green)';
+  phpEl.textContent=G.hp; phpEl.style.color=phpClr;
+  const phpBar=document.getElementById('cbt-php-bar');
+  phpBar.style.width=G.hp+'%'; phpBar.style.background=phpClr;
   const psanEl=document.getElementById('cbt-psan');
-  psanEl.textContent=G.san; psanEl.style.color=G.san<30?'var(--red)':'var(--purple)';
+  const psanClr=G.san<30?'var(--red)':'var(--purple)';
+  psanEl.textContent=G.san; psanEl.style.color=psanClr;
+  const psanBar=document.getElementById('cbt-psan-bar');
+  psanBar.style.width=G.san+'%'; psanBar.style.background=psanClr;
   document.getElementById('cbt-eicon').textContent=e.icon;
   document.getElementById('cbt-ename').textContent=e.name;
   document.getElementById('cbt-ehp').textContent=Math.max(0,e.curHp);
