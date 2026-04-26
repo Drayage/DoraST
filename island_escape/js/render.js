@@ -118,10 +118,12 @@ function render(){
     p.logs.slice(0,25).map(l=>`<div class="le ${l.type||''}">${l.msg}</div>`).join('');
 
   // 버튼 활성화
-  d.btnExp.disabled=p.ap<2||p.over||p.tiles[p.pos].explored;
-  d.btnGa.disabled=p.ap<3||p.over||!p.tiles[p.pos].explored;
-  d.btnCamp.disabled=p.ap<8||p.over||p.tiles[p.pos].hasCamp;
-  d.btnCraft.disabled=p.over||!p.tiles[p.pos].hasCamp;
+  d.btnExp.disabled=p.ap<2||p.over||ct.explored;
+  const hasGaTool=ct.explored&&(ct.gather||[]).some(o=>cards.some(c=>c.id===o.tool));
+  d.btnGa.disabled=p.ap<3||p.over||!ct.explored||!hasGaTool;
+  d.btnGa.innerHTML=ct.explored&&!hasGaTool?'🎒 도구없음 <span class="apb">AP3</span>':'🎒 수집 <span class="apb">AP3</span>';
+  d.btnCamp.disabled=p.ap<8||p.over||ct.hasCamp;
+  d.btnCraft.disabled=p.over||!ct.hasCamp;
   d.btnUse.disabled=p.ap<1||p.over;
   d.btnSleep.disabled=p.over;
 }

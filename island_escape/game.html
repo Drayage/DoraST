@@ -561,6 +561,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
       <button class="btn" onclick="closeCraft()">✕ 닫기</button>
     </div>
     <div id="cr-mats" style="display:flex;gap:5px;flex-wrap:wrap;padding:7px;background:var(--bg3);border-radius:6px;font-family:var(--font-m);font-size:9px;margin-bottom:10px;"></div>
+    <div id="cr-filter" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:7px;"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;" id="cr-list"></div>
     <div id="cr-msg" style="margin-top:8px;padding:6px 8px;background:var(--bg3);border-radius:4px;font-size:9px;font-family:var(--font-m);display:none;"></div>
   </div>
@@ -867,21 +868,21 @@ const EVENTS={
 };
 
 const RECIPES=[
-  {id:'r_knife',   name:'칼',       icon:'🔪',result:'knife',          rn:1,ap:1,cost:[{id:'wood',n:1},{id:'metal',n:2}],  desc:'패시브:식량회복+8. 전투ATK4.'},
-  {id:'r_torch',   name:'횃불',     icon:'🔦',result:'torch',          rn:1,ap:1,cost:[{id:'wood',n:2}],                   desc:'패시브:탐색추가보상. 폐허수집장비.'},
-  {id:'r_rope',    name:'밧줄',     icon:'🪢',result:'rope',           rn:1,ap:1,cost:[{id:'wood',n:1},{id:'food',n:1}],   desc:'패시브:드로우+1. 방어DEF3.'},
-  {id:'r_axe',     name:'도끼',     icon:'🪓',result:'axe',            rn:1,ap:1,cost:[{id:'wood',n:2},{id:'metal',n:1}],  desc:'숲 나무베기. 전투ATK3.'},
-  {id:'r_gknife',  name:'채집칼',   icon:'🗡️',result:'gathering_knife',rn:1,ap:1,cost:[{id:'metal',n:2}],                  desc:'숲 약초채집. 전투ATK2.'},
-  {id:'r_frod',    name:'낚싯대',   icon:'🎣',result:'fishing_rod',    rn:1,ap:1,cost:[{id:'wood',n:2},{id:'metal',n:1}],  desc:'해변·해안 낚시. 방어DEF2.'},
-  {id:'r_canteen', name:'물통',     icon:'🫙',result:'canteen',        rn:1,ap:1,cost:[{id:'metal',n:2}],                  desc:'해안 물 채집. 방어DEF2.'},
-  {id:'r_pick',    name:'곡괭이',   icon:'⛏️',result:'pickaxe',       rn:1,ap:1,cost:[{id:'wood',n:1},{id:'metal',n:3}],  desc:'동굴 채굴. 전투ATK3.'},
-  {id:'r_spear',   name:'창',       icon:'🗡️',result:'spear',         rn:1,ap:2,cost:[{id:'wood',n:2},{id:'metal',n:3}],  desc:'관통특수. ATK8+4관통. 최강공격.'},
-  {id:'r_larmor',  name:'가죽갑옷', icon:'🧥',result:'leather_armor',  rn:1,ap:1,cost:[{id:'hide',n:2}],                  desc:'패시브:전투피해-2. DEF4. 가죽×2.'},
-  {id:'r_pknife',  name:'독칼',     icon:'☠️',result:'poison_knife',   rn:1,ap:1,cost:[{id:'hide',n:1},{id:'venom',n:1}],  desc:'독:매라운드+3피해. ATK6. 가죽+독낭.'},
-  {id:'r_fcloak',  name:'깃털망토', icon:'🧣',result:'feather_cloak',  rn:1,ap:1,cost:[{id:'feather',n:2}],               desc:'패시브:도망비용HP-2. DEF2. 깃털×2.'},
-  {id:'r_compass', name:'유물나침반',icon:'🧭',result:'compass',       rn:1,ap:1,cost:[{id:'shard',n:2}],                  desc:'즉시 탈출도+20%. 고대파편×2.'},
+  {id:'r_knife',   cat:'생존',name:'칼',       icon:'🔪',result:'knife',          rn:1,ap:1,cost:[{id:'wood',n:1},{id:'metal',n:2}],  desc:'패시브:식량회복+8. 전투ATK4.'},
+  {id:'r_torch',   cat:'수집',name:'횃불',     icon:'🔦',result:'torch',          rn:1,ap:1,cost:[{id:'wood',n:2}],                   desc:'패시브:탐색추가보상. 폐허수집장비.'},
+  {id:'r_rope',    cat:'생존',name:'밧줄',     icon:'🪢',result:'rope',           rn:1,ap:1,cost:[{id:'wood',n:1},{id:'food',n:1}],   desc:'패시브:드로우+1. 방어DEF3.'},
+  {id:'r_axe',     cat:'수집',name:'도끼',     icon:'🪓',result:'axe',            rn:1,ap:1,cost:[{id:'wood',n:2},{id:'metal',n:1}],  desc:'숲 나무베기. 전투ATK3.'},
+  {id:'r_gknife',  cat:'수집',name:'채집칼',   icon:'🗡️',result:'gathering_knife',rn:1,ap:1,cost:[{id:'metal',n:2}],                  desc:'숲 약초채집. 전투ATK2.'},
+  {id:'r_frod',    cat:'수집',name:'낚싯대',   icon:'🎣',result:'fishing_rod',    rn:1,ap:1,cost:[{id:'wood',n:2},{id:'metal',n:1}],  desc:'해변·해안 낚시. 방어DEF2.'},
+  {id:'r_canteen', cat:'수집',name:'물통',     icon:'🫙',result:'canteen',        rn:1,ap:1,cost:[{id:'metal',n:2}],                  desc:'해안 물 채집. 방어DEF2.'},
+  {id:'r_pick',    cat:'수집',name:'곡괭이',   icon:'⛏️',result:'pickaxe',       rn:1,ap:1,cost:[{id:'wood',n:1},{id:'metal',n:3}],  desc:'동굴 채굴. 전투ATK3.'},
+  {id:'r_spear',   cat:'전투',name:'창',       icon:'🗡️',result:'spear',         rn:1,ap:2,cost:[{id:'wood',n:2},{id:'metal',n:3}],  desc:'관통특수. ATK8+4관통. 최강공격.'},
+  {id:'r_larmor',  cat:'전투',name:'가죽갑옷', icon:'🧥',result:'leather_armor',  rn:1,ap:1,cost:[{id:'hide',n:2}],                  desc:'패시브:전투피해-2. DEF4. 가죽×2.'},
+  {id:'r_pknife',  cat:'전투',name:'독칼',     icon:'☠️',result:'poison_knife',   rn:1,ap:1,cost:[{id:'hide',n:1},{id:'venom',n:1}],  desc:'독:매라운드+3피해. ATK6. 가죽+독낭.'},
+  {id:'r_fcloak',  cat:'전투',name:'깃털망토', icon:'🧣',result:'feather_cloak',  rn:1,ap:1,cost:[{id:'feather',n:2}],               desc:'패시브:도망비용HP-2. DEF2. 깃털×2.'},
+  {id:'r_compass', cat:'탈출',name:'유물나침반',icon:'🧭',result:'compass',       rn:1,ap:1,cost:[{id:'shard',n:2}],                  desc:'즉시 탈출도+20%. 고대파편×2.'},
   // 뗏목 — 뽑기 시스템 (대성공1/성공3/실패1)
-  {id:'r_raft',    name:'뗏목 부품',icon:'🛶',result:null,             rn:0,ap:2,cost:[{id:'wood',n:3},{id:'metal',n:1}],
+  {id:'r_raft',    cat:'탈출',name:'뗏목 부품',icon:'🛶',result:null,             rn:0,ap:2,cost:[{id:'wood',n:3},{id:'metal',n:1}],
    desc:'대성공(1/5): +30%  성공(3/5): +15%  실패(1/5): -10%', raftLottery:true},
 ];
 
@@ -1503,6 +1504,8 @@ function doCamp(){
 // ═══════════════ CRAFT ═══════════════
 // [버그수정] 뗏목 UI에서 escapeBonus undefined 표시 제거
 
+let _craftFilter='전체';
+
 function openCraft(){
   if(G.over) return;
   if(!G.tiles[G.pos].hasCamp){log('제작은 캠프 위치에서만 가능.','danger');render();return;}
@@ -1522,8 +1525,29 @@ function renderCraft(){
   });
   mEl.innerHTML+=`<span style="margin-left:auto;color:var(--text3);">총 ${G.deck.length+G.disc.length}장</span>`;
 
+  // 필터 버튼
+  const fEl=document.getElementById('cr-filter'); fEl.innerHTML='';
+  ['전체','전투','생존','수집','탈출'].forEach(f=>{
+    const b=document.createElement('button'); b.className='btn';
+    b.textContent=f;
+    b.style.cssText=`font-size:8px;padding:2px 8px;${f===_craftFilter?'border-color:var(--purple);color:var(--purple);':''}`;
+    b.onclick=()=>{ _craftFilter=f; renderCraft(); };
+    fEl.appendChild(b);
+  });
+
+  // 정렬: 제작가능+AP있음 → 재료있음 → 불가
+  const sorted=[...RECIPES]
+    .filter(r=>_craftFilter==='전체'||r.cat===_craftFilter)
+    .sort((a,b)=>{
+      const aFull=canCraft(a)&&G.ap>=a.ap, bFull=canCraft(b)&&G.ap>=b.ap;
+      const aOk=canCraft(a), bOk=canCraft(b);
+      if(aFull!==bFull) return bFull-aFull;
+      if(aOk!==bOk) return (bOk?1:0)-(aOk?1:0);
+      return 0;
+    });
+
   const lEl=document.getElementById('cr-list'); lEl.innerHTML='';
-  RECIPES.forEach(rec=>{
+  sorted.forEach(rec=>{
     const ok=canCraft(rec), hasAP=G.ap>=rec.ap, canDo=ok&&hasAP;
     const resultDef=rec.result?CARD_MAP[rec.result]:null;
     const costHtml=rec.cost.map(c=>{
@@ -1733,6 +1757,7 @@ function applyWeather(){
 
 function showRaftLottery(){
   const deck5=shuffle(['great','ok','ok','ok','fail']);
+  document.getElementById('se-ok').textContent='확인 →';
   document.getElementById('se-title').textContent='🛶 뗏목 부품 제작 — 뽑기!';
   document.getElementById('se-flavor').textContent='부품을 조립하다 보니 결과가 어떻게 될지 알 수 없다. 5장 중 1장을 선택하라.';
   document.getElementById('se-hint').textContent='대성공(1): 탈출+30% | 성공(3): 탈출+15% | 실패(1): 탈출-10%';
@@ -1783,6 +1808,7 @@ function showSleepEvt(){
   if(stN>=2||bad){ okN=2; failN=1; badN=2; }
   if(stN>=4||(stN>=2&&bad)){ okN=1; failN=1; badN=3; }
   const deck5=shuffle([...Array(okN).fill('ok'),...Array(failN).fill('fail'),...Array(badN).fill('bad')]);
+  document.getElementById('se-ok').textContent='다음날로 →';
   document.getElementById('se-title').textContent='🌙 취침 이벤트';
   document.getElementById('se-flavor').textContent=
     !G.camps.length
@@ -2240,10 +2266,12 @@ function render(){
     p.logs.slice(0,25).map(l=>`<div class="le ${l.type||''}">${l.msg}</div>`).join('');
 
   // 버튼 활성화
-  d.btnExp.disabled=p.ap<2||p.over||p.tiles[p.pos].explored;
-  d.btnGa.disabled=p.ap<3||p.over||!p.tiles[p.pos].explored;
-  d.btnCamp.disabled=p.ap<8||p.over||p.tiles[p.pos].hasCamp;
-  d.btnCraft.disabled=p.over||!p.tiles[p.pos].hasCamp;
+  d.btnExp.disabled=p.ap<2||p.over||ct.explored;
+  const hasGaTool=ct.explored&&(ct.gather||[]).some(o=>cards.some(c=>c.id===o.tool));
+  d.btnGa.disabled=p.ap<3||p.over||!ct.explored||!hasGaTool;
+  d.btnGa.innerHTML=ct.explored&&!hasGaTool?'🎒 도구없음 <span class="apb">AP3</span>':'🎒 수집 <span class="apb">AP3</span>';
+  d.btnCamp.disabled=p.ap<8||p.over||ct.hasCamp;
+  d.btnCraft.disabled=p.over||!ct.hasCamp;
   d.btnUse.disabled=p.ap<1||p.over;
   d.btnSleep.disabled=p.over;
 }

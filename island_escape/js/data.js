@@ -184,21 +184,21 @@ const EVENTS={
 };
 
 const RECIPES=[
-  {id:'r_knife',   name:'칼',       icon:'🔪',result:'knife',          rn:1,ap:1,cost:[{id:'wood',n:1},{id:'metal',n:2}],  desc:'패시브:식량회복+8. 전투ATK4.'},
-  {id:'r_torch',   name:'횃불',     icon:'🔦',result:'torch',          rn:1,ap:1,cost:[{id:'wood',n:2}],                   desc:'패시브:탐색추가보상. 폐허수집장비.'},
-  {id:'r_rope',    name:'밧줄',     icon:'🪢',result:'rope',           rn:1,ap:1,cost:[{id:'wood',n:1},{id:'food',n:1}],   desc:'패시브:드로우+1. 방어DEF3.'},
-  {id:'r_axe',     name:'도끼',     icon:'🪓',result:'axe',            rn:1,ap:1,cost:[{id:'wood',n:2},{id:'metal',n:1}],  desc:'숲 나무베기. 전투ATK3.'},
-  {id:'r_gknife',  name:'채집칼',   icon:'🗡️',result:'gathering_knife',rn:1,ap:1,cost:[{id:'metal',n:2}],                  desc:'숲 약초채집. 전투ATK2.'},
-  {id:'r_frod',    name:'낚싯대',   icon:'🎣',result:'fishing_rod',    rn:1,ap:1,cost:[{id:'wood',n:2},{id:'metal',n:1}],  desc:'해변·해안 낚시. 방어DEF2.'},
-  {id:'r_canteen', name:'물통',     icon:'🫙',result:'canteen',        rn:1,ap:1,cost:[{id:'metal',n:2}],                  desc:'해안 물 채집. 방어DEF2.'},
-  {id:'r_pick',    name:'곡괭이',   icon:'⛏️',result:'pickaxe',       rn:1,ap:1,cost:[{id:'wood',n:1},{id:'metal',n:3}],  desc:'동굴 채굴. 전투ATK3.'},
-  {id:'r_spear',   name:'창',       icon:'🗡️',result:'spear',         rn:1,ap:2,cost:[{id:'wood',n:2},{id:'metal',n:3}],  desc:'관통특수. ATK8+4관통. 최강공격.'},
-  {id:'r_larmor',  name:'가죽갑옷', icon:'🧥',result:'leather_armor',  rn:1,ap:1,cost:[{id:'hide',n:2}],                  desc:'패시브:전투피해-2. DEF4. 가죽×2.'},
-  {id:'r_pknife',  name:'독칼',     icon:'☠️',result:'poison_knife',   rn:1,ap:1,cost:[{id:'hide',n:1},{id:'venom',n:1}],  desc:'독:매라운드+3피해. ATK6. 가죽+독낭.'},
-  {id:'r_fcloak',  name:'깃털망토', icon:'🧣',result:'feather_cloak',  rn:1,ap:1,cost:[{id:'feather',n:2}],               desc:'패시브:도망비용HP-2. DEF2. 깃털×2.'},
-  {id:'r_compass', name:'유물나침반',icon:'🧭',result:'compass',       rn:1,ap:1,cost:[{id:'shard',n:2}],                  desc:'즉시 탈출도+20%. 고대파편×2.'},
+  {id:'r_knife',   cat:'생존',name:'칼',       icon:'🔪',result:'knife',          rn:1,ap:1,cost:[{id:'wood',n:1},{id:'metal',n:2}],  desc:'패시브:식량회복+8. 전투ATK4.'},
+  {id:'r_torch',   cat:'수집',name:'횃불',     icon:'🔦',result:'torch',          rn:1,ap:1,cost:[{id:'wood',n:2}],                   desc:'패시브:탐색추가보상. 폐허수집장비.'},
+  {id:'r_rope',    cat:'생존',name:'밧줄',     icon:'🪢',result:'rope',           rn:1,ap:1,cost:[{id:'wood',n:1},{id:'food',n:1}],   desc:'패시브:드로우+1. 방어DEF3.'},
+  {id:'r_axe',     cat:'수집',name:'도끼',     icon:'🪓',result:'axe',            rn:1,ap:1,cost:[{id:'wood',n:2},{id:'metal',n:1}],  desc:'숲 나무베기. 전투ATK3.'},
+  {id:'r_gknife',  cat:'수집',name:'채집칼',   icon:'🗡️',result:'gathering_knife',rn:1,ap:1,cost:[{id:'metal',n:2}],                  desc:'숲 약초채집. 전투ATK2.'},
+  {id:'r_frod',    cat:'수집',name:'낚싯대',   icon:'🎣',result:'fishing_rod',    rn:1,ap:1,cost:[{id:'wood',n:2},{id:'metal',n:1}],  desc:'해변·해안 낚시. 방어DEF2.'},
+  {id:'r_canteen', cat:'수집',name:'물통',     icon:'🫙',result:'canteen',        rn:1,ap:1,cost:[{id:'metal',n:2}],                  desc:'해안 물 채집. 방어DEF2.'},
+  {id:'r_pick',    cat:'수집',name:'곡괭이',   icon:'⛏️',result:'pickaxe',       rn:1,ap:1,cost:[{id:'wood',n:1},{id:'metal',n:3}],  desc:'동굴 채굴. 전투ATK3.'},
+  {id:'r_spear',   cat:'전투',name:'창',       icon:'🗡️',result:'spear',         rn:1,ap:2,cost:[{id:'wood',n:2},{id:'metal',n:3}],  desc:'관통특수. ATK8+4관통. 최강공격.'},
+  {id:'r_larmor',  cat:'전투',name:'가죽갑옷', icon:'🧥',result:'leather_armor',  rn:1,ap:1,cost:[{id:'hide',n:2}],                  desc:'패시브:전투피해-2. DEF4. 가죽×2.'},
+  {id:'r_pknife',  cat:'전투',name:'독칼',     icon:'☠️',result:'poison_knife',   rn:1,ap:1,cost:[{id:'hide',n:1},{id:'venom',n:1}],  desc:'독:매라운드+3피해. ATK6. 가죽+독낭.'},
+  {id:'r_fcloak',  cat:'전투',name:'깃털망토', icon:'🧣',result:'feather_cloak',  rn:1,ap:1,cost:[{id:'feather',n:2}],               desc:'패시브:도망비용HP-2. DEF2. 깃털×2.'},
+  {id:'r_compass', cat:'탈출',name:'유물나침반',icon:'🧭',result:'compass',       rn:1,ap:1,cost:[{id:'shard',n:2}],                  desc:'즉시 탈출도+20%. 고대파편×2.'},
   // 뗏목 — 뽑기 시스템 (대성공1/성공3/실패1)
-  {id:'r_raft',    name:'뗏목 부품',icon:'🛶',result:null,             rn:0,ap:2,cost:[{id:'wood',n:3},{id:'metal',n:1}],
+  {id:'r_raft',    cat:'탈출',name:'뗏목 부품',icon:'🛶',result:null,             rn:0,ap:2,cost:[{id:'wood',n:3},{id:'metal',n:1}],
    desc:'대성공(1/5): +30%  성공(3/5): +15%  실패(1/5): -10%', raftLottery:true},
 ];
 

@@ -64,6 +64,7 @@ function applyWeather(){
 
 function showRaftLottery(){
   const deck5=shuffle(['great','ok','ok','ok','fail']);
+  document.getElementById('se-ok').textContent='확인 →';
   document.getElementById('se-title').textContent='🛶 뗏목 부품 제작 — 뽑기!';
   document.getElementById('se-flavor').textContent='부품을 조립하다 보니 결과가 어떻게 될지 알 수 없다. 5장 중 1장을 선택하라.';
   document.getElementById('se-hint').textContent='대성공(1): 탈출+30% | 성공(3): 탈출+15% | 실패(1): 탈출-10%';
@@ -114,6 +115,7 @@ function showSleepEvt(){
   if(stN>=2||bad){ okN=2; failN=1; badN=2; }
   if(stN>=4||(stN>=2&&bad)){ okN=1; failN=1; badN=3; }
   const deck5=shuffle([...Array(okN).fill('ok'),...Array(failN).fill('fail'),...Array(badN).fill('bad')]);
+  document.getElementById('se-ok').textContent='다음날로 →';
   document.getElementById('se-title').textContent='🌙 취침 이벤트';
   document.getElementById('se-flavor').textContent=
     !G.camps.length

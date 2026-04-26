@@ -1,6 +1,8 @@
 // ═══════════════ CRAFT ═══════════════
 // [버그수정] 뗏목 UI에서 escapeBonus undefined 표시 제거
 
+let _craftFilter='전체';
+
 function openCraft(){
   if(G.over) return;
   if(!G.tiles[G.pos].hasCamp){log('제작은 캠프 위치에서만 가능.','danger');render();return;}
@@ -20,8 +22,29 @@ function renderCraft(){
   });
   mEl.innerHTML+=`<span style="margin-left:auto;color:var(--text3);">총 ${G.deck.length+G.disc.length}장</span>`;
 
+  // 필터 버튼
+  const fEl=document.getElementById('cr-filter'); fEl.innerHTML='';
+  ['전체','전투','생존','수집','탈출'].forEach(f=>{
+    const b=document.createElement('button'); b.className='btn';
+    b.textContent=f;
+    b.style.cssText=`font-size:8px;padding:2px 8px;${f===_craftFilter?'border-color:var(--purple);color:var(--purple);':''}`;
+    b.onclick=()=>{ _craftFilter=f; renderCraft(); };
+    fEl.appendChild(b);
+  });
+
+  // 정렬: 제작가능+AP있음 → 재료있음 → 불가
+  const sorted=[...RECIPES]
+    .filter(r=>_craftFilter==='전체'||r.cat===_craftFilter)
+    .sort((a,b)=>{
+      const aFull=canCraft(a)&&G.ap>=a.ap, bFull=canCraft(b)&&G.ap>=b.ap;
+      const aOk=canCraft(a), bOk=canCraft(b);
+      if(aFull!==bFull) return bFull-aFull;
+      if(aOk!==bOk) return (bOk?1:0)-(aOk?1:0);
+      return 0;
+    });
+
   const lEl=document.getElementById('cr-list'); lEl.innerHTML='';
-  RECIPES.forEach(rec=>{
+  sorted.forEach(rec=>{
     const ok=canCraft(rec), hasAP=G.ap>=rec.ap, canDo=ok&&hasAP;
     const resultDef=rec.result?CARD_MAP[rec.result]:null;
     const costHtml=rec.cost.map(c=>{
