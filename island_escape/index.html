@@ -172,7 +172,7 @@
 </div></div>
 
 <!-- DECK VIEWER -->
-<div id="dv-mo" class="mo">
+<div id="dv-mo" class="mo" onclick="if(event.target===this)closeDv()">
   <div id="dv-box" class="mb">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;">
       <div style="font-family:var(--font-t);font-size:16px;color:var(--accent);">📦 덱 구성</div>
@@ -218,7 +218,7 @@
 </div>
 
 <!-- GATHER -->
-<div id="ga-mo" class="mo">
+<div id="ga-mo" class="mo" onclick="if(event.target===this)this.style.display='none'">
   <div id="ga-box" class="mb">
     <div class="mo-title" id="ga-title" style="font-size:17px;color:#70b0e0;margin-bottom:3px;"></div>
     <div style="font-size:10px;color:var(--text2);margin-bottom:11px;" id="ga-flavor"></div>
@@ -228,7 +228,7 @@
 </div>
 
 <!-- CRAFT -->
-<div id="cr-mo" class="mo">
+<div id="cr-mo" class="mo" onclick="if(event.target===this)closeCraft()">
   <div id="cr-box" class="mb">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
       <div style="font-family:var(--font-t);font-size:17px;color:var(--purple);">🔨 캠프 제작소</div>
@@ -241,7 +241,7 @@
 </div>
 
 <!-- USE CARD -->
-<div id="uc-mo" class="mo">
+<div id="uc-mo" class="mo" onclick="if(event.target===this)closeUseCard()">
   <div id="uc-box" class="mb">
     <div style="font-family:var(--font-t);font-size:16px;color:var(--green);margin-bottom:3px;">✨ 카드 사용</div>
     <div style="font-size:9px;color:var(--text3);font-family:var(--font-m);margin-bottom:10px;" id="uc-sub"></div>
@@ -269,7 +269,11 @@
 <div id="cbt-mo" class="mo">
   <div id="cbt-box" class="mb">
     <div class="cbt-title" id="cbt-title">⚔️ 전투!</div>
-    <div style="font-size:9px;color:var(--text3);font-family:var(--font-m);margin-bottom:9px;" id="cbt-sub"></div>
+    <div style="display:flex;align-items:center;gap:6px;font-family:var(--font-m);font-size:9px;margin-bottom:6px;">
+      <span id="cbt-sub" style="color:var(--text3);flex:1;"></span>
+      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:3px 8px;">❤️ <span id="cbt-php" style="font-weight:700;color:var(--green);">100</span></span>
+      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:3px 8px;">🧠 <span id="cbt-psan" style="font-weight:700;color:var(--purple);">100</span></span>
+    </div>
     <div class="enemy-area">
       <div class="enemy-card">
         <div class="enemy-icon" id="cbt-eicon"></div>
@@ -309,7 +313,7 @@
 </div>
 
 <!-- ITEM POPUP -->
-<div id="item-mo" class="mo">
+<div id="item-mo" class="mo" onclick="if(event.target===this)skipItemPopup()">
   <div id="item-box" class="mb">
     <div class="item-title" id="item-title">🎁 획득!</div>
     <div class="item-row" id="item-row"></div>

@@ -85,6 +85,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .dk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:5px;}
 .card{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;cursor:pointer;transition:all .14s;min-height:78px;}
 .card:hover{transform:translateY(-3px);border-color:var(--border2);}
+.card.card-disc{opacity:0.42;filter:grayscale(60%);border-style:dashed;}
 .card-icon{font-size:18px;margin-bottom:2px;}
 .card-name{font-size:7px;font-weight:700;color:var(--text);text-align:center;margin-bottom:2px;}
 .card-tag{font-size:6px;padding:1px 3px;border-radius:2px;font-family:var(--font-m);font-weight:600;margin-bottom:2px;}

@@ -72,6 +72,10 @@ function renderCombat(){
   const e=CBT.enemy;
   document.getElementById('cbt-title').textContent=`⚔️ ${e.name} 출현!`;
   document.getElementById('cbt-sub').textContent=`라운드${CBT.turn} | 적 다음행동: ${CBT.stunned?'기절(피해없음)':`공격-${e.atk}HP`}`;
+  const phpEl=document.getElementById('cbt-php');
+  phpEl.textContent=G.hp; phpEl.style.color=G.hp<30?'var(--red)':'var(--green)';
+  const psanEl=document.getElementById('cbt-psan');
+  psanEl.textContent=G.san; psanEl.style.color=G.san<30?'var(--red)':'var(--purple)';
   document.getElementById('cbt-eicon').textContent=e.icon;
   document.getElementById('cbt-ename').textContent=e.name;
   document.getElementById('cbt-ehp').textContent=Math.max(0,e.curHp);

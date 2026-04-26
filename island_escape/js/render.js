@@ -67,10 +67,12 @@ function render(){
   });
   d.grid.innerHTML=''; d.grid.appendChild(mapFrag);
 
-  // 덱 표시
+  // 덱 표시 (버림더미 카드는 회색)
+  const discUids=new Set(G.disc.map(c=>c.uid));
   const deckFrag=document.createDocumentFragment();
   cards.forEach(c=>{
-    const div=document.createElement('div'); div.className='card';
+    const div=document.createElement('div');
+    div.className='card'+(discUids.has(c.uid)?' card-disc':'');
     const durDisp=c.dur?`<br><span style="color:var(--accent);font-size:6px;">🔋${c.curDur||c.dur}/${c.dur}</span>`:'';
     div.innerHTML=`<div class="card-icon">${c.icon}</div>
       <div class="card-name">${c.name}</div>
