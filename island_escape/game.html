@@ -152,6 +152,21 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .ttt-row.fog{color:var(--text3);}
 .ttt-row.todo{color:var(--text3);}
 
+/* ACTION BUTTON TOOLTIP */
+.att-inner{background:var(--bg2);border:1px solid var(--border2);border-radius:10px;overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,.85);animation:ttPop .12s ease-out;}
+.att-title{font-family:var(--font-t);font-size:13px;color:var(--text);padding:9px 13px 5px;border-bottom:1px solid var(--border);}
+.att-cost{font-size:9px;font-family:var(--font-m);color:var(--accent);padding:4px 13px 2px;letter-spacing:.04em;}
+.att-rows{padding:4px 13px 9px;display:flex;flex-direction:column;gap:3px;}
+.att-row{display:flex;align-items:center;gap:7px;font-size:9px;font-family:var(--font-m);color:var(--text2);line-height:1.4;}
+.att-ri{font-size:12px;flex-shrink:0;width:16px;text-align:center;}
+.att-row.gain{color:var(--green);}
+.att-row.loss{color:var(--red);}
+.att-row.warn{color:var(--accent);}
+.att-row.info{color:var(--text3);}
+.att-row.accent{color:var(--accent);}
+.att-row.early{color:#7ec8e3;}
+.att-row.doom{color:var(--red);opacity:.85;}
+
 /* MODALS */
 .mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:50;align-items:center;justify-content:center;overflow-y:auto;padding:16px;}
 .mb{background:var(--bg2);border:1px solid var(--border2);border-radius:13px;padding:20px;max-width:95vw;max-height:90vh;overflow-y:auto;}
@@ -640,6 +655,11 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
     </div>
     <div id="ttt-rows"></div>
   </div>
+</div>
+
+<!-- ACTION BUTTON TOOLTIP -->
+<div id="att" style="display:none;position:fixed;z-index:650;pointer-events:none;width:210px;">
+  <div class="att-inner"></div>
 </div>
 
 <!-- DECK VIEWER -->
@@ -1650,6 +1670,50 @@ document.addEventListener('click', e=>{
   const tt=document.getElementById('tt');
   if(tt&&tt.style.display==='block'&&!tt.contains(e.target)) tt.style.display='none';
 });
+
+// ── 액션 버튼 툴팁 ──
+function initActionTT(){
+  ['btn-exp','btn-ga','btn-camp','btn-craft','btn-use','btn-sleep'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('mouseenter', e=>{ if(window.innerWidth>700&&el._att) showActionTT(e.clientX,e.clientY,el._att); });
+    el.addEventListener('mousemove',  e=>{ if(window.innerWidth>700&&el._att) _reposATT(e.clientX,e.clientY); });
+    el.addEventListener('mouseleave', hideActionTT);
+  });
+}
+
+function showActionTT(mx, my, data){
+  const tt=document.getElementById('att');
+  if(!tt) return;
+  let html=`<div class="att-title">${data.title}</div>`;
+  if(data.cost) html+=`<div class="att-cost">${data.cost}</div>`;
+  if(data.rows&&data.rows.length){
+    html+='<div class="att-rows">';
+    data.rows.forEach(r=>{
+      html+=`<div class="att-row ${r.cls||''}"><span class="att-ri">${r.icon||''}</span><span>${r.text}</span></div>`;
+    });
+    html+='</div>';
+  }
+  tt.querySelector('.att-inner').innerHTML=html;
+  tt.style.display='block';
+  _reposATT(mx, my);
+}
+
+function _reposATT(mx, my){
+  const tt=document.getElementById('att');
+  if(!tt||tt.style.display==='none') return;
+  const ttW=210, ttH=tt.offsetHeight||140;
+  let left=mx+16, top=my-ttH/2;
+  if(left+ttW>window.innerWidth-6) left=mx-ttW-12;
+  if(top+ttH>window.innerHeight-6) top=window.innerHeight-ttH-6;
+  top=Math.max(6,top);
+  tt.style.left=left+'px'; tt.style.top=top+'px';
+}
+
+function hideActionTT(){
+  const tt=document.getElementById('att');
+  if(tt) tt.style.display='none';
+}
 
 </script></script>
 <script>
@@ -3167,47 +3231,87 @@ function render(){
   d.logMain.innerHTML=
     p.logs.slice(0,25).map(l=>`<div class="le ${l.type||''}">${l.msg}</div>`).join('');
 
-  // 버튼 활성화 + 툴팁
+  // 버튼 활성화 + 액션 툴팁 데이터
   const warns=[];
-  if(p.hp<=20) warns.push('❤️위험');
-  if(p.hun<=10) warns.push('🍗부족');
-  if(p.thi<=10) warns.push('💧부족');
-  const warnTip=warns.length?` ⚠️ ${warns.join(' ')}`:' ';
+  if(p.hp<=20)  warns.push({icon:'❤️', text:'체력 위험', cls:'warn'});
+  if(p.hun<=10) warns.push({icon:'🍗', text:'허기 부족', cls:'warn'});
+  if(p.thi<=10) warns.push({icon:'💧', text:'갈증 부족', cls:'warn'});
 
+  // 탐색
   d.btnExp.disabled=p.ap<2||p.over||ct.explored;
-  d.btnExp.title=`탐색 AP2${warnTip}`;
+  d.btnExp._att={title:'🔍 탐색', cost:'AP 2', rows:[
+    {icon:'🎴', text:'덱 맨 위 카드 태그로 성공/실패 판정', cls:'info'},
+    {icon:'👁', text:'이미 탐색한 타일 재탐색 불가', cls:'info'},
+    ...warns,
+  ]};
 
+  // 수집
   const hasGaTool=ct.explored&&(ct.gather||[]).some(o=>cards.some(c=>c.id===o.tool));
   d.btnGa.disabled=p.ap<3||p.over||!ct.explored||!hasGaTool;
   d.btnGa.innerHTML=ct.explored&&!hasGaTool?'🎒 도구없음 <span class="apb">AP3</span>':'🎒 수집 <span class="apb">AP3</span>';
-  d.btnGa.title=`수집 AP3 (허기-5 갈증-6)${warnTip}`;
+  d.btnGa._att={title:'🎒 수집', cost:'AP 3', rows:[
+    {icon:'🍗', text:'허기 -5', cls:'loss'},
+    {icon:'💧', text:'갈증 -6', cls:'loss'},
+    {icon:'🔧', text:'탐색 완료 + 수집 도구 필요', cls:'info'},
+    ...warns,
+  ]};
 
+  // 캠프
   const ctBonus=campBonus(ct.id);
   d.btnCamp.disabled=p.ap<8||p.over||ct.hasCamp;
-  d.btnCamp.title=`캠프 건설 AP8${ctBonus?' — 보너스: '+ctBonus:''}`;
+  const campRows=[
+    {icon:'🏕️', text:'취침 이벤트 확률 대폭 감소', cls:'gain'},
+    {icon:'🔨', text:'캠프 위치에서 제작 가능', cls:'info'},
+  ];
+  if(ctBonus) campRows.push({icon:'⭐', text:'지형 보너스: '+ctBonus, cls:'accent'});
+  if(ct.hasCamp) campRows.push({icon:'✓', text:'이미 설치됨', cls:'info'});
+  d.btnCamp._att={title:'🏕️ 캠프 건설', cost:'AP 8', rows:campRows};
 
+  // 제작
   d.btnCraft.disabled=p.over||!ct.hasCamp;
+  d.btnCraft._att={title:'🔨 제작소', cost:'AP 1~', rows:[
+    {icon:'🏕️', text:'캠프 위치에서만 사용 가능', cls:'info'},
+    {icon:'🛶', text:'뗏목 제작 → 탈출도 +15~30%', cls:'gain'},
+    {icon:'🗡️', text:'도구·무기·장비 제작', cls:'info'},
+  ]};
 
-  // 카드사용 드로우 수 동적 표시
+  // 카드 사용
   const beachCamp=p.camps.some(cp=>p.tiles[cp].id==='beach');
   const drawN=5+(hasTool('rope')?1:0)+(beachCamp?1:0);
   d.btnUse.disabled=p.ap<1||p.over;
   d.btnUse.innerHTML=`✨ 카드 사용 — ${drawN}장 드로우 <span class="apb">AP1</span>`;
+  const useRows=[{icon:'🎴', text:`${drawN}장 드로우`, cls:'gain'}];
+  if(hasTool('rope')) useRows.push({icon:'🪢', text:'밧줄 패시브 +1장', cls:'info'});
+  if(beachCamp)       useRows.push({icon:'🏖️', text:'해변 캠프 +1장', cls:'info'});
+  useRows.push({icon:'🍗', text:'식량·물·약초 즉시 사용 가능', cls:'info'});
+  d.btnUse._att={title:'✨ 카드 사용', cost:'AP 1', rows:useRows};
 
-  // 취침 hover 미리보기
+  // 취침
   const sleepEarly=p.ap>=4;
   const sHpR=sleepEarly?15:9;
   const sSanR=sleepEarly?4:2;
   const sDrain=p.camps.length?2:5;
   const sSanNet=sSanR-sDrain;
   const sEvt=calcSleepEvtChance(sleepEarly);
-  const sDoom=p.doomRate>0?` DOOM+${p.doomRate}%`:p.doomPhase>=4?' DOOM+1~3%':'';
   d.btnSleep.disabled=p.over;
-  d.btnSleep.title=`HP+${sHpR} 정신력${sSanNet>=0?'+':''}${sSanNet} 허기-14 갈증-18${sleepEarly?' 이른취침AP+2':''}${sEvt>0?` 이벤트${sEvt}%`:''}${sDoom}`;
+  const sleepRows=[
+    {icon:'❤️', text:`HP +${sHpR}`, cls:'gain'},
+    {icon:'🧠', text:`정신력 ${sSanNet>=0?'+':''}${sSanNet}`, cls:sSanNet>=0?'gain':'loss'},
+    {icon:'🍗', text:'허기 -14', cls:'loss'},
+    {icon:'💧', text:'갈증 -18', cls:'loss'},
+  ];
+  if(sleepEarly) sleepRows.push({icon:'🌙', text:'이른취침 · AP+2 · 회복↑', cls:'early'});
+  if(sEvt>0)     sleepRows.push({icon:'🎲', text:`취침 이벤트 ${sEvt}%`, cls:'info'});
+  if(p.doomRate>0)      sleepRows.push({icon:'🌫️', text:`DOOM +${p.doomRate}%`, cls:'doom'});
+  else if(p.doomPhase>=4) sleepRows.push({icon:'🌫️', text:'DOOM +1~3%', cls:'doom'});
+  sleepRows.push(...warns);
+  d.btnSleep._att={title:'🌙 취침', cost:'다음 날로', rows:sleepRows};
 }
 
 </script></script>
-<script>/* 게임은 타이틀 화면의 startGame()으로 시작 */</script>
+<script>/* 게임은 타이틀 화면의 startGame()으로 시작 */
+initActionTT();
+</script>
 
 </body>
 </html>

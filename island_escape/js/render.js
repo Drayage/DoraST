@@ -137,41 +137,79 @@ function render(){
   d.logMain.innerHTML=
     p.logs.slice(0,25).map(l=>`<div class="le ${l.type||''}">${l.msg}</div>`).join('');
 
-  // 버튼 활성화 + 툴팁
+  // 버튼 활성화 + 액션 툴팁 데이터
   const warns=[];
-  if(p.hp<=20) warns.push('❤️위험');
-  if(p.hun<=10) warns.push('🍗부족');
-  if(p.thi<=10) warns.push('💧부족');
-  const warnTip=warns.length?` ⚠️ ${warns.join(' ')}`:' ';
+  if(p.hp<=20)  warns.push({icon:'❤️', text:'체력 위험', cls:'warn'});
+  if(p.hun<=10) warns.push({icon:'🍗', text:'허기 부족', cls:'warn'});
+  if(p.thi<=10) warns.push({icon:'💧', text:'갈증 부족', cls:'warn'});
 
+  // 탐색
   d.btnExp.disabled=p.ap<2||p.over||ct.explored;
-  d.btnExp.title=`탐색 AP2${warnTip}`;
+  d.btnExp._att={title:'🔍 탐색', cost:'AP 2', rows:[
+    {icon:'🎴', text:'덱 맨 위 카드 태그로 성공/실패 판정', cls:'info'},
+    {icon:'👁', text:'이미 탐색한 타일 재탐색 불가', cls:'info'},
+    ...warns,
+  ]};
 
+  // 수집
   const hasGaTool=ct.explored&&(ct.gather||[]).some(o=>cards.some(c=>c.id===o.tool));
   d.btnGa.disabled=p.ap<3||p.over||!ct.explored||!hasGaTool;
   d.btnGa.innerHTML=ct.explored&&!hasGaTool?'🎒 도구없음 <span class="apb">AP3</span>':'🎒 수집 <span class="apb">AP3</span>';
-  d.btnGa.title=`수집 AP3 (허기-5 갈증-6)${warnTip}`;
+  d.btnGa._att={title:'🎒 수집', cost:'AP 3', rows:[
+    {icon:'🍗', text:'허기 -5', cls:'loss'},
+    {icon:'💧', text:'갈증 -6', cls:'loss'},
+    {icon:'🔧', text:'탐색 완료 + 수집 도구 필요', cls:'info'},
+    ...warns,
+  ]};
 
+  // 캠프
   const ctBonus=campBonus(ct.id);
   d.btnCamp.disabled=p.ap<8||p.over||ct.hasCamp;
-  d.btnCamp.title=`캠프 건설 AP8${ctBonus?' — 보너스: '+ctBonus:''}`;
+  const campRows=[
+    {icon:'🏕️', text:'취침 이벤트 확률 대폭 감소', cls:'gain'},
+    {icon:'🔨', text:'캠프 위치에서 제작 가능', cls:'info'},
+  ];
+  if(ctBonus) campRows.push({icon:'⭐', text:'지형 보너스: '+ctBonus, cls:'accent'});
+  if(ct.hasCamp) campRows.push({icon:'✓', text:'이미 설치됨', cls:'info'});
+  d.btnCamp._att={title:'🏕️ 캠프 건설', cost:'AP 8', rows:campRows};
 
+  // 제작
   d.btnCraft.disabled=p.over||!ct.hasCamp;
+  d.btnCraft._att={title:'🔨 제작소', cost:'AP 1~', rows:[
+    {icon:'🏕️', text:'캠프 위치에서만 사용 가능', cls:'info'},
+    {icon:'🛶', text:'뗏목 제작 → 탈출도 +15~30%', cls:'gain'},
+    {icon:'🗡️', text:'도구·무기·장비 제작', cls:'info'},
+  ]};
 
-  // 카드사용 드로우 수 동적 표시
+  // 카드 사용
   const beachCamp=p.camps.some(cp=>p.tiles[cp].id==='beach');
   const drawN=5+(hasTool('rope')?1:0)+(beachCamp?1:0);
   d.btnUse.disabled=p.ap<1||p.over;
   d.btnUse.innerHTML=`✨ 카드 사용 — ${drawN}장 드로우 <span class="apb">AP1</span>`;
+  const useRows=[{icon:'🎴', text:`${drawN}장 드로우`, cls:'gain'}];
+  if(hasTool('rope')) useRows.push({icon:'🪢', text:'밧줄 패시브 +1장', cls:'info'});
+  if(beachCamp)       useRows.push({icon:'🏖️', text:'해변 캠프 +1장', cls:'info'});
+  useRows.push({icon:'🍗', text:'식량·물·약초 즉시 사용 가능', cls:'info'});
+  d.btnUse._att={title:'✨ 카드 사용', cost:'AP 1', rows:useRows};
 
-  // 취침 hover 미리보기
+  // 취침
   const sleepEarly=p.ap>=4;
   const sHpR=sleepEarly?15:9;
   const sSanR=sleepEarly?4:2;
   const sDrain=p.camps.length?2:5;
   const sSanNet=sSanR-sDrain;
   const sEvt=calcSleepEvtChance(sleepEarly);
-  const sDoom=p.doomRate>0?` DOOM+${p.doomRate}%`:p.doomPhase>=4?' DOOM+1~3%':'';
   d.btnSleep.disabled=p.over;
-  d.btnSleep.title=`HP+${sHpR} 정신력${sSanNet>=0?'+':''}${sSanNet} 허기-14 갈증-18${sleepEarly?' 이른취침AP+2':''}${sEvt>0?` 이벤트${sEvt}%`:''}${sDoom}`;
+  const sleepRows=[
+    {icon:'❤️', text:`HP +${sHpR}`, cls:'gain'},
+    {icon:'🧠', text:`정신력 ${sSanNet>=0?'+':''}${sSanNet}`, cls:sSanNet>=0?'gain':'loss'},
+    {icon:'🍗', text:'허기 -14', cls:'loss'},
+    {icon:'💧', text:'갈증 -18', cls:'loss'},
+  ];
+  if(sleepEarly) sleepRows.push({icon:'🌙', text:'이른취침 · AP+2 · 회복↑', cls:'early'});
+  if(sEvt>0)     sleepRows.push({icon:'🎲', text:`취침 이벤트 ${sEvt}%`, cls:'info'});
+  if(p.doomRate>0)      sleepRows.push({icon:'🌫️', text:`DOOM +${p.doomRate}%`, cls:'doom'});
+  else if(p.doomPhase>=4) sleepRows.push({icon:'🌫️', text:'DOOM +1~3%', cls:'doom'});
+  sleepRows.push(...warns);
+  d.btnSleep._att={title:'🌙 취침', cost:'다음 날로', rows:sleepRows};
 }

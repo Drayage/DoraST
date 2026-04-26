@@ -266,6 +266,11 @@
   </div>
 </div>
 
+<!-- ACTION BUTTON TOOLTIP -->
+<div id="att" style="display:none;position:fixed;z-index:650;pointer-events:none;width:210px;">
+  <div class="att-inner"></div>
+</div>
+
 <!-- DECK VIEWER -->
 <div id="dv-mo" class="mo" onclick="if(event.target===this)closeDv()">
   <div id="dv-box" class="mb">
@@ -528,7 +533,9 @@
 <script src="js/combat.js"></script>
 <script src="js/deckviewer.js"></script>
 <script src="js/render.js"></script>
-<script>/* 게임은 타이틀 화면의 startGame()으로 시작 */</script>
+<script>/* 게임은 타이틀 화면의 startGame()으로 시작 */
+initActionTT();
+</script>
 
 </body>
 </html>

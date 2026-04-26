@@ -121,3 +121,47 @@ document.addEventListener('click', e=>{
   const tt=document.getElementById('tt');
   if(tt&&tt.style.display==='block'&&!tt.contains(e.target)) tt.style.display='none';
 });
+
+// ── 액션 버튼 툴팁 ──
+function initActionTT(){
+  ['btn-exp','btn-ga','btn-camp','btn-craft','btn-use','btn-sleep'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('mouseenter', e=>{ if(window.innerWidth>700&&el._att) showActionTT(e.clientX,e.clientY,el._att); });
+    el.addEventListener('mousemove',  e=>{ if(window.innerWidth>700&&el._att) _reposATT(e.clientX,e.clientY); });
+    el.addEventListener('mouseleave', hideActionTT);
+  });
+}
+
+function showActionTT(mx, my, data){
+  const tt=document.getElementById('att');
+  if(!tt) return;
+  let html=`<div class="att-title">${data.title}</div>`;
+  if(data.cost) html+=`<div class="att-cost">${data.cost}</div>`;
+  if(data.rows&&data.rows.length){
+    html+='<div class="att-rows">';
+    data.rows.forEach(r=>{
+      html+=`<div class="att-row ${r.cls||''}"><span class="att-ri">${r.icon||''}</span><span>${r.text}</span></div>`;
+    });
+    html+='</div>';
+  }
+  tt.querySelector('.att-inner').innerHTML=html;
+  tt.style.display='block';
+  _reposATT(mx, my);
+}
+
+function _reposATT(mx, my){
+  const tt=document.getElementById('att');
+  if(!tt||tt.style.display==='none') return;
+  const ttW=210, ttH=tt.offsetHeight||140;
+  let left=mx+16, top=my-ttH/2;
+  if(left+ttW>window.innerWidth-6) left=mx-ttW-12;
+  if(top+ttH>window.innerHeight-6) top=window.innerHeight-ttH-6;
+  top=Math.max(6,top);
+  tt.style.left=left+'px'; tt.style.top=top+'px';
+}
+
+function hideActionTT(){
+  const tt=document.getElementById('att');
+  if(tt) tt.style.display='none';
+}
