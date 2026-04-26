@@ -46,10 +46,9 @@ function doGather(opt, key, rate){
   G.hun-=5; G.thi-=6;
   if(Math.random()*100<rate){
     const n=Math.random()<0.28?2:1;
-    addCard(opt.res, n);
     const d=CARD_MAP[opt.res];
-    log(`🎒 ${opt.label} 성공! ${d?.icon||''}${d?.name||opt.res}×${n} 획득 (AP-3)`,'gather');
-    showItemPopup([{icon:d?.icon||'📦',name:d?.name||opt.res,n}],`🎒 ${opt.label} 성공!`,()=>{
+    log(`🎒 ${opt.label} 성공! ${d?.icon||''}${d?.name||opt.res}×${n} (AP-3)`,'gather');
+    showItemPopup([{id:opt.res,icon:d?.icon||'📦',name:d?.name||opt.res,n}],`🎒 ${opt.label} 성공!`,()=>{
       checkSurvival(); render();
     });
   } else {

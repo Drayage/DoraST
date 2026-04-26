@@ -71,8 +71,10 @@ function flashDamage(){
   setTimeout(()=>el.classList.remove('hit'),180);
 }
 
+// items: [{id, icon, name, n}]  — id 있어야 확인 시 addCard 실행
 function showItemPopup(items, title, cb){
   _itemCb=cb;
+  _pendingItemCards=items;
   document.getElementById('item-title').textContent=title;
   const row=document.getElementById('item-row'); row.innerHTML='';
   items.forEach(({icon,name,n},idx)=>{
@@ -86,6 +88,23 @@ function showItemPopup(items, title, cb){
 
 function confirmItemPopup(){
   document.getElementById('item-mo').style.display='none';
+  if(_pendingItemCards){
+    _pendingItemCards.forEach(({id,n})=>{ if(id) addCard(id,n); });
+    const names=_pendingItemCards.map(({icon,name,n})=>`${icon}${name}×${n}`).join(' ');
+    if(names) log(`📦 획득: ${names}`,'success');
+    _pendingItemCards=null;
+  }
+  const cb=_itemCb; _itemCb=null;
+  if(cb) cb();
+}
+
+function skipItemPopup(){
+  document.getElementById('item-mo').style.display='none';
+  if(_pendingItemCards){
+    const names=_pendingItemCards.map(({icon,name,n})=>`${icon}${name}×${n}`).join(' ');
+    if(names) log(`🚫 포기: ${names}`,'');
+    _pendingItemCards=null;
+  }
   const cb=_itemCb; _itemCb=null;
   if(cb) cb();
 }

@@ -4,7 +4,7 @@ let G={}, CBT={};
 let _dvTab='all', _ttTm=null, _cbtMode=null, _ucHand=[];
 let _mobTab='map';
 const _tabMap={map:'map-col',deck:'ctr-col',stat:'rgt-col',help:'rgt-col'};
-let _pendingItems=null, _itemCb=null;
+let _pendingItems=null, _itemCb=null, _pendingItemCards=null;
 
 function startGame(){
   document.getElementById('title-scr').style.display='none';
@@ -22,7 +22,7 @@ function initGame(){
     over:false, win:false, logs:[], kills:0,
     gatherCnt:{},
   };
-  _pendingItems=null; _itemCb=null;
+  _pendingItems=null; _itemCb=null; _pendingItemCards=null;
   buildDeck(); buildMap();
   document.getElementById('go-scr').style.display='none';
   initMobile();
