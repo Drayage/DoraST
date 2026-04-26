@@ -60,6 +60,15 @@
         <span style="color:var(--accent);">🧍나</span><span style="color:var(--green);">🏕️캠프</span>
       </div>
     </div>
+    <!-- 현재 위치 정보 -->
+    <div id="cur-tile" style="padding:5px 9px;border-top:1px solid var(--border);font-size:9px;font-family:var(--font-m);display:flex;align-items:center;gap:7px;background:var(--bg2);min-height:28px;">
+      <span id="cur-tile-icon" style="font-size:16px;"></span>
+      <div style="flex:1;min-width:0;">
+        <span id="cur-tile-name" style="font-weight:700;color:var(--text);"></span>
+        <span id="cur-tile-status" style="color:var(--text3);margin-left:6px;font-size:8px;"></span>
+      </div>
+      <span id="cur-tile-gather" style="color:var(--text3);font-size:8px;"></span>
+    </div>
     <div id="act-panel">
       <div class="act-grid">
         <button class="btn" id="btn-exp" onclick="doExplore()">🔍 탐색 <span class="apb">AP2</span></button>

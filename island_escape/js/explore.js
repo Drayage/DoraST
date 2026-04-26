@@ -2,7 +2,7 @@
 
 function doExplore(){
   if(G.over) return;
-  if(G.ap<2){log('AP부족 (탐색:AP2)','danger');render();return;}
+  if(G.ap<2){log('AP부족 (탐색:AP2)','');render();return;}
   const t=G.tiles[G.pos];
   if(t.explored){log('이미 탐색한 지역이다.','');return;}
   G.ap-=2; t.explored=true;

@@ -47,6 +47,7 @@ function showTT(c, el){
   const r=el.getBoundingClientRect();
   let left=r.right+8, top=r.top;
   if(left+178>window.innerWidth) left=r.left-178;
+  left=Math.max(4,left);  // 왼쪽 화면 밖 방지
   if(top+280>window.innerHeight) top=window.innerHeight-284;
   tt.style.left=left+'px'; tt.style.top=Math.max(4,top)+'px';
 }

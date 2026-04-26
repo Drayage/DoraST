@@ -376,6 +376,15 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
         <span style="color:var(--accent);">🧍나</span><span style="color:var(--green);">🏕️캠프</span>
       </div>
     </div>
+    <!-- 현재 위치 정보 -->
+    <div id="cur-tile" style="padding:5px 9px;border-top:1px solid var(--border);font-size:9px;font-family:var(--font-m);display:flex;align-items:center;gap:7px;background:var(--bg2);min-height:28px;">
+      <span id="cur-tile-icon" style="font-size:16px;"></span>
+      <div style="flex:1;min-width:0;">
+        <span id="cur-tile-name" style="font-weight:700;color:var(--text);"></span>
+        <span id="cur-tile-status" style="color:var(--text3);margin-left:6px;font-size:8px;"></span>
+      </div>
+      <span id="cur-tile-gather" style="color:var(--text3);font-size:8px;"></span>
+    </div>
     <div id="act-panel">
       <div class="act-grid">
         <button class="btn" id="btn-exp" onclick="doExplore()">🔍 탐색 <span class="apb">AP2</span></button>
@@ -1123,6 +1132,7 @@ function showTT(c, el){
   const r=el.getBoundingClientRect();
   let left=r.right+8, top=r.top;
   if(left+178>window.innerWidth) left=r.left-178;
+  left=Math.max(4,left);  // 왼쪽 화면 밖 방지
   if(top+280>window.innerHeight) top=window.innerHeight-284;
   tt.style.left=left+'px'; tt.style.top=Math.max(4,top)+'px';
 }
@@ -1247,7 +1257,7 @@ function clickTile(i){
 
 function doExplore(){
   if(G.over) return;
-  if(G.ap<2){log('AP부족 (탐색:AP2)','danger');render();return;}
+  if(G.ap<2){log('AP부족 (탐색:AP2)','');render();return;}
   const t=G.tiles[G.pos];
   if(t.explored){log('이미 탐색한 지역이다.','');return;}
   G.ap-=2; t.explored=true;
@@ -1398,14 +1408,14 @@ function closeJdg(){
 function openGather(){
   if(G.over) return;
   const tile=G.tiles[G.pos];
-  if(!tile.explored){log('먼저 탐색을 완료해야 수집할 수 있다.','danger');render();return;}
-  if(G.ap<3){log('AP부족 (수집:AP3)','danger');render();return;}
+  if(!tile.explored){log('먼저 탐색을 완료해야 수집할 수 있다.','');render();return;}
+  if(G.ap<3){log('AP부족 (수집:AP3)','');render();return;}
   const opts=tile.gather||[];
   const cards=allCards();
   const avail=opts.filter(o=>cards.some(c=>c.id===o.tool));
   if(!avail.length){
     const needed=opts.map(o=>CARD_MAP[o.tool]?.name||o.tool).join(', ');
-    log(`수집 장비 없음. 필요: ${needed}`,'danger'); render(); return;
+    log(`수집 장비 없음. 필요: ${needed}`,''); render(); return;
   }
   document.getElementById('ga-title').textContent=`🎒 ${tile.name} 수집활동`;
   document.getElementById('ga-flavor').textContent=tile.flavor||`${tile.name}에서 자원을 수집한다.`;
@@ -1518,7 +1528,7 @@ function renderCraft(){
       <button class="btn" style="${canDo?'border-color:var(--purple);color:var(--purple);':''}" onclick="doCraft('${rec.id}')" ${canDo?'':'disabled'}>
         🔨 제작 (AP${rec.ap})${!ok?' — 재료부족':!hasAP?' — AP부족':''}
       </button>`;
-    if(resultDef){ div.addEventListener('mouseenter',()=>showTT(resultDef,div)); div.addEventListener('mouseleave',hideTT); }
+    if(resultDef&&window.innerWidth>700){ div.addEventListener('mouseenter',()=>showTT(resultDef,div)); div.addEventListener('mouseleave',hideTT); }
     lEl.appendChild(div);
   });
 }
@@ -1526,7 +1536,7 @@ function renderCraft(){
 function doCraft(id){
   const rec=RECIPES.find(r=>r.id===id);
   if(!rec||!canCraft(rec)) return;
-  if(G.ap<rec.ap){log('AP부족','danger');return;}
+  if(G.ap<rec.ap){log('AP부족','');return;}
   G.ap-=rec.ap;
   rec.cost.forEach(c=>rmFromDeck(c.id,c.n));
 
@@ -2100,6 +2110,8 @@ function getDOM(){
     barHp:$('bar-hp'),barSan:$('bar-san'),barHun:$('bar-hun'),barThi:$('bar-thi'),
     svEsc:$('sv-esc'),barEsc:$('bar-esc'),
     campInfo:$('camp-info'),passiveInfo:$('passive-info'),
+    curTileIcon:$('cur-tile-icon'),curTileName:$('cur-tile-name'),
+    curTileStatus:$('cur-tile-status'),curTileGather:$('cur-tile-gather'),
     grid:$('grid'),deckGrid:$('deck-grid'),
     dkTotal:$('dk-total'),dkDeck:$('dk-deck'),dkDisc:$('dk-disc'),
     logMain:$('log-main'),
@@ -2133,6 +2145,14 @@ function render(){
   // 캠프 정보
   d.campInfo.textContent=p.camps.length?`캠프 ${p.camps.length}곳 (제작 가능)`:'캠프 없음 (취침이벤트↑)';
   d.campInfo.style.color=p.camps.length?'var(--green)':'var(--red)';
+
+  // 현재 위치 지형
+  const ct=p.tiles[p.pos];
+  d.curTileIcon.textContent=ct.icon||'❓';
+  d.curTileName.textContent=ct.name||'?';
+  d.curTileStatus.textContent=ct.hasCamp?'🏕️ 캠프':ct.explored?'✓ 탐색완료':'— 미탐색';
+  const gatherTools=ct.gather?.map(o=>CARD_MAP[o.tool]?.icon+CARD_MAP[o.tool]?.name).join(' ');
+  d.curTileGather.textContent=gatherTools?`수집: ${gatherTools}`:'';
 
   // 패시브 목록
   const cards=allCards();

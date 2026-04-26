@@ -47,7 +47,7 @@ function renderCraft(){
       <button class="btn" style="${canDo?'border-color:var(--purple);color:var(--purple);':''}" onclick="doCraft('${rec.id}')" ${canDo?'':'disabled'}>
         🔨 제작 (AP${rec.ap})${!ok?' — 재료부족':!hasAP?' — AP부족':''}
       </button>`;
-    if(resultDef){ div.addEventListener('mouseenter',()=>showTT(resultDef,div)); div.addEventListener('mouseleave',hideTT); }
+    if(resultDef&&window.innerWidth>700){ div.addEventListener('mouseenter',()=>showTT(resultDef,div)); div.addEventListener('mouseleave',hideTT); }
     lEl.appendChild(div);
   });
 }
@@ -55,7 +55,7 @@ function renderCraft(){
 function doCraft(id){
   const rec=RECIPES.find(r=>r.id===id);
   if(!rec||!canCraft(rec)) return;
-  if(G.ap<rec.ap){log('AP부족','danger');return;}
+  if(G.ap<rec.ap){log('AP부족','');return;}
   G.ap-=rec.ap;
   rec.cost.forEach(c=>rmFromDeck(c.id,c.n));
 

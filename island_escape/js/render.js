@@ -12,6 +12,8 @@ function getDOM(){
     barHp:$('bar-hp'),barSan:$('bar-san'),barHun:$('bar-hun'),barThi:$('bar-thi'),
     svEsc:$('sv-esc'),barEsc:$('bar-esc'),
     campInfo:$('camp-info'),passiveInfo:$('passive-info'),
+    curTileIcon:$('cur-tile-icon'),curTileName:$('cur-tile-name'),
+    curTileStatus:$('cur-tile-status'),curTileGather:$('cur-tile-gather'),
     grid:$('grid'),deckGrid:$('deck-grid'),
     dkTotal:$('dk-total'),dkDeck:$('dk-deck'),dkDisc:$('dk-disc'),
     logMain:$('log-main'),
@@ -45,6 +47,14 @@ function render(){
   // 캠프 정보
   d.campInfo.textContent=p.camps.length?`캠프 ${p.camps.length}곳 (제작 가능)`:'캠프 없음 (취침이벤트↑)';
   d.campInfo.style.color=p.camps.length?'var(--green)':'var(--red)';
+
+  // 현재 위치 지형
+  const ct=p.tiles[p.pos];
+  d.curTileIcon.textContent=ct.icon||'❓';
+  d.curTileName.textContent=ct.name||'?';
+  d.curTileStatus.textContent=ct.hasCamp?'🏕️ 캠프':ct.explored?'✓ 탐색완료':'— 미탐색';
+  const gatherTools=ct.gather?.map(o=>CARD_MAP[o.tool]?.icon+CARD_MAP[o.tool]?.name).join(' ');
+  d.curTileGather.textContent=gatherTools?`수집: ${gatherTools}`:'';
 
   // 패시브 목록
   const cards=allCards();

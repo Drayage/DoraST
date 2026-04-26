@@ -3,14 +3,14 @@
 function openGather(){
   if(G.over) return;
   const tile=G.tiles[G.pos];
-  if(!tile.explored){log('먼저 탐색을 완료해야 수집할 수 있다.','danger');render();return;}
-  if(G.ap<3){log('AP부족 (수집:AP3)','danger');render();return;}
+  if(!tile.explored){log('먼저 탐색을 완료해야 수집할 수 있다.','');render();return;}
+  if(G.ap<3){log('AP부족 (수집:AP3)','');render();return;}
   const opts=tile.gather||[];
   const cards=allCards();
   const avail=opts.filter(o=>cards.some(c=>c.id===o.tool));
   if(!avail.length){
     const needed=opts.map(o=>CARD_MAP[o.tool]?.name||o.tool).join(', ');
-    log(`수집 장비 없음. 필요: ${needed}`,'danger'); render(); return;
+    log(`수집 장비 없음. 필요: ${needed}`,''); render(); return;
   }
   document.getElementById('ga-title').textContent=`🎒 ${tile.name} 수집활동`;
   document.getElementById('ga-flavor').textContent=tile.flavor||`${tile.name}에서 자원을 수집한다.`;
