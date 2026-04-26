@@ -64,6 +64,14 @@ function render(){
     } else { campBonusesEl.style.display='none'; }
   }
 
+  // 취침 이벤트 확률 표시
+  const sleepChanceEl=document.getElementById('sleep-evt-chance');
+  if(sleepChanceEl){
+    const chance=calcSleepEvtChance(p.ap>=4);
+    const col=chance<=5?'var(--green)':chance<=20?'var(--accent)':'var(--red)';
+    sleepChanceEl.innerHTML=`취침 이벤트 확률: <span style="color:${col};font-weight:700;">${chance}%</span>${p.ap>=4?' (이른취침)':''}`;
+  }
+
   // 현재 위치 지형
   const ct=p.tiles[p.pos];
   d.curTileIcon.textContent=ct.icon||'❓';

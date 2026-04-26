@@ -457,6 +457,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
         <div class="lbl">캠프 현황</div>
         <div id="camp-info" style="color:var(--text2);">캠프 없음</div>
         <div id="camp-bonuses" style="color:var(--text3);font-size:8px;line-height:1.7;margin-top:2px;white-space:pre;display:none;"></div>
+        <div id="sleep-evt-chance" style="margin-top:4px;font-size:8px;font-family:var(--font-m);"></div>
       </div>
       <div class="info-box">
         <div class="lbl">활성 패시브</div>
@@ -1811,19 +1812,20 @@ function doSleep(){
 }
 
 function calcSleepEvtChance(early){
-  if(early) return 8;
-  let c=15;
+  let c;
   if(!G.camps.length){
-    c+=40;
+    c=early?20:60;
   } else {
     const minD=Math.min(...G.camps.map(cp=>{
       return Math.abs(Math.floor(cp/10)-Math.floor(G.pos/10))+Math.abs((cp%10)-(G.pos%10));
     }));
-    c+=minD*5;
+    if(minD===0)      c=early?2:4;    // 캠프 위에서 취침 — 거의 없음
+    else if(minD===1) c=early?5:12;   // 인접
+    else              c=early?8:15+(minD-2)*7;
   }
   const stN=allCards().filter(c=>c.tag==='status').length;
   c+=stN*6;
-  if(G.hp<40) c+=10; if(G.hun<30) c+=8; if(G.thi<30) c+=8; if(G.ap<=2) c+=5;
+  if(G.hp<40) c+=8; if(G.hun<30) c+=8; if(G.thi<30) c+=8; if(G.ap<=2) c+=4;
   return Math.min(c,95);
 }
 
@@ -2308,6 +2310,14 @@ function render(){
       campBonusesEl.textContent=p.camps.map(cp=>{const t=p.tiles[cp];const b=campBonus(t.id);return `· ${t.icon}${t.name}${b?`: ${b}`:''}`;}).join('\n');
       campBonusesEl.style.display='';
     } else { campBonusesEl.style.display='none'; }
+  }
+
+  // 취침 이벤트 확률 표시
+  const sleepChanceEl=document.getElementById('sleep-evt-chance');
+  if(sleepChanceEl){
+    const chance=calcSleepEvtChance(p.ap>=4);
+    const col=chance<=5?'var(--green)':chance<=20?'var(--accent)':'var(--red)';
+    sleepChanceEl.innerHTML=`취침 이벤트 확률: <span style="color:${col};font-weight:700;">${chance}%</span>${p.ap>=4?' (이른취침)':''}`;
   }
 
   // 현재 위치 지형

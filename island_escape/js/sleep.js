@@ -37,19 +37,20 @@ function doSleep(){
 }
 
 function calcSleepEvtChance(early){
-  if(early) return 8;
-  let c=15;
+  let c;
   if(!G.camps.length){
-    c+=40;
+    c=early?20:60;
   } else {
     const minD=Math.min(...G.camps.map(cp=>{
       return Math.abs(Math.floor(cp/10)-Math.floor(G.pos/10))+Math.abs((cp%10)-(G.pos%10));
     }));
-    c+=minD*5;
+    if(minD===0)      c=early?2:4;    // 캠프 위에서 취침 — 거의 없음
+    else if(minD===1) c=early?5:12;   // 인접
+    else              c=early?8:15+(minD-2)*7;
   }
   const stN=allCards().filter(c=>c.tag==='status').length;
   c+=stN*6;
-  if(G.hp<40) c+=10; if(G.hun<30) c+=8; if(G.thi<30) c+=8; if(G.ap<=2) c+=5;
+  if(G.hp<40) c+=8; if(G.hun<30) c+=8; if(G.thi<30) c+=8; if(G.ap<=2) c+=4;
   return Math.min(c,95);
 }
 
