@@ -2674,12 +2674,17 @@ function drawCombatHand(){ return drawToHand(5); }
 
 // 기습: 첫 라운드 전투카드 1장 보장
 function drawAmbushHand(){
+  // 덱이 비어있으면 먼저 재셔플
+  if(!G.deck.length && G.disc.length){ G.deck=shuffle([...G.disc]); G.disc=[]; }
   const isCbt = c => c.atk>0 || c.tag==='combat';
-  const cbtInDeck = G.deck.filter(isCbt);
-  if(cbtInDeck.length>=1){
-    // 전투카드 1장만 끝에 배치 → pop으로 먼저 뽑힘
-    const pick = cbtInDeck[0];
-    G.deck = [...G.deck.filter(c=>c!==pick), pick];
+  let idx = G.deck.findIndex(isCbt);
+  if(idx===-1){
+    // 덱에 없으면 버림더미에서 꺼내 덱 맨 끝(=pop 우선)에 삽입
+    const di = G.disc.findIndex(isCbt);
+    if(di!==-1){ const [pick]=G.disc.splice(di,1); G.deck.push(pick); }
+  } else {
+    // 덱에 있으면 맨 끝으로 이동
+    const [pick]=G.deck.splice(idx,1); G.deck.push(pick);
   }
   return drawToHand(5);
 }
@@ -2704,7 +2709,7 @@ function showEncounter(evtId){
       <div class="ex-cn">기습 공격</div>
       <div class="ex-cd">선제 공격으로 유리한 위치를 점한다.</div>
       <div style="font-size:8px;margin-top:3px;">
-        <span style="color:var(--green);">★ 첫 라운드 전투카드 2장 이상 보장</span>
+        <span style="color:var(--green);">★ 첫 라운드 전투카드 1장 이상 보장</span>
         <span style="color:var(--red);margin-left:6px;">✗ 도주 시 HP-15</span>
       </div>
     </div>`;
