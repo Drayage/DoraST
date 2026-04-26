@@ -92,6 +92,24 @@ function doJudgment(evt, ch){
       const resEl=document.getElementById('jdg-res');
       resEl.style.display='';
       const lines=[], bonLines=[];
+      // 망각 카드 효과 + 종말 환각
+      if(top&&top.id==='amnesia'){
+        G.san=Math.max(0,G.san-3);
+        flashDamage();
+        bonLines.push('🌀 망각이 판정에 스며들었다. 정신력-3');
+        if(G.doomPhase>=4&&Math.random()<0.35){
+          addCard('amnesia',1);
+          bonLines.push('🌀 환각이 퍼진다: 망각 카드 추가');
+        }
+      }
+      if(G.doomPhase>=4&&G.san<40){
+        const hRate=15+Math.max(0,40-G.san)*0.8;
+        if(Math.random()*100<hRate){
+          addCard('amnesia',1);
+          bonLines.push('🌀 환각: 정체불명의 카드가 손안으로 스며들었다');
+          log('🌀 환각 발동! 망각 카드가 덱에 추가됐다.','danger');
+        }
+      }
       if(isGreat){
         resEl.className='jdg-res great'; resEl.textContent='★ 대성공!';
         applyR(ch.reward,lines); applyR(ch.greatBonus,lines);

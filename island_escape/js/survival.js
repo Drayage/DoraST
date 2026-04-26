@@ -85,8 +85,8 @@ function _endHighlights(win){
   const h=[];
   const explored=G.tiles.filter(t=>t.explored).length;
 
-  if(G.doomSurvives>0)         h.push(`🌟 화산의 불길에서 ${G.doomSurvives}번 살아남았다`);
-  if(G.doomPhase>=3)            h.push('🌋 화산 분화를 두 눈으로 목격했다');
+  if(G.doomSurvives>0)         h.push(`🌀 망각의 복권에서 ${G.doomSurvives}번 살아남았다`);
+  if(G.doomPhase>=3)            h.push('🌫️ 안개가 기억을 삼키는 것을 두 눈으로 목격했다');
   if(G.kills>=5)                h.push(`⚔️ 총 ${G.kills}마리를 쓰러뜨렸다`);
   else if(G.kills===0&&G.day>3) h.push('⚔️ 한 번도 싸우지 않았다 (평화주의?)');
   if(!win&&G.escape>=80)        h.push(`🛶 탈출까지 단 ${100-G.escape}%가 남아있었다`);

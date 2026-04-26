@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>무인도 탈출 v0.2</title>
+<title>망각의 맹그로브 섬 v0.2</title>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
@@ -11,17 +11,17 @@
 
 <!-- TITLE SCREEN -->
 <div id="title-scr">
-  <div class="title-logo">🏝 무인도 탈출</div>
+  <div class="title-logo">🌿 망각의 맹그로브 섬</div>
   <div class="title-sub">Island Escape · v0.2</div>
   <div class="title-story">
-    <span class="ts-head">2025년 봄, 태평양 항해 도중 폭풍을 만났다</span>
-    거대한 파도가 배를 덮쳤고, 탈출 보트조차 소용없었다.<br>
-    정신을 차리자 <b>낯선 모래사장 위</b>에 혼자 쓰러져 있었다.<br><br>
-    사방은 바다. 섬은 작고, 문명의 흔적은 없다.<br>
-    하지만 포기할 수 없다. 어딘가에 <b>탈출의 실마리</b>가 있을 것이다.<br><br>
+    <span class="ts-head">정신을 차렸을 때, 이름조차 떠오르지 않았다</span>
+    습한 공기, 뒤엉킨 뿌리들, 조용히 흐르는 검은 물.<br>
+    여기가 어딘지, 어떻게 왔는지 — 아무것도 기억나지 않는다.<br><br>
+    맹그로브 숲 너머로 바다가 보인다. 섬은 기억을 삼키고,<br>
+    오래 있을수록 <b>안개가 머릿속을 채워간다.</b><br><br>
     <span style="color:var(--text3);font-size:9px;font-family:var(--font-m);">
       탐색하고 · 수집하고 · 제작하라<br>
-      탈출도 100%를 달성하면 구조된다 · DOOM이 100%에 달하면 최후가 찾아온다
+      탈출도 100%를 달성하면 구조된다 · 정신이 무너지기 전에 섬을 떠나라
     </span>
   </div>
   <!-- 덱 구성 선택 -->
@@ -53,7 +53,7 @@
     <div style="color:var(--accent);font-family:var(--font-t);font-size:14px;margin-bottom:10px;">📋 게임 규칙 &amp; 핵심 개념</div>
 
     <b style="color:var(--green);">🎉 승리</b> — 탈출도 100% 달성 시 구조됨.<br>
-    <b style="color:var(--red);">💀 패배</b> — ❤️체력 또는 🧠정신력이 0 / 🌋 화산 복권에서 사망 카드 뽑음.<br>
+    <b style="color:var(--red);">💀 패배</b> — ❤️체력 또는 🧠정신력이 0 / 🌫️ 망각의 복권에서 사망 카드 뽑음.<br>
     <br>
 
     <b style="color:var(--text);">⚙️ 기본 흐름</b><br>
@@ -82,16 +82,17 @@
     도망 가능(HP-8, 망토 보유 시 HP-2). 승리 시 식량+랜덤 보상.<br>
     <br>
 
-    <b style="color:var(--text);">🌋 DOOM (화산 종말)</b><br>
-    1일: 첫 징조 +1% (+2%/일 시작) → 6일: 화산 눈뜸 +15% (+3%/일) → 11일: 마그마 전진 +25% (+4%/일) → 16일: 분화 임박 80%<br>
-    80%+: 매 취침 +1~3% + 체력·정신력 추가 소모. 100% 도달 시 5장 복권 (처음 생존카드 4장, 이후 점점 감소).
+    <b style="color:var(--text);">🌫️ DOOM (망각의 안개)</b><br>
+    1일: 섬의 첫 숨결 +1% (+2%/일) → 6일: 첫 번째 환각 +15% (+3%/일) → 11일: 안개가 기억을 삼킨다 +25% (+4%/일) → 16일: 망각의 심연 80%<br>
+    80%+: 매 취침 정신력 추가 소모 + DOOM 상승. 취침·탐색 중 🌀망각 상태이상 카드가 덱에 침투할 수 있다.<br>
+    100% 도달 시 5장 복권 (처음 생존카드 4장, 이후 점점 감소).
   </div>
   <div class="title-tip">화면 크기에 따라 모바일/PC 레이아웃 자동 전환</div>
 </div>
 
 <!-- HEADER -->
 <div id="hdr">
-  <h1>🏝 무인도 탈출</h1>
+  <h1>🌿 망각의 맹그로브 섬</h1>
   <div class="hs"><span class="lbl">HP</span><span class="val" id="hv-hp">100</span></div>
   <div class="hs"><span class="lbl">정신력</span><span class="val" id="hv-san">100</span></div>
   <div class="hs"><span class="lbl">허기</span><span class="val" id="hv-hun">80</span></div>
@@ -113,7 +114,7 @@
 
   <!-- MAP -->
   <div id="map-col">
-    <div class="col-hdr">🗺 탐색 맵 <span>난파선 섬</span></div>
+    <div class="col-hdr">🗺 탐색 맵 <span>망각의 맹그로브 섬</span></div>
     <div id="map-wrap">
       <div id="grid"></div>
       <div style="margin-top:7px;font-size:8px;color:var(--text3);font-family:var(--font-m);display:flex;gap:7px;flex-wrap:wrap;">
@@ -208,7 +209,7 @@
         <div class="help-row"><b>🌤 날씨</b> — 취침 시 내일 날씨로 변경.<br>
           ☀️맑음/☁️흐림: 효과 없음 · 🌧️폭우: AP-1 · 🔥폭염: 갈증-14 · 🌫️짙은안개: 시야 제한 · ⛈️폭풍: HP-10</div>
         <div class="help-row"><b>🃏 덱 순환</b> — 카드 사용/전투 후 버림더미로 이동. 덱 소진 시 자동 재순환. 취침 시 전체 셔플. 내구도(🔋) 소진 카드는 영구 제거.</div>
-        <div class="help-row"><b>🌋 DOOM (화산 종말)</b> — 스토리 이벤트(1/6/11/16일)로 단계적 증가. 80%+부터 분화 단계: 매 취침 추가 피해+DOOM. 100% 도달 시 5장 복권(생존/사망)으로 생사 결정. 생존해도 다음엔 더 어려워짐.</div>
+        <div class="help-row"><b>🌫️ DOOM (망각의 안개)</b> — 스토리 이벤트(1/6/11/16일)로 단계적 증가. 80%+부터 환각 단계: 매 취침 정신력 추가 소모+DOOM 상승. 취침 중 🌀망각 카드가 덱에 침투, 탐색 판정 시 정신력-3 패널티. 100% 도달 시 5장 복권(생존/사망)으로 생사 결정.</div>
         <div class="help-row"><b>📊 승패 조건</b> — 탈출도 100% 달성 시 탈출 성공. HP·정신력 0 또는 DOOM 100% 도달 시 게임오버.</div>
       </div>
     </div>

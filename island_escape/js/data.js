@@ -104,6 +104,9 @@ const CARDS=[
   {id:'fear',        name:'공포',icon:'😱',tag:'status',atk:-1,def:-1,n:0,desc:'ATK·DEF -1.'},
   {id:'fatigue',     name:'피로',icon:'😴',tag:'status',atk:0, def:-1,n:0,desc:'DEF -1. 취침 AP회복 -2.'},
   {id:'poison_status',name:'중독',icon:'💀',tag:'status',atk:-1,def:0,n:0,desc:'ATK -1. 매 취침 HP -5.'},
+  {id:'amnesia',     name:'망각',icon:'🌀',tag:'status',atk:-1,def:0,n:0,
+   desc:'환각이 현실을 침식한다. 탐색 판정 시 정신력-3. 종말 단계에서 확률로 다시 출현한다.',
+   passiveDesc:'망각: 탐색 판정 시 정신력-3'},
 ];
 
 const ENEMIES={

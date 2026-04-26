@@ -1,36 +1,36 @@
 // ═══════════════ SLEEP ═══════════════
 
-// ── 화산 종말 시나리오 ──
+// ── 망각의 맹그로브 섬 종말 시나리오 ──
 const DOOM_STORY=[
   {phase:0,
-   title:'🌋 불길한 진동',
-   story:'첫 번째 밤, 묵직한 울림이 섬 전체를 흔들었다.\n눈을 떠보니 모래사장에 선명한 균열이 생겨 있었다.\n\n섬 중앙을 바라보니 열기 섞인 연기가 피어오르고 있었다.\n\n이 섬은... 화산섬이었다.',
+   title:'🌫️ 섬의 첫 번째 숨결',
+   story:'첫 번째 밤, 낮고 짙은 안개가 섬 전체를 감쌌다.\n잠에서 깨어보니 방향 감각이 흐릿했다.\n\n맹그로브 뿌리 사이에서 무언가 속삭이는 소리가 들렸다.\n기억인지 환각인지 알 수 없는 그 소리가\n이 섬의 이름을 알려주었다 —\n\n여기는 망각의 맹그로브 섬이다.',
    detail:'종말 진행도 +1% → 이후 매 취침마다 +2% 증가',
    doomAdd:1,rateAfter:2,nextPhase:1},
   {phase:1,minDay:6,
-   title:'🔥 화산의 눈뜸',
-   story:'섬 중앙에서 검은 연기 기둥이 솟구쳤다.\n\n땅이 뜨거워지고, 나무들이 시들어간다.\n발밑에서 열기가 올라오는 게 느껴진다.\n\n화산이 깨어났다. 더 이상 망설일 시간이 없다.',
+   title:'👁 첫 번째 환각',
+   story:'탐색 중 잠시 길을 잃었다.\n방금 지나온 나무가 두 그루였는데, 돌아보니 하나였다.\n\n맹그로브 뿌리가 발목을 감는 것 같은 느낌.\n물 위에 비친 내 얼굴이 조금 낯설었다.\n\n섬이 나를 흡수하려는 건지도 모른다.',
    detail:'종말 진행도 +15% → 이후 매 취침마다 +3% 증가',
    doomAdd:15,rateAfter:3,nextPhase:2},
   {phase:2,minDay:11,
-   title:'🌊 마그마의 전진',
-   story:'동쪽 절벽에서 붉은 마그마가 쏟아져 내렸다.\n해안선의 바닷물이 끓어오르고\n유황 냄새가 폐부를 찌른다.\n\n섬의 절반이 이미 불길에 잠식되고 있다.',
+   title:'🌊 안개가 기억을 삼킨다',
+   story:'3일 전에 탐색한 구역을 다시 걷는 기분이 든다.\n하지만 발자국을 보면 처음 오는 곳이다.\n\n밤이면 누군가의 발소리가 들린다.\n뒤돌아보면 아무도 없다.\n\n이 섬은 방문자의 기억을 먹고 산다.',
    detail:'종말 진행도 +25% → 이후 매 취침마다 +4% 증가',
    doomAdd:25,rateAfter:4,nextPhase:3},
   {phase:3,minDay:16,
-   title:'💥 분화 임박',
-   story:'화산이 폭발했다.\n\n거대한 화염 기둥이 하늘을 찌르고\n화산재가 사방을 뒤덮었다.\n용암이 모든 것을 집어삼키며 흘러온다.\n\n지금 이 순간부터 — 매 순간이 생사의 갈림길이다.',
-   detail:'종말 진행도 → 80% | 종말 단계: 매 취침 회복 감소·추가 피해',
+   title:'🌑 망각의 심연',
+   story:'오늘 아침 내 이름이 기억나지 않았다.\n\n뗏목을 짜던 손이 멈췄다.\n왜 이걸 만들고 있었는지,\n어디로 가야 하는지가\n안개처럼 흩어졌다.\n\n하지만 손은 기억한다. 계속 움직인다.\n몸보다 먼저 탈출을 원하고 있다.',
+   detail:'종말 진행도 → 80% | 망각 단계: 탐색 시 망각 카드 출현 · 정신력 가속 소모',
    doomSet:80,rateAfter:0,nextPhase:4},
 ];
 
 const DOOM_ENDGAME_FL=[
-  {txt:'밤새 용암이 조금 더 가까워졌다. 열기에 잠을 설쳤다.',hpPen:3,sanPen:2},
-  {txt:'화산재가 폐부를 찌른다. 밤새 기침이 멈추지 않았다.',hpPen:5,sanPen:3},
-  {txt:'지열로 인해 잠자리가 뜨거웠다. 충분히 회복하지 못했다.',hpPen:2,sanPen:4},
-  {txt:'폭발음이 귀를 찢었다. 공포에 잠들기 어려웠다.',hpPen:2,sanPen:5},
-  {txt:'용암 전선이 5미터 더 가까워졌다.',hpPen:4,sanPen:2},
-  {txt:'유황 가스가 진동한다. 눈과 목이 따갑다.',hpPen:6,sanPen:1},
+  {txt:'안개 속에서 지나온 길을 잃었다. 한 시간을 헤맸다.',hpPen:1,sanPen:6},
+  {txt:'잠결에 모르는 언어로 중얼거렸다. 깨어나도 기억이 없다.',hpPen:0,sanPen:7},
+  {txt:'맹그로브 나무들이 모두 같은 얼굴로 보인다.',hpPen:2,sanPen:5},
+  {txt:'물 위의 내 그림자가 반대 방향으로 움직였다.',hpPen:1,sanPen:6},
+  {txt:'뗏목에 새긴 날짜가 흐릿해졌다. 오늘이 며칠인지 모른다.',hpPen:0,sanPen:8},
+  {txt:'동이 틀 때까지 맹그로브 뿌리들이 움직이는 소리를 들었다.',hpPen:3,sanPen:4},
 ];
 
 function doSleep(){
@@ -94,20 +94,25 @@ function _processDoom(early){
   // 일일 수동 증가
   if(G.doomRate>0 && G.doomPhase<4) G.doom=Math.min(100,G.doom+G.doomRate);
 
-  // 종말 단계 (80%+)
+  // 망각 단계 (80%+)
   if(G.doomPhase===4){
     const add=1+Math.floor(Math.random()*3);
     G.doom=Math.min(100,G.doom+add);
     const fl=DOOM_ENDGAME_FL[Math.floor(Math.random()*DOOM_ENDGAME_FL.length)];
     G.hp=Math.max(0,G.hp-fl.hpPen); G.san=Math.max(0,G.san-fl.sanPen);
     if(fl.hpPen>0) flashDamage();
-    log(`🌋 ${fl.txt} HP-${fl.hpPen} 정신력-${fl.sanPen} DOOM+${add}(${G.doom}%)`,'danger');
+    // 수면 중 망각 카드 스며들기 (정신력이 낮을수록 확률 증가)
+    if(G.san<50&&Math.random()*100<(40-G.san*0.5)){
+      addCard('amnesia',1);
+      log('🌀 잠결에 환각이 스며들었다. 망각 카드가 덱에 추가됐다.','danger');
+    }
+    log(`🌫️ ${fl.txt} 정신력-${fl.sanPen}${fl.hpPen>0?` HP-${fl.hpPen}`:''}  DOOM+${add}(${G.doom}%)`,'danger');
     if(G.doom>=100){
       checkSurvival(); if(G.over) return;
-      _showDoomModal('🌋 종말 임박',fl.txt+'\n\n종말 진행도가 100%에 도달했다.\n다음 취침부터 생사의 복권이 시작된다.',`DOOM ${G.doom}%`,()=>_afterDoom(early));
+      _showDoomModal('🌫️ 완전한 망각',fl.txt+'\n\n안개가 100%에 도달했다.\n이제 탈출 의지 자체가 흐릿해진다.\n다음 취침부터 생사의 복권이 시작된다.',`DOOM ${G.doom}%`,()=>_afterDoom(early));
       return;
     }
-    _showDoomModal('🌋 종말 진행',fl.txt+`\n\n체력 -${fl.hpPen} · 정신력 -${fl.sanPen}`,`종말 +${add}% → ${G.doom}%`,()=>_afterDoom(early));
+    _showDoomModal('🌫️ 망각의 진행',fl.txt+`\n\n정신력 -${fl.sanPen}${fl.hpPen>0?` · 체력 -${fl.hpPen}`:''}`,`종말 +${add}% → ${G.doom}%`,()=>_afterDoom(early));
     return;
   }
   _afterDoom(early);
@@ -219,11 +224,11 @@ function showDoomLottery(){
   const deck5=shuffle([...Array(survN).fill('survive'),...Array(dieN).fill('death')]);
   document.getElementById('se-ok').textContent='다음날로 →';
   document.getElementById('se-ok').onclick=null;
-  document.getElementById('se-title').textContent='🌋 최후의 불길';
+  document.getElementById('se-title').textContent='🌫️ 망각의 문턱';
   document.getElementById('se-flavor').textContent=
     survN===0
-      ?'돌아올 수 없는 선을 넘었다. 이 불지옥에서 살아남을 방법이 없다.'
-      :'섬이 거의 완전히 용암에 잠겼다. 5장 중 1장을 선택하라.';
+      ?'기억이 모두 사라졌다. 이름도, 고향도, 탈출 이유도 잊었다. 돌아갈 수 없다.'
+      :'안개가 섬을 완전히 삼켰다. 의식이 흐릿하다. 5장 중 1장을 선택하라.';
   document.getElementById('se-hint').textContent=`생존 ${survN}장 · 죽음 ${dieN}장 (${G.doomSurvives}번 생존)`;
   document.getElementById('se-result').textContent='';
   document.getElementById('se-ok').style.display='none';
@@ -250,14 +255,14 @@ function revealDoomLottery(el,type){
     log(`🌟 종말 복권: 생존! (생존카드 ${left}장 남음)`,'success');
     document.getElementById('se-ok').style.display='';
   } else {
-    el.classList.add('sc-bad'); el.textContent='💀';
+    el.classList.add('sc-bad'); el.textContent='🌀';
     resEl.style.color='var(--red)';
-    resEl.textContent='💀 용암이 모든 것을 삼켰다.';
-    log('💀 종말 복권: 사망 — 화산에 의해 최후를 맞이했다.','danger');
-    document.getElementById('se-ok').textContent='게임 오버';
+    resEl.textContent='🌫️ 안개 속으로 사라졌다. 돌아오지 않았다.';
+    log('🌀 망각 복권: 사망 — 섬의 안개에 흡수되어 사라졌다.','danger');
+    document.getElementById('se-ok').textContent='사라지다...';
     document.getElementById('se-ok').onclick=()=>{
       document.getElementById('se-mo').style.display='none';
-      triggerGameOver('🌋 화산 폭발로 인해 섬이 완전히 소멸했습니다.');
+      triggerGameOver('🌫️ 망각의 안개에 흡수되었습니다.');
     };
     document.getElementById('se-ok').style.display='';
   }
