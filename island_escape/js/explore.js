@@ -130,7 +130,7 @@ function applyR(r, lines){
       addCard(r.card,r.n||1);
     }
   }
-  if(r.san)   {G.san=Math.min(100,G.san+r.san);  lines.push(`정신력+${r.san}`);}
+  if(r.san)   {G.san=Math.min(100,Math.max(0,G.san+r.san)); lines.push(r.san>=0?`정신력+${r.san}`:`정신력${r.san}`);}
   if(r.escape){G.escape=Math.min(100,G.escape+r.escape);lines.push(`탈출+${r.escape}%`);}
   if(r.hun)   {G.hun=Math.min(100,G.hun+r.hun);  lines.push(`허기+${r.hun}`);}
   if(r.hp)    {G.hp=Math.min(100,G.hp+r.hp);     lines.push(`HP+${r.hp}`);}

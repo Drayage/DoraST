@@ -91,7 +91,7 @@ function render(){
   p.tiles.forEach((t,i)=>{
     const el=document.createElement('div');
     el.className='tile'
-      +(t.revealed?` revealed ${t.cls}`:t.wasSeen?` seen-fog ${t.cls}`:'fog')
+      +(t.revealed?` revealed ${t.cls}`:t.wasSeen?` seen-fog`:'fog')
       +(i===p.pos?' player':'')
       +(t.hasCamp?' camp-t':'')
       +(t.revealed&&t.explored?' explored':'');

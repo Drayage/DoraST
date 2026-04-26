@@ -14,10 +14,10 @@ const TILE_TYPES=[
    events:['res_metal','res_metal','res_metal','cbt_bat','find_shelter','nothing'],
    gather:[{tool:'pickaxe',res:'metal',label:'채굴',flavor:'곡괭이로 동굴 벽을 캔다.'}]},
   {id:'ruins', name:'폐허',icon:'🏚️',cls:'t-ruins',flavor:'오래된 구조물의 잔해가 흩어져 있다. 무언가 숨겨져 있을 것 같다.',
-   events:['res_metal','find_blueprint','cbt_ghost','res_food','survivor_note'],
+   events:['res_metal','find_blueprint','cbt_ghost','res_food','survivor_note','haunted_spot'],
    gather:[{tool:'torch',res:'metal',label:'유물탐색',flavor:'횃불로 폐허를 샅샅이 뒤진다.'}]},
   {id:'shore', name:'해안',icon:'🌊',cls:'t-shore',flavor:'거친 파도가 해안을 두드린다. 표류물이 밀려와 있다.',
-   events:['res_food','res_metal','find_wreckage','nothing'],
+   events:['res_food','res_metal','find_wreckage','nothing','isolation_dread'],
    gather:[
      {tool:'fishing_rod',res:'food',label:'낚시',flavor:'해안에서 낚싯대로 낚시한다.'},
      {tool:'canteen',res:'water',label:'물 채집',flavor:'물통에 깨끗한 물을 담는다.'},
@@ -122,9 +122,9 @@ const ENEMIES={
     rewardDesc:'식량×1 + (깃털×2 또는 고철×1)',
     penalty:{san:-10,desc:'박쥐떼에 시달려 정신력 -10'}},
   cbt_ghost:{name:'환각존재',icon:'👻',hp:24,atk:10,def:3,
-    reward:{san:20,cards:[{id:'food',n:1}]},
+    reward:{san:12,cards:[{id:'food',n:1}]},
     altCards:[[{id:'shard',n:2}],[{id:'metal',n:2}]],
-    rewardDesc:'정신력+20 + 식량×1 + (파편×2 또는 고철×2)',
+    rewardDesc:'정신력+12 + 식량×1 + (파편×2 또는 고철×2)',
     penalty:{san:-20,desc:'환각에 시달려 정신력 -20'}},
 };
 
@@ -160,9 +160,9 @@ const EVENTS={
   find_shelter:{
     name:'은신처 발견',flavor:'폭풍을 피할 수 있는 작은 동굴 입구가 보인다.',
     choices:[
-      {label:'깊이 탐색한다',icon:'🔦',req:'tool',reward:{san:18,card:'metal',n:1},failPen:{hp:-15},
-       greatCard:'torch',greatBonus:{san:10,ap:2},desc:'도구판정. 성공:정신력+18+고철 / 대성공(횃불):+정신력+10+AP×2 / 실패:HP-15'},
-      {label:'입구만 살핀다',icon:'👁️',req:null,reward:{san:8},desc:'무조건. 정신력+8.'},
+      {label:'깊이 탐색한다',icon:'🔦',req:'tool',reward:{san:10,card:'metal',n:1},failPen:{hp:-15},
+       greatCard:'torch',greatBonus:{san:8,ap:2},desc:'도구판정. 성공:정신력+10+고철 / 대성공(횃불):+정신력+8+AP×2 / 실패:HP-15'},
+      {label:'입구만 살핀다',icon:'👁️',req:null,reward:{san:5},desc:'무조건. 정신력+5.'},
     ]},
   find_blueprint:{
     name:'탈출 설계도!',flavor:'낡은 상자 안에 뭔가 적힌 종이가 보인다.',
@@ -207,16 +207,37 @@ const EVENTS={
        reward:{},
        desc:'무조건. 빈손. 안전.'},
     ]},
+  haunted_spot:{
+    name:'으스스한 기운',flavor:'이 폐허에서 무언가를 강하게 느꼈다. 환각인지 현실인지 경계가 흐려지기 시작한다.',
+    choices:[
+      {label:'정신을 다잡고 탐색한다',icon:'🔦',req:'tool',
+       reward:{card:'metal',n:1},failPen:{san:-18},
+       greatCard:'torch',greatBonus:{san:10,escape:5},
+       desc:'도구판정. 성공:고철×1 / 대성공(횃불):정신력+10+탈출+5% / 실패:정신력-18'},
+      {label:'이 곳을 빨리 벗어난다',icon:'🏃',req:null,
+       reward:{san:-6},
+       desc:'무조건. 황급히 벗어나지만 정신력-6.'},
+    ]},
+  isolation_dread:{
+    name:'극도의 고립감',flavor:'수평선을 바라보다 아무도 없다는 사실이 갑자기 절망적으로 느껴진다.',
+    choices:[
+      {label:'탈출을 생각하며 버틴다',icon:'🌊',req:'resource',
+       reward:{san:8,escape:5},failPen:{san:-15},
+       desc:'자원판정. 성공:정신력+8+탈출+5% / 실패:정신력-15'},
+      {label:'그냥 눈을 감는다',icon:'😔',req:null,
+       reward:{san:-5},
+       desc:'무조건. 체념하며 버틴다. 정신력-5.'},
+    ]},
   old_fire:{
     name:'꺼진 모닥불 흔적',flavor:'누군가 야영했던 자리다. 숯불 주위에 쓸만한 것이 남아있을지도 모른다.',
     choices:[
       {label:'재와 주변을 뒤진다',icon:'🔥',req:'resource',
-       reward:{card:'wood',n:2,san:8},failPen:{hun:-10},
+       reward:{card:'wood',n:2,san:5},failPen:{hun:-10},
        greatCard:'axe',greatBonus:{card:'wood',n:1,ap:1},
-       desc:'자원판정. 성공:목재×2+정신력+8 / 대성공(도끼):+목재+AP환급 / 실패:허기-10'},
+       desc:'자원판정. 성공:목재×2+정신력+5 / 대성공(도끼):+목재+AP환급 / 실패:허기-10'},
       {label:'불을 다시 피운다',icon:'🕯️',req:null,
-       reward:{san:14},
-       desc:'무조건. 따뜻한 불로 정신력+14 회복.'},
+       reward:{san:8},
+       desc:'무조건. 따뜻한 불로 정신력+8 회복.'},
     ]},
 };
 

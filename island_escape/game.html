@@ -52,8 +52,9 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 #grid{display:grid;grid-template-columns:repeat(10,29px);gap:2px;}
 .tile{width:29px;height:29px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;border:1px solid transparent;transition:all .1s;position:relative;user-select:none;}
 .tile.fog{background:#0d1420;cursor:default;}.tile.fog::after{content:'▓';color:#1e2d40;font-size:9px;}
-.tile.seen-fog{background:#161820;border-color:#222428;cursor:default;}
-.tile.seen-fog:hover{transform:none!important;border-color:#222428!important;}
+.tile.seen-fog{background:#10131a;border-color:#1a1f28;cursor:default;filter:grayscale(50%);}
+.tile.seen-fog::after{content:'░';color:#1e2438;font-size:10px;position:absolute;}
+.tile.seen-fog:hover{transform:none!important;border-color:#1a1f28!important;}
 .tile:not(.fog):hover{border-color:var(--border2);transform:scale(1.1);z-index:2;}
 .tile.player{border-color:var(--accent)!important;border-width:2px;box-shadow:0 0 7px rgba(232,184,75,.4);}
 .tile.camp-t{box-shadow:inset 0 0 5px rgba(76,175,125,.3);}
@@ -495,7 +496,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
         <div class="help-row"><b>🏕️ 캠프 건설 (AP8)</b> — 현재 타일에 캠프 설치. 제작 가능 + 취침 이벤트 확률 대폭 감소. 지형 보너스:<br>🌲숲: 식량 자동생성 · 🌊해안: 물 자동생성 · 🪨동굴: 정신력+5 · 🏖️해변: 카드사용 드로우+1 · 🏚️폐허: AP+1</div>
         <div class="help-row"><b>🔨 제작 (AP1~)</b> — 캠프 위치에서만 사용 가능. 재료 소모해 도구·장비 제작. 뗏목 제작(AP14+재료) → 탈출도 +15~30%.</div>
         <div class="help-row"><b>✨ 카드 사용 (AP1)</b> — 덱에서 5장 드로우. 식량(허기+22)/물(갈증+28)/약초(HP+10) 즉시 사용. 🪢밧줄 보유 시 +1장, 🏖️해변 캠프 시 +1장.</div>
-        <div class="help-row"><b>🌙 취침</b> — 다음날로 이동. 허기-14·갈증-18 소모. HP·정신력 회복. 덱 전체 셔플(버림더미 포함). AP4↑ 남기고 자면 <b>이른 취침</b>: 회복 추가+AP+2.<br>취침 이벤트 확률: 캠프 위=2~4% · 캠프 인접=5~12% · 캠프 없음=20~60%+</div>
+        <div class="help-row"><b>🌙 취침</b> — 다음날로 이동. 허기-14·갈증-18 소모. HP 회복. 덱 전체 셔플. AP4↑ 남기고 자면 <b>이른 취침</b>: HP 추가 회복+AP+2.<br>정신력: 회복되지만 고립감으로 매일 소모(캠프 없음 -5/있음 -2). 🪨동굴 캠프(취침+5) 유지 권장.<br>취침 이벤트 확률: 캠프 위=2~4% · 캠프 인접=5~12% · 캠프 없음=20~60%+</div>
         <div class="help-row"><b>⚔️ 전투</b> — 탐색 중 적 조우 시 자동 시작. 카드를 공격/방어에 배정 후 라운드 해결. 도망 가능(HP-8, 망토 보유 시 HP-2). 승리 시 식량+랜덤 보상.</div>
         <div class="help-row"><b>🃏 덱 순환</b> — 카드 사용/전투 후 버림더미로 이동. 덱 소진 시 자동 재순환. 취침 시 전체 셔플. 내구도(🔋) 소진 카드는 영구 제거.</div>
         <div class="help-row"><b>☠️ DOOM</b> — 매일 취침 시 증가 (초반 +2/일, 6일 이후 최대 +12/일). HP·정신력 낮거나 상태이상 많을수록 취침 이벤트 확률 ↑.</div>
@@ -743,10 +744,10 @@ const TILE_TYPES=[
    events:['res_metal','res_metal','res_metal','cbt_bat','find_shelter','nothing'],
    gather:[{tool:'pickaxe',res:'metal',label:'채굴',flavor:'곡괭이로 동굴 벽을 캔다.'}]},
   {id:'ruins', name:'폐허',icon:'🏚️',cls:'t-ruins',flavor:'오래된 구조물의 잔해가 흩어져 있다. 무언가 숨겨져 있을 것 같다.',
-   events:['res_metal','find_blueprint','cbt_ghost','res_food','survivor_note'],
+   events:['res_metal','find_blueprint','cbt_ghost','res_food','survivor_note','haunted_spot'],
    gather:[{tool:'torch',res:'metal',label:'유물탐색',flavor:'횃불로 폐허를 샅샅이 뒤진다.'}]},
   {id:'shore', name:'해안',icon:'🌊',cls:'t-shore',flavor:'거친 파도가 해안을 두드린다. 표류물이 밀려와 있다.',
-   events:['res_food','res_metal','find_wreckage','nothing'],
+   events:['res_food','res_metal','find_wreckage','nothing','isolation_dread'],
    gather:[
      {tool:'fishing_rod',res:'food',label:'낚시',flavor:'해안에서 낚싯대로 낚시한다.'},
      {tool:'canteen',res:'water',label:'물 채집',flavor:'물통에 깨끗한 물을 담는다.'},
@@ -851,9 +852,9 @@ const ENEMIES={
     rewardDesc:'식량×1 + (깃털×2 또는 고철×1)',
     penalty:{san:-10,desc:'박쥐떼에 시달려 정신력 -10'}},
   cbt_ghost:{name:'환각존재',icon:'👻',hp:24,atk:10,def:3,
-    reward:{san:20,cards:[{id:'food',n:1}]},
+    reward:{san:12,cards:[{id:'food',n:1}]},
     altCards:[[{id:'shard',n:2}],[{id:'metal',n:2}]],
-    rewardDesc:'정신력+20 + 식량×1 + (파편×2 또는 고철×2)',
+    rewardDesc:'정신력+12 + 식량×1 + (파편×2 또는 고철×2)',
     penalty:{san:-20,desc:'환각에 시달려 정신력 -20'}},
 };
 
@@ -889,9 +890,9 @@ const EVENTS={
   find_shelter:{
     name:'은신처 발견',flavor:'폭풍을 피할 수 있는 작은 동굴 입구가 보인다.',
     choices:[
-      {label:'깊이 탐색한다',icon:'🔦',req:'tool',reward:{san:18,card:'metal',n:1},failPen:{hp:-15},
-       greatCard:'torch',greatBonus:{san:10,ap:2},desc:'도구판정. 성공:정신력+18+고철 / 대성공(횃불):+정신력+10+AP×2 / 실패:HP-15'},
-      {label:'입구만 살핀다',icon:'👁️',req:null,reward:{san:8},desc:'무조건. 정신력+8.'},
+      {label:'깊이 탐색한다',icon:'🔦',req:'tool',reward:{san:10,card:'metal',n:1},failPen:{hp:-15},
+       greatCard:'torch',greatBonus:{san:8,ap:2},desc:'도구판정. 성공:정신력+10+고철 / 대성공(횃불):+정신력+8+AP×2 / 실패:HP-15'},
+      {label:'입구만 살핀다',icon:'👁️',req:null,reward:{san:5},desc:'무조건. 정신력+5.'},
     ]},
   find_blueprint:{
     name:'탈출 설계도!',flavor:'낡은 상자 안에 뭔가 적힌 종이가 보인다.',
@@ -936,16 +937,37 @@ const EVENTS={
        reward:{},
        desc:'무조건. 빈손. 안전.'},
     ]},
+  haunted_spot:{
+    name:'으스스한 기운',flavor:'이 폐허에서 무언가를 강하게 느꼈다. 환각인지 현실인지 경계가 흐려지기 시작한다.',
+    choices:[
+      {label:'정신을 다잡고 탐색한다',icon:'🔦',req:'tool',
+       reward:{card:'metal',n:1},failPen:{san:-18},
+       greatCard:'torch',greatBonus:{san:10,escape:5},
+       desc:'도구판정. 성공:고철×1 / 대성공(횃불):정신력+10+탈출+5% / 실패:정신력-18'},
+      {label:'이 곳을 빨리 벗어난다',icon:'🏃',req:null,
+       reward:{san:-6},
+       desc:'무조건. 황급히 벗어나지만 정신력-6.'},
+    ]},
+  isolation_dread:{
+    name:'극도의 고립감',flavor:'수평선을 바라보다 아무도 없다는 사실이 갑자기 절망적으로 느껴진다.',
+    choices:[
+      {label:'탈출을 생각하며 버틴다',icon:'🌊',req:'resource',
+       reward:{san:8,escape:5},failPen:{san:-15},
+       desc:'자원판정. 성공:정신력+8+탈출+5% / 실패:정신력-15'},
+      {label:'그냥 눈을 감는다',icon:'😔',req:null,
+       reward:{san:-5},
+       desc:'무조건. 체념하며 버틴다. 정신력-5.'},
+    ]},
   old_fire:{
     name:'꺼진 모닥불 흔적',flavor:'누군가 야영했던 자리다. 숯불 주위에 쓸만한 것이 남아있을지도 모른다.',
     choices:[
       {label:'재와 주변을 뒤진다',icon:'🔥',req:'resource',
-       reward:{card:'wood',n:2,san:8},failPen:{hun:-10},
+       reward:{card:'wood',n:2,san:5},failPen:{hun:-10},
        greatCard:'axe',greatBonus:{card:'wood',n:1,ap:1},
-       desc:'자원판정. 성공:목재×2+정신력+8 / 대성공(도끼):+목재+AP환급 / 실패:허기-10'},
+       desc:'자원판정. 성공:목재×2+정신력+5 / 대성공(도끼):+목재+AP환급 / 실패:허기-10'},
       {label:'불을 다시 피운다',icon:'🕯️',req:null,
-       reward:{san:14},
-       desc:'무조건. 따뜻한 불로 정신력+14 회복.'},
+       reward:{san:8},
+       desc:'무조건. 따뜻한 불로 정신력+8 회복.'},
     ]},
 };
 
@@ -1497,7 +1519,7 @@ function applyR(r, lines){
       addCard(r.card,r.n||1);
     }
   }
-  if(r.san)   {G.san=Math.min(100,G.san+r.san);  lines.push(`정신력+${r.san}`);}
+  if(r.san)   {G.san=Math.min(100,Math.max(0,G.san+r.san)); lines.push(r.san>=0?`정신력+${r.san}`:`정신력${r.san}`);}
   if(r.escape){G.escape=Math.min(100,G.escape+r.escape);lines.push(`탈출+${r.escape}%`);}
   if(r.hun)   {G.hun=Math.min(100,G.hun+r.hun);  lines.push(`허기+${r.hun}`);}
   if(r.hp)    {G.hp=Math.min(100,G.hp+r.hp);     lines.push(`HP+${r.hp}`);}
@@ -1801,7 +1823,7 @@ function doSleep(){
   G.day++;
   const doomInc=G.day>5?Math.min(12,G.day-3):2;
   G.doom+=doomInc;
-  let hpR=early?15:9, sanR=early?11:6;
+  let hpR=early?15:9, sanR=early?4:2;
   G.camps.forEach(cp=>{
     const t=G.tiles[cp];
     if(t.id==='cave')   { sanR+=5; }
@@ -1813,20 +1835,28 @@ function doSleep(){
   G.hun=Math.max(0,G.hun-14); G.thi=Math.max(0,G.thi-18);
   const poisonN=allCards().filter(c=>c.id==='poison_status').length;
   if(poisonN>0){ G.hp=Math.max(0,G.hp-5*poisonN); log(`☠️ 중독 피해: HP-${5*poisonN}`,'danger'); }
-  G.hp=Math.min(100,G.hp+hpR); G.san=Math.min(100,G.san+sanR);
+  G.hp=Math.min(100,G.hp+hpR);
+  const sanDrain=G.camps.length?2:5;
+  G.san=Math.min(100,Math.max(0,G.san+sanR-sanDrain));
   const bonAP=early?2:0;
   G.weather=G.tomorrow;
   G.tomorrow=WEATHER[Math.floor(Math.random()*WEATHER.length)];
   G.ap=Math.max(1,G.maxAP+bonAP-fatigueN*2);
   applyWeather();
   if(G.day>5){
-    const fog=G.tiles.filter((t,i)=>t.revealed&&!t.hasCamp&&i!==G.pos);
+    const fog=G.tiles.filter((t,i)=>{
+      if(!t.revealed||t.hasCamp||i===G.pos) return false;
+      const dr=Math.abs(Math.floor(i/10)-Math.floor(G.pos/10));
+      const dc=Math.abs((i%10)-(G.pos%10));
+      return dr+dc>1;
+    });
     const n=Math.floor(fog.length*.08);
     for(let i=0;i<n;i++){const idx=Math.floor(Math.random()*fog.length);const ti=G.tiles.indexOf(fog[idx]);if(ti>=0){G.tiles[ti].wasSeen=true;G.tiles[ti].revealed=false;}fog.splice(idx,1);}
   }
   // 덱 전체 셔플 (버림더미 합산)
   G.deck=shuffle(G.deck.concat(G.disc)); G.disc=[];
-  log(`🌙 ${G.day-1}일→${G.day}일. HP+${hpR} 정신력+${sanR}${bonAP?` 이른취침AP+${bonAP}`:''}${fatigueN?` 피로AP-${fatigueN*2}`:''} | ☠️DOOM+${doomInc}(${Math.min(100,G.doom)}%)`, 'important');
+  const sanNet=sanR-sanDrain;
+  log(`🌙 ${G.day-1}일→${G.day}일. HP+${hpR} 정신력${sanNet>=0?'+':''}${sanNet}(회복${sanR}-고립${sanDrain})${bonAP?` 이른취침AP+${bonAP}`:''}${fatigueN?` 피로AP-${fatigueN*2}`:''} | ☠️DOOM+${doomInc}(${Math.min(100,G.doom)}%)`, 'important');
   if(Math.random()*100<calcSleepEvtChance(early)){
     showSleepEvt();
   } else {
@@ -2362,7 +2392,7 @@ function render(){
   p.tiles.forEach((t,i)=>{
     const el=document.createElement('div');
     el.className='tile'
-      +(t.revealed?` revealed ${t.cls}`:t.wasSeen?` seen-fog ${t.cls}`:'fog')
+      +(t.revealed?` revealed ${t.cls}`:t.wasSeen?` seen-fog`:'fog')
       +(i===p.pos?' player':'')
       +(t.hasCamp?' camp-t':'')
       +(t.revealed&&t.explored?' explored':'');

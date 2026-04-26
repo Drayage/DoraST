@@ -6,7 +6,7 @@ function doSleep(){
   G.day++;
   const doomInc=G.day>5?Math.min(12,G.day-3):2;
   G.doom+=doomInc;
-  let hpR=early?15:9, sanR=early?11:6;
+  let hpR=early?15:9, sanR=early?4:2;
   G.camps.forEach(cp=>{
     const t=G.tiles[cp];
     if(t.id==='cave')   { sanR+=5; }
@@ -18,20 +18,28 @@ function doSleep(){
   G.hun=Math.max(0,G.hun-14); G.thi=Math.max(0,G.thi-18);
   const poisonN=allCards().filter(c=>c.id==='poison_status').length;
   if(poisonN>0){ G.hp=Math.max(0,G.hp-5*poisonN); log(`☠️ 중독 피해: HP-${5*poisonN}`,'danger'); }
-  G.hp=Math.min(100,G.hp+hpR); G.san=Math.min(100,G.san+sanR);
+  G.hp=Math.min(100,G.hp+hpR);
+  const sanDrain=G.camps.length?2:5;
+  G.san=Math.min(100,Math.max(0,G.san+sanR-sanDrain));
   const bonAP=early?2:0;
   G.weather=G.tomorrow;
   G.tomorrow=WEATHER[Math.floor(Math.random()*WEATHER.length)];
   G.ap=Math.max(1,G.maxAP+bonAP-fatigueN*2);
   applyWeather();
   if(G.day>5){
-    const fog=G.tiles.filter((t,i)=>t.revealed&&!t.hasCamp&&i!==G.pos);
+    const fog=G.tiles.filter((t,i)=>{
+      if(!t.revealed||t.hasCamp||i===G.pos) return false;
+      const dr=Math.abs(Math.floor(i/10)-Math.floor(G.pos/10));
+      const dc=Math.abs((i%10)-(G.pos%10));
+      return dr+dc>1;
+    });
     const n=Math.floor(fog.length*.08);
     for(let i=0;i<n;i++){const idx=Math.floor(Math.random()*fog.length);const ti=G.tiles.indexOf(fog[idx]);if(ti>=0){G.tiles[ti].wasSeen=true;G.tiles[ti].revealed=false;}fog.splice(idx,1);}
   }
   // 덱 전체 셔플 (버림더미 합산)
   G.deck=shuffle(G.deck.concat(G.disc)); G.disc=[];
-  log(`🌙 ${G.day-1}일→${G.day}일. HP+${hpR} 정신력+${sanR}${bonAP?` 이른취침AP+${bonAP}`:''}${fatigueN?` 피로AP-${fatigueN*2}`:''} | ☠️DOOM+${doomInc}(${Math.min(100,G.doom)}%)`, 'important');
+  const sanNet=sanR-sanDrain;
+  log(`🌙 ${G.day-1}일→${G.day}일. HP+${hpR} 정신력${sanNet>=0?'+':''}${sanNet}(회복${sanR}-고립${sanDrain})${bonAP?` 이른취침AP+${bonAP}`:''}${fatigueN?` 피로AP-${fatigueN*2}`:''} | ☠️DOOM+${doomInc}(${Math.min(100,G.doom)}%)`, 'important');
   if(Math.random()*100<calcSleepEvtChance(early)){
     showSleepEvt();
   } else {
