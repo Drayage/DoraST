@@ -138,6 +138,9 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .tt-consumable{color:var(--red);background:rgba(224,80,80,.1);border:1px solid rgba(224,80,80,.18);}
 
 /* ══ TILE TOOLTIP ══ */
+#mob-log-strip{display:none;padding:3px 9px;border-top:1px solid var(--border);background:var(--bg);font-size:9px;font-family:var(--font-m);max-height:42px;overflow:hidden;}
+.mls-entry{padding:1px 0;line-height:1.45;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text2);}
+.mls-entry.gain{color:var(--green);}.mls-entry.loss{color:var(--red);}.mls-entry.danger{color:var(--red);}.mls-entry.system{color:var(--accent);}
 #tile-tt{display:none;position:fixed;z-index:600;pointer-events:none;}
 .ttt-inner{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,.8);min-width:140px;animation:ttPop .1s ease-out;}
 .ttt-head{display:flex;align-items:center;gap:8px;padding:8px 11px 6px;border-bottom:1px solid var(--border);}
@@ -311,6 +314,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   #map-col.mob-active,#ctr-col.mob-active,#rgt-col.mob-active{display:flex;}
   #mob-tabs{display:grid;}
   #grid{grid-template-columns:repeat(7,calc((100vw - 20px)/7));gap:2px;}
+  #mob-log-strip{display:block;}
   .tile{width:calc((100vw - 20px)/7);height:calc((100vw - 20px)/7);font-size:15px;border-radius:4px;}
   .act-grid{grid-template-columns:1fr 1fr;gap:4px;}
   .btn{font-size:12px;padding:10px 8px;border-radius:7px;justify-content:center;}
@@ -514,6 +518,8 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
       </div>
     </div>
     <!-- 현재 위치 정보 -->
+    <!-- 모바일 미니 로그 -->
+    <div id="mob-log-strip"></div>
     <div id="cur-tile" style="padding:5px 9px;border-top:1px solid var(--border);font-size:9px;font-family:var(--font-m);display:flex;align-items:center;gap:7px;background:var(--bg2);min-height:28px;">
       <span id="cur-tile-icon" style="font-size:16px;"></span>
       <div style="flex:1;min-width:0;">
@@ -3230,6 +3236,10 @@ function render(){
   // 로그
   d.logMain.innerHTML=
     p.logs.slice(0,25).map(l=>`<div class="le ${l.type||''}">${l.msg}</div>`).join('');
+
+  // 모바일 미니 로그 (최근 2줄)
+  const mlsEl=document.getElementById('mob-log-strip');
+  if(mlsEl) mlsEl.innerHTML=p.logs.slice(0,2).map(l=>`<div class="mls-entry ${l.type||''}">${l.msg}</div>`).join('');
 
   // 버튼 활성화 + 액션 툴팁 데이터
   const warns=[];

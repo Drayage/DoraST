@@ -137,6 +137,10 @@ function render(){
   d.logMain.innerHTML=
     p.logs.slice(0,25).map(l=>`<div class="le ${l.type||''}">${l.msg}</div>`).join('');
 
+  // 모바일 미니 로그 (최근 2줄)
+  const mlsEl=document.getElementById('mob-log-strip');
+  if(mlsEl) mlsEl.innerHTML=p.logs.slice(0,2).map(l=>`<div class="mls-entry ${l.type||''}">${l.msg}</div>`).join('');
+
   // 버튼 활성화 + 액션 툴팁 데이터
   const warns=[];
   if(p.hp<=20)  warns.push({icon:'❤️', text:'체력 위험', cls:'warn'});
