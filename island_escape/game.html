@@ -344,6 +344,16 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .item-card-n{font-size:15px;font-weight:700;color:var(--green);font-family:var(--font-m);}
 @keyframes itemPop{from{transform:scale(0.4) translateY(8px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
 
+/* ══ ISLAND INTRO ══ */
+#island-intro-mo{z-index:280;background:rgba(0,0,0,.88);}
+#ii-box{width:520px;max-width:94vw;background:linear-gradient(160deg,#08111a,#0d1e2e);border:1px solid var(--border2);border-radius:18px;padding:32px 28px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 0 60px rgba(76,175,125,.12);}
+.ii-icon{font-size:64px;animation:iiFloat 3s ease-in-out infinite alternate;display:block;}
+.ii-name{font-family:var(--font-t);font-size:26px;color:var(--accent);text-shadow:0 0 24px rgba(232,184,75,.4);}
+.ii-sub{font-size:10px;color:var(--text3);font-family:var(--font-m);letter-spacing:.2em;text-transform:uppercase;}
+.ii-story{font-size:11px;color:var(--text2);line-height:2.1;white-space:pre-line;background:var(--bg3);border-left:3px solid var(--green2);border-radius:5px;padding:14px 16px;text-align:left;width:100%;}
+.ii-mech{font-size:10px;color:var(--accent);font-family:var(--font-m);background:rgba(232,184,75,.06);border:1px solid rgba(232,184,75,.18);border-radius:7px;padding:11px 14px;line-height:1.9;width:100%;white-space:pre-line;text-align:left;}
+@keyframes iiFloat{from{transform:translateY(0) scale(1)}to{transform:translateY(-8px) scale(1.06)}}
+
 /* ══ HELP SECTION ══ */
 .help-section{margin-top:12px;border-top:1px solid var(--border);padding-top:10px;}
 .help-h{font-family:var(--font-t);font-size:13px;color:var(--accent);margin-bottom:8px;}
@@ -356,17 +366,17 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 
 <!-- TITLE SCREEN -->
 <div id="title-scr">
-  <div class="title-logo">🌿 망각의 맹그로브 섬</div>
+  <div class="title-logo">🏝 무인도 탈출</div>
   <div class="title-sub">Island Escape · v0.2</div>
   <div class="title-story">
-    <span class="ts-head">정신을 차렸을 때, 이름조차 떠오르지 않았다</span>
-    습한 공기, 뒤엉킨 뿌리들, 조용히 흐르는 검은 물.<br>
-    여기가 어딘지, 어떻게 왔는지 — 아무것도 기억나지 않는다.<br><br>
-    맹그로브 숲 너머로 바다가 보인다. 섬은 기억을 삼키고,<br>
-    오래 있을수록 <b>안개가 머릿속을 채워간다.</b><br><br>
+    <span class="ts-head">어딘가의 섬에 혼자다</span>
+    낯선 땅, 낯선 하늘. 여기가 어딘지는 모른다.<br>
+    중요한 건 하나 — <b>살아서 탈출하는 것.</b><br><br>
+    탐색하고, 수집하고, 도구를 만들어라.<br>
+    섬마다 다른 위협이 기다린다. <b>준비된 자만이 돌아간다.</b><br><br>
     <span style="color:var(--text3);font-size:9px;font-family:var(--font-m);">
-      탐색하고 · 수집하고 · 제작하라<br>
-      탈출도 100%를 달성하면 구조된다 · 정신이 무너지기 전에 섬을 떠나라
+      탈출도 100% 달성 → 구조 · HP·정신력 0 또는 DOOM 100% → 게임오버<br>
+      탐색 → 캠프 → 제작 → 수집 → 탈출
     </span>
   </div>
   <!-- 덱 구성 선택 -->
@@ -437,7 +447,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 
 <!-- HEADER -->
 <div id="hdr">
-  <h1>🌿 망각의 맹그로브 섬</h1>
+  <h1 id="hdr-title">🏝 무인도 탈출</h1>
   <div class="hs"><span class="lbl">HP</span><span class="val" id="hv-hp">100</span></div>
   <div class="hs"><span class="lbl">정신력</span><span class="val" id="hv-san">100</span></div>
   <div class="hs"><span class="lbl">허기</span><span class="val" id="hv-hun">80</span></div>
@@ -459,7 +469,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 
   <!-- MAP -->
   <div id="map-col">
-    <div class="col-hdr">🗺 탐색 맵 <span>망각의 맹그로브 섬</span></div>
+    <div class="col-hdr">🗺 탐색 맵 <span id="map-island-name">—</span></div>
     <div id="map-wrap">
       <div id="grid"></div>
       <div style="margin-top:7px;font-size:8px;color:var(--text3);font-family:var(--font-m);display:flex;gap:7px;flex-wrap:wrap;">
@@ -827,6 +837,18 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 <!-- DAMAGE FX -->
 <div id="dmg-fx"></div>
 
+<!-- ISLAND INTRO (게임 시작 시 섬별 인트로 팝업) -->
+<div id="island-intro-mo" class="mo" style="display:none;">
+  <div id="ii-box">
+    <div class="ii-icon" id="ii-icon">🌿</div>
+    <div class="ii-name" id="ii-name"></div>
+    <div class="ii-sub" id="ii-sub"></div>
+    <div class="ii-story" id="ii-story"></div>
+    <div class="ii-mech" id="ii-mech"></div>
+    <button class="btn primary" style="font-size:13px;padding:11px 32px;margin-top:4px;" onclick="document.getElementById('island-intro-mo').style.display='none'">탈출을 시작하라 →</button>
+  </div>
+</div>
+
 <!-- GAMEOVER / ENDING (내용은 showEnding()으로 동적 생성) -->
 <div id="go-scr"></div>
 
@@ -1112,6 +1134,21 @@ const RECIPES=[
 // O(1) 카드 조회 맵 — CARDS.find() 대신 CARD_MAP[id] 사용
 const CARD_MAP = Object.fromEntries(CARDS.map(c=>[c.id,c]));
 
+// ─── 섬 정의 ───────────────────────────────────────────
+// 향후 섬 추가 시 여기에 객체 추가 (id, name, icon, subtitle, story, mechanic, doomName, startLog)
+const ISLANDS = {
+  mangrove: {
+    id: 'mangrove',
+    name: '망각의 맹그로브 섬',
+    icon: '🌿',
+    subtitle: '기억을 잃은 자의 섬',
+    story: '정신을 차렸을 때, 이름조차 떠오르지 않았다.\n\n습한 공기, 뒤엉킨 맹그로브 뿌리들, 조용히 흐르는 검은 물.\n여기가 어딘지, 어떻게 왔는지 — 아무것도 기억나지 않는다.\n\n숲 너머로 바다가 보인다. 섬은 조용하고, 그 조용함이 더 무섭다.\n오래 있을수록 안개가 머릿속을 채워간다.\n\n탈출해야 한다. 기억이 완전히 사라지기 전에.',
+    mechanic: '🌀 망각의 안개\nDOOM이 높아질수록 짙어지는 안개가 정신력을 가속 소모시킨다.\nDOOM 80% 이후, 탐색·수면 중 망각 상태이상 카드가 덱에 침투한다.\n망각 카드가 판정에 뽑히면 정신력-3. 오래 머물수록 기억이 무너진다.',
+    doomName: '망각의 안개',
+    startLog: '🌿 망각의 맹그로브 섬에 홀로 깨어났다. 기억이 흐릿하다.',
+  },
+};
+
 </script></script>
 <script>
 // ═══════════════ STATE ═══════════════
@@ -1128,6 +1165,7 @@ function startGame(){
 }
 
 function initGame(){
+  const islandId = (G && G.islandId) ? G.islandId : 'mangrove';
   G={
     day:1, ap:10, maxAP:10,
     hp:100, san:100, hun:80, thi:80,
@@ -1138,14 +1176,17 @@ function initGame(){
     weather:WEATHER[0], tomorrow:WEATHER[1],
     over:false, win:false, logs:[], kills:0,
     gatherCnt:{}, gatherBonus:{}, tilesMoved:0,
+    islandId,
   };
   _pendingItems=null; _itemCb=null; _pendingItemCards=null; _ucHand=[];
   buildDeck(); buildMap();
   document.getElementById('go-scr').style.display='none';
   initMobile();
-  log('🌊 난파선 섬에 표류했다! 생존하고 탈출하라.','system');
+  const isl = ISLANDS[G.islandId] || ISLANDS.mangrove;
+  log(`${isl.icon} ${isl.startLog}`,'system');
   log('팁: 탐색→캠프→제작소에서 도구 제작→수집으로 자원 확보','');
   render();
+  showIslandIntro();
 }
 
 function buildDeck(){
@@ -1301,6 +1342,20 @@ function skipItemPopup(){
   _pendingItemCards=null;
   const cb=_itemCb; _itemCb=null;
   if(cb) cb();
+}
+
+function showIslandIntro(){
+  const isl=ISLANDS[G.islandId]||ISLANDS.mangrove;
+  document.getElementById('ii-icon').textContent=isl.icon;
+  document.getElementById('ii-name').textContent=isl.name;
+  document.getElementById('ii-sub').textContent=isl.subtitle;
+  document.getElementById('ii-story').textContent=isl.story;
+  document.getElementById('ii-mech').textContent=isl.mechanic;
+  const hdrTitle=document.getElementById('hdr-title');
+  if(hdrTitle) hdrTitle.textContent=`${isl.icon} ${isl.name}`;
+  const mapName=document.getElementById('map-island-name');
+  if(mapName) mapName.textContent=isl.name;
+  document.getElementById('island-intro-mo').style.display='flex';
 }
 
 </script></script>

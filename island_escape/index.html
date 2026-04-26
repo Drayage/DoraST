@@ -11,17 +11,17 @@
 
 <!-- TITLE SCREEN -->
 <div id="title-scr">
-  <div class="title-logo">🌿 망각의 맹그로브 섬</div>
+  <div class="title-logo">🏝 무인도 탈출</div>
   <div class="title-sub">Island Escape · v0.2</div>
   <div class="title-story">
-    <span class="ts-head">정신을 차렸을 때, 이름조차 떠오르지 않았다</span>
-    습한 공기, 뒤엉킨 뿌리들, 조용히 흐르는 검은 물.<br>
-    여기가 어딘지, 어떻게 왔는지 — 아무것도 기억나지 않는다.<br><br>
-    맹그로브 숲 너머로 바다가 보인다. 섬은 기억을 삼키고,<br>
-    오래 있을수록 <b>안개가 머릿속을 채워간다.</b><br><br>
+    <span class="ts-head">어딘가의 섬에 혼자다</span>
+    낯선 땅, 낯선 하늘. 여기가 어딘지는 모른다.<br>
+    중요한 건 하나 — <b>살아서 탈출하는 것.</b><br><br>
+    탐색하고, 수집하고, 도구를 만들어라.<br>
+    섬마다 다른 위협이 기다린다. <b>준비된 자만이 돌아간다.</b><br><br>
     <span style="color:var(--text3);font-size:9px;font-family:var(--font-m);">
-      탐색하고 · 수집하고 · 제작하라<br>
-      탈출도 100%를 달성하면 구조된다 · 정신이 무너지기 전에 섬을 떠나라
+      탈출도 100% 달성 → 구조 · HP·정신력 0 또는 DOOM 100% → 게임오버<br>
+      탐색 → 캠프 → 제작 → 수집 → 탈출
     </span>
   </div>
   <!-- 덱 구성 선택 -->
@@ -92,7 +92,7 @@
 
 <!-- HEADER -->
 <div id="hdr">
-  <h1>🌿 망각의 맹그로브 섬</h1>
+  <h1 id="hdr-title">🏝 무인도 탈출</h1>
   <div class="hs"><span class="lbl">HP</span><span class="val" id="hv-hp">100</span></div>
   <div class="hs"><span class="lbl">정신력</span><span class="val" id="hv-san">100</span></div>
   <div class="hs"><span class="lbl">허기</span><span class="val" id="hv-hun">80</span></div>
@@ -114,7 +114,7 @@
 
   <!-- MAP -->
   <div id="map-col">
-    <div class="col-hdr">🗺 탐색 맵 <span>망각의 맹그로브 섬</span></div>
+    <div class="col-hdr">🗺 탐색 맵 <span id="map-island-name">—</span></div>
     <div id="map-wrap">
       <div id="grid"></div>
       <div style="margin-top:7px;font-size:8px;color:var(--text3);font-family:var(--font-m);display:flex;gap:7px;flex-wrap:wrap;">
@@ -481,6 +481,18 @@
 
 <!-- DAMAGE FX -->
 <div id="dmg-fx"></div>
+
+<!-- ISLAND INTRO (게임 시작 시 섬별 인트로 팝업) -->
+<div id="island-intro-mo" class="mo" style="display:none;">
+  <div id="ii-box">
+    <div class="ii-icon" id="ii-icon">🌿</div>
+    <div class="ii-name" id="ii-name"></div>
+    <div class="ii-sub" id="ii-sub"></div>
+    <div class="ii-story" id="ii-story"></div>
+    <div class="ii-mech" id="ii-mech"></div>
+    <button class="btn primary" style="font-size:13px;padding:11px 32px;margin-top:4px;" onclick="document.getElementById('island-intro-mo').style.display='none'">탈출을 시작하라 →</button>
+  </div>
+</div>
 
 <!-- GAMEOVER / ENDING (내용은 showEnding()으로 동적 생성) -->
 <div id="go-scr"></div>

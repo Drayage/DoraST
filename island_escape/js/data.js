@@ -277,3 +277,18 @@ const RECIPES=[
 
 // O(1) 카드 조회 맵 — CARDS.find() 대신 CARD_MAP[id] 사용
 const CARD_MAP = Object.fromEntries(CARDS.map(c=>[c.id,c]));
+
+// ─── 섬 정의 ───────────────────────────────────────────
+// 향후 섬 추가 시 여기에 객체 추가 (id, name, icon, subtitle, story, mechanic, doomName, startLog)
+const ISLANDS = {
+  mangrove: {
+    id: 'mangrove',
+    name: '망각의 맹그로브 섬',
+    icon: '🌿',
+    subtitle: '기억을 잃은 자의 섬',
+    story: '정신을 차렸을 때, 이름조차 떠오르지 않았다.\n\n습한 공기, 뒤엉킨 맹그로브 뿌리들, 조용히 흐르는 검은 물.\n여기가 어딘지, 어떻게 왔는지 — 아무것도 기억나지 않는다.\n\n숲 너머로 바다가 보인다. 섬은 조용하고, 그 조용함이 더 무섭다.\n오래 있을수록 안개가 머릿속을 채워간다.\n\n탈출해야 한다. 기억이 완전히 사라지기 전에.',
+    mechanic: '🌀 망각의 안개\nDOOM이 높아질수록 짙어지는 안개가 정신력을 가속 소모시킨다.\nDOOM 80% 이후, 탐색·수면 중 망각 상태이상 카드가 덱에 침투한다.\n망각 카드가 판정에 뽑히면 정신력-3. 오래 머물수록 기억이 무너진다.',
+    doomName: '망각의 안개',
+    startLog: '🌿 망각의 맹그로브 섬에 홀로 깨어났다. 기억이 흐릿하다.',
+  },
+};

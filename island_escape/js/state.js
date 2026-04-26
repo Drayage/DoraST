@@ -12,6 +12,7 @@ function startGame(){
 }
 
 function initGame(){
+  const islandId = (G && G.islandId) ? G.islandId : 'mangrove';
   G={
     day:1, ap:10, maxAP:10,
     hp:100, san:100, hun:80, thi:80,
@@ -22,14 +23,17 @@ function initGame(){
     weather:WEATHER[0], tomorrow:WEATHER[1],
     over:false, win:false, logs:[], kills:0,
     gatherCnt:{}, gatherBonus:{}, tilesMoved:0,
+    islandId,
   };
   _pendingItems=null; _itemCb=null; _pendingItemCards=null; _ucHand=[];
   buildDeck(); buildMap();
   document.getElementById('go-scr').style.display='none';
   initMobile();
-  log('🌊 난파선 섬에 표류했다! 생존하고 탈출하라.','system');
+  const isl = ISLANDS[G.islandId] || ISLANDS.mangrove;
+  log(`${isl.icon} ${isl.startLog}`,'system');
   log('팁: 탐색→캠프→제작소에서 도구 제작→수집으로 자원 확보','');
   render();
+  showIslandIntro();
 }
 
 function buildDeck(){

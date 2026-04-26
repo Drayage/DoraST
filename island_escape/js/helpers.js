@@ -138,3 +138,17 @@ function skipItemPopup(){
   const cb=_itemCb; _itemCb=null;
   if(cb) cb();
 }
+
+function showIslandIntro(){
+  const isl=ISLANDS[G.islandId]||ISLANDS.mangrove;
+  document.getElementById('ii-icon').textContent=isl.icon;
+  document.getElementById('ii-name').textContent=isl.name;
+  document.getElementById('ii-sub').textContent=isl.subtitle;
+  document.getElementById('ii-story').textContent=isl.story;
+  document.getElementById('ii-mech').textContent=isl.mechanic;
+  const hdrTitle=document.getElementById('hdr-title');
+  if(hdrTitle) hdrTitle.textContent=`${isl.icon} ${isl.name}`;
+  const mapName=document.getElementById('map-island-name');
+  if(mapName) mapName.textContent=isl.name;
+  document.getElementById('island-intro-mo').style.display='flex';
+}
