@@ -24,7 +24,8 @@ function showTT(c, el){
   if(c.use){
     useEl.style.display='';
     const kB=hasTool('knife')?8:0;
-    const m={eat:`🍗 허기+${22+kB}`,drink:'💧 갈증+28',heal:'🌿 HP+10'};
+    const eatTxt=kB?`🍗 허기+30 (칼 패시브+8)`:`🍗 허기+22`;
+    const m={eat:eatTxt,drink:'💧 갈증+28',heal:'🌿 HP+10'};
     useEl.textContent=m[c.use]||'';
   } else useEl.style.display='none';
 

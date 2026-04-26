@@ -24,7 +24,28 @@
       탈출도 100%를 달성하면 구조된다 · DOOM이 100%에 달하면 최후가 찾아온다
     </span>
   </div>
-  <button class="btn primary" style="font-size:14px;padding:12px 32px;" onclick="startGame()">▶ 시작하기</button>
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+    <button class="btn primary" style="font-size:14px;padding:12px 32px;" onclick="startGame()">▶ 시작하기</button>
+    <button class="btn" style="font-size:12px;padding:10px 18px;" onclick="document.getElementById('rules-box').style.display=document.getElementById('rules-box').style.display==='block'?'none':'block'">📖 게임 규칙</button>
+  </div>
+  <div id="rules-box" style="display:none;max-width:480px;margin:16px auto 0;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:16px;text-align:left;font-family:var(--font-m);font-size:9px;line-height:1.9;color:var(--text2);">
+    <div style="color:var(--accent);font-family:var(--font-t);font-size:14px;margin-bottom:8px;">📋 게임 규칙</div>
+    <b style="color:var(--green);">🎉 승리</b> — 탈출도 100% 달성 시 구조됨.<br>
+    <b style="color:var(--red);">💀 패배</b> — ❤️체력 또는 🧠정신력이 0 / DOOM 100% 도달.<br>
+    <br>
+    <b style="color:var(--text);">⚙️ 기본 흐름</b><br>
+    타일을 클릭해 이동(칸당 AP1) → 🔍탐색(AP2)으로 이벤트 발동 → 판정 성공/실패 → 자원 획득<br>
+    🏕️캠프 건설(AP8) 후 🔨제작소에서 도구 제작 → 🎒수집으로 자원 안정 확보 → 탈출도 올리기<br>
+    <br>
+    <b style="color:var(--text);">🃏 카드 판정</b><br>
+    탐색/전투 시 덱 맨 위 카드를 뒤집어 태그(자원/도구)로 성공 여부 결정. 덱이 비면 버림더미를 섞어 재활용.<br>
+    <br>
+    <b style="color:var(--text);">🏕️ 캠프 보너스</b><br>
+    🌲숲: 취침마다 식량 자동생성 · 🌊해안: 취침마다 물 자동생성<br>
+    🪨동굴: 취침마다 정신력+5 · 🏖️해변: 카드사용 드로우+1<br>
+    <br>
+    <b style="color:var(--text);">📉 DOOM</b> — 매일 증가. 체력·허기·갈증이 0이면 피해. 빨리 탈출할수록 유리.
+  </div>
   <div class="title-tip">화면 크기에 따라 모바일/PC 레이아웃 자동 전환</div>
 </div>
 
@@ -132,7 +153,7 @@
         <div class="help-h">📖 도움말</div>
         <div class="help-row"><b>🔍 탐색 (AP2)</b> — 새 타일 첫 방문 시 이벤트 발생. 덱 맨 위 카드 태그로 성공/실패 판정. 이미 탐색한 곳은 비활성화.</div>
         <div class="help-row"><b>🎒 수집 (AP3)</b> — 탐색 완료된 타일에서만 가능. 수집 장비 필요. 같은 곳 반복 수집 시 성공률 감소 (최소 20%).</div>
-        <div class="help-row"><b>🏕️ 캠프 건설 (AP8)</b> — 현재 타일에 캠프 설치. 제작 가능 + 취침 회복 증가. 숲/해안 캠프는 매일 자원 자동생성.</div>
+        <div class="help-row"><b>🏕️ 캠프 건설 (AP8)</b> — 현재 타일에 캠프 설치. 제작 가능 + 취침 회복 증가. 지형 보너스: 🌲숲(취침마다 식량생성) · 🌊해안(취침마다 물생성) · 🪨동굴(취침마다 정신력+5) · 🏖️해변(카드사용 드로우+1).</div>
         <div class="help-row"><b>🔨 제작 (AP1~)</b> — 캠프 위치에서만 사용 가능. 재료 소모해 도구·장비 제작. 뗏목 제작으로 탈출도 대폭 상승.</div>
         <div class="help-row"><b>✨ 카드 사용 (AP1)</b> — 덱에서 5장 드로우. 식량(허기+22)/물(갈증+28)/약초(HP+10) 즉시 사용. 🪢밧줄 보유 시 +1장.</div>
         <div class="help-row"><b>🌙 취침</b> — 다음날로 이동. 허기-14·갈증-18 소모. AP4 이상 남기고 자면 이른 취침 보너스(HP·정신력·AP 추가 회복).</div>
@@ -285,7 +306,7 @@
       <div class="enemy-card">
         <div class="enemy-icon" id="cbt-eicon"></div>
         <div class="enemy-name" id="cbt-ename"></div>
-        <div style="font-size:9px;font-family:var(--font-m);color:var(--text3);">HP <span id="cbt-ehp">0</span>/<span id="cbt-emhp">0</span></div>
+        <div style="font-size:9px;font-family:var(--font-m);color:var(--text3);">HP <span id="cbt-ehp">0</span>/<span id="cbt-emhp">0</span> · DEF <span id="cbt-edef" style="color:var(--blue);">0</span></div>
         <div class="ehp-trk"><div class="ehp-fill" id="cbt-ehpbar" style="width:100%"></div></div>
         <div style="font-size:9px;color:var(--text2);font-family:var(--font-m);margin-top:4px;" id="cbt-intent"></div>
       </div>
@@ -330,6 +351,7 @@
       <div class="zone atk-z"><div class="zone-title">⚔️ 공격 합계: <span id="atk-tot">0</span></div><div id="atk-zone"></div></div>
       <div class="zone def-z"><div class="zone-title">🛡️ 방어 합계: <span id="def-tot">0</span></div><div id="def-zone"></div></div>
     </div>
+    <div id="cbt-preview" style="font-size:9px;font-family:var(--font-m);text-align:center;padding:5px 8px;background:var(--bg3);border-radius:4px;margin-bottom:5px;color:var(--text3);">배정 후 예상 피해가 표시됩니다</div>
     <div style="font-size:8px;color:var(--text3);font-family:var(--font-m);margin-bottom:5px;">핸드 — 클릭하여 배정 | 배정된 카드 재클릭 시 해제</div>
     <div class="cbt-hd" id="cbt-hand"></div>
     <div class="res-area" id="cbt-res" style="display:none;"></div>
@@ -346,9 +368,9 @@
   <div id="item-box" class="mb">
     <div class="item-title" id="item-title">🎁 획득!</div>
     <div class="item-row" id="item-row"></div>
+    <div style="font-size:8px;color:var(--text3);font-family:var(--font-m);text-align:center;margin-bottom:7px;">카드를 클릭하면 개별 획득 · 원하지 않으면 아래 버튼으로 포기</div>
     <div style="display:flex;gap:8px;justify-content:center;">
-      <button class="btn" onclick="confirmItemPopup()">⏩ 스킵</button>
-      <button class="btn primary" onclick="confirmItemPopup()">✓ 획득 확인</button>
+      <button class="btn" onclick="skipItemPopup()">⏩ 나머지 모두 포기</button>
     </div>
   </div>
 </div>

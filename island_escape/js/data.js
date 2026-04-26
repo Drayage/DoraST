@@ -2,19 +2,19 @@
 
 const TILE_TYPES=[
   {id:'beach', name:'해변',icon:'🏖️',cls:'t-beach',flavor:'해변의 모래사장을 걷는다. 파도 소리가 들려온다.',
-   events:['res_wood','res_metal','res_food','nothing'],
+   events:['res_wood','res_metal','res_food','old_fire','nothing'],
    gather:[{tool:'fishing_rod',res:'food',label:'낚시',flavor:'해변에서 낚싯대로 물고기를 잡는다.'}]},
   {id:'forest',name:'숲',  icon:'🌲',cls:'t-forest',flavor:'울창한 숲이다. 여러 동식물의 소리가 들린다.',
-   events:['res_food','res_herb','cbt_boar','cbt_snake','nothing'],
+   events:['res_wood','res_wood','res_food','res_herb','cbt_boar','cbt_snake','trap_pit'],
    gather:[
      {tool:'gathering_knife',res:'herb',label:'약초채집',flavor:'채집칼로 약초를 모은다.'},
      {tool:'axe',res:'wood',label:'나무베기',flavor:'도끼로 나무를 벤다.'},
    ]},
   {id:'cave',  name:'동굴',icon:'🪨',cls:'t-cave',flavor:'어두운 동굴 입구가 보인다. 안에서 차가운 공기가 흘러나온다.',
-   events:['res_metal','cbt_bat','find_shelter','nothing'],
+   events:['res_metal','res_metal','res_metal','cbt_bat','find_shelter','nothing'],
    gather:[{tool:'pickaxe',res:'metal',label:'채굴',flavor:'곡괭이로 동굴 벽을 캔다.'}]},
   {id:'ruins', name:'폐허',icon:'🏚️',cls:'t-ruins',flavor:'오래된 구조물의 잔해가 흩어져 있다. 무언가 숨겨져 있을 것 같다.',
-   events:['res_metal','find_blueprint','cbt_ghost','res_food'],
+   events:['res_metal','find_blueprint','cbt_ghost','res_food','survivor_note'],
    gather:[{tool:'torch',res:'metal',label:'유물탐색',flavor:'횃불로 폐허를 샅샅이 뒤진다.'}]},
   {id:'shore', name:'해안',icon:'🌊',cls:'t-shore',flavor:'거친 파도가 해안을 두드린다. 표류물이 밀려와 있다.',
    events:['res_food','res_metal','find_wreckage','nothing'],
@@ -39,15 +39,15 @@ const CARDS=[
    desc:'뗏목·도구 제작 핵심. 방어 판정에 유리.'},
   {id:'metal', name:'고철', icon:'⚙️', tag:'resource',atk:1,def:0,n:3,
    desc:'도구 제작·공격 판정. 해안에서 많이 발견.'},
-  {id:'food',  name:'식량', icon:'🍗',tag:'resource',atk:0,def:0,n:4,use:'eat',dur:3,
-   desc:'허기 +22 (칼 패시브 +8). 내구도 3회 사용 후 소진.'},
-  {id:'water', name:'물',   icon:'💧',tag:'resource',atk:0,def:0,n:3,use:'drink',dur:3,
-   desc:'갈증 +28. 내구도 3회 사용 후 소진.'},
+  {id:'food',  name:'식량', icon:'🍗',tag:'resource',atk:0,def:0,n:4,use:'eat',dur:2,
+   desc:'허기 +22 (칼 보유 시 +30). 내구도 2회 사용 후 소진.'},
+  {id:'water', name:'물',   icon:'💧',tag:'resource',atk:0,def:0,n:3,use:'drink',dur:2,
+   desc:'갈증 +28. 내구도 2회 사용 후 소진.'},
   {id:'herb',  name:'약초', icon:'🌿',tag:'resource',atk:0,def:0,n:2,use:'heal',dur:2,
    desc:'HP +10. 내구도 2회 사용 후 소진.'},
   // 도구 — 패시브 + 수집장비
   {id:'knife',    name:'칼',    icon:'🔪',tag:'tool',atk:4,def:1,n:0,
-   passiveDesc:'식량 회복 +8 (22→30)',
+   passiveDesc:'식량 섭취 허기+8 추가 (22→30)',
    desc:'패시브: 식량 회복 증가. 전투 공격력 4.'},
   {id:'torch',    name:'횃불',  icon:'🔦',tag:'tool',atk:2,def:1,n:0,gatherTool:true,
    passiveDesc:'탐색 tool 판정 성공 시 추가 보상 1장',
@@ -108,19 +108,23 @@ const CARDS=[
 
 const ENEMIES={
   cbt_boar:{name:'멧돼지',icon:'🐗',hp:30,atk:12,def:4,
-    reward:{cards:[{id:'food',n:2},{id:'hide',n:2}]},
-    rewardDesc:'식량×2 + 가죽×2'},
+    reward:{cards:[{id:'food',n:1}]},
+    altCards:[[{id:'hide',n:2}],[{id:'wood',n:2}]],
+    rewardDesc:'식량×1 + (가죽×2 또는 목재×2)'},
   cbt_snake:{name:'독사',  icon:'🐍',hp:18,atk:10,def:2,
-    reward:{cards:[{id:'herb',n:1},{id:'venom',n:1}]},
-    rewardDesc:'약초×1 + 독낭×1',
+    reward:{cards:[{id:'food',n:1}]},
+    altCards:[[{id:'herb',n:1},{id:'venom',n:1}],[{id:'metal',n:2}]],
+    rewardDesc:'식량×1 + (약초+독낭 또는 고철×2)',
     penalty:{card:'injury',desc:'독사에게 물려 부상 카드 추가'}},
   cbt_bat:{name:'박쥐떼',icon:'🦇',hp:22,atk:8, def:1,
-    reward:{cards:[{id:'feather',n:2}]},
-    rewardDesc:'깃털×2',
+    reward:{cards:[{id:'food',n:1}]},
+    altCards:[[{id:'feather',n:2}],[{id:'metal',n:1}]],
+    rewardDesc:'식량×1 + (깃털×2 또는 고철×1)',
     penalty:{san:-10,desc:'박쥐떼에 시달려 정신력 -10'}},
   cbt_ghost:{name:'환각존재',icon:'👻',hp:24,atk:10,def:3,
-    reward:{san:20,cards:[{id:'shard',n:2}]},
-    rewardDesc:'정신력+20 + 고대파편×2',
+    reward:{san:20,cards:[{id:'food',n:1}]},
+    altCards:[[{id:'shard',n:2}],[{id:'metal',n:2}]],
+    rewardDesc:'정신력+20 + 식량×1 + (파편×2 또는 고철×2)',
     penalty:{san:-20,desc:'환각에 시달려 정신력 -20'}},
 };
 
@@ -128,9 +132,9 @@ const EVENTS={
   res_wood:{
     name:'목재 더미 발견',flavor:'해안가에 파도에 쓸려온 통나무가 쌓여 있다.',
     choices:[
-      {label:'꼼꼼히 수거',icon:'🪵',req:'resource',reward:{card:'wood',n:2},failPen:{hun:-8},
-       greatCard:'axe',greatBonus:{card:'wood',n:1,ap:1},desc:'자원판정. 성공:목재×2 / 대성공(도끼):+목재+AP환급'},
-      {label:'빠르게만 챙긴다',icon:'👀',req:null,reward:{card:'wood',n:1},desc:'무조건 성공. 목재 1장.'},
+      {label:'꼼꼼히 수거',icon:'🪵',req:'resource',reward:{card:'wood',n:3},failPen:{hun:-12},
+       greatCard:'axe',greatBonus:{card:'wood',n:2,ap:1},desc:'자원판정. 성공:목재×3 / 대성공(도끼):+목재×2+AP환급 / 실패:허기-12'},
+      {label:'빠르게만 챙긴다',icon:'👀',req:null,reward:{card:'wood',n:1},desc:'무조건 성공. 목재×1.'},
     ]},
   res_food:{
     name:'먹을 것 발견',flavor:'덤불 사이에 먹을 수 있을 것 같은 것들이 보인다.',
@@ -156,9 +160,9 @@ const EVENTS={
   find_shelter:{
     name:'은신처 발견',flavor:'폭풍을 피할 수 있는 작은 동굴 입구가 보인다.',
     choices:[
-      {label:'깊이 탐색한다',icon:'🔦',req:'tool',reward:{san:14,card:'metal',n:1},failPen:{hp:-10},
-       greatCard:'torch',greatBonus:{san:10,ap:2},desc:'도구판정. 성공:정신력+고철 / 대성공(횃불):+정신력+AP×2'},
-      {label:'입구만 살핀다',icon:'👁️',req:null,reward:{san:8},desc:'무조건. 정신력 +8.'},
+      {label:'깊이 탐색한다',icon:'🔦',req:'tool',reward:{san:18,card:'metal',n:1},failPen:{hp:-15},
+       greatCard:'torch',greatBonus:{san:10,ap:2},desc:'도구판정. 성공:정신력+18+고철 / 대성공(횃불):+정신력+10+AP×2 / 실패:HP-15'},
+      {label:'입구만 살핀다',icon:'👁️',req:null,reward:{san:8},desc:'무조건. 정신력+8.'},
     ]},
   find_blueprint:{
     name:'탈출 설계도!',flavor:'낡은 상자 안에 뭔가 적힌 종이가 보인다.',
@@ -177,9 +181,42 @@ const EVENTS={
   nothing:{
     name:'아무것도 없음',flavor:'이 주변을 둘러봤지만 특별한 것은 없었다.',
     choices:[
-      {label:'한 번 더 살핀다',icon:'🔎',req:'tool',reward:{card:'food',n:1},
-       greatCard:'torch',greatBonus:{card:'food',n:1,ap:1},desc:'도구판정. 성공:식량 / 대성공(횃불):+식량+AP'},
+      {label:'한 번 더 살핀다',icon:'🔎',req:'tool',reward:{card:'food',n:2,ap:1},failPen:{hp:-8},
+       greatCard:'torch',greatBonus:{card:'metal',n:2},desc:'도구판정. 성공:식량×2+AP환급 / 대성공(횃불):고철×2 / 실패:HP-8'},
       {label:'그냥 돌아간다',icon:'↩️',req:null,reward:{},desc:'무조건. 빈손.'},
+    ]},
+  survivor_note:{
+    name:'생존자의 흔적',flavor:'누군가 이 곳에 있었던 것 같다. 낡은 메모와 흔적이 남아있다.',
+    choices:[
+      {label:'흔적을 철저히 조사',icon:'🔦',req:'tool',
+       reward:{card:'metal',n:1,escape:15},failPen:{hp:-8},
+       greatCard:'torch',greatBonus:{card:'wood',n:1,ap:2},
+       desc:'도구판정. 성공:고철×1+탈출+15% / 대성공(횃불):+목재+AP×2 / 실패:HP-8'},
+      {label:'메모만 빠르게 읽는다',icon:'📝',req:null,
+       reward:{escape:5},
+       desc:'무조건. 탈출도+5%.'},
+    ]},
+  trap_pit:{
+    name:'야생 덫 구덩이',flavor:'덤불 사이에 정교하게 파인 함정이 보인다. 먹이가 걸려든 것 같다.',
+    choices:[
+      {label:'전리품을 회수한다',icon:'🎯',req:'resource',
+       reward:{card:'food',n:3},failPen:{hp:-12},
+       greatCard:'gathering_knife',greatBonus:{card:'hide',n:1},
+       desc:'자원판정. 성공:식량×3 / 대성공(채집칼):+가죽×1 / 실패:HP-12'},
+      {label:'건드리지 않고 지나친다',icon:'🚶',req:null,
+       reward:{},
+       desc:'무조건. 빈손. 안전.'},
+    ]},
+  old_fire:{
+    name:'꺼진 모닥불 흔적',flavor:'누군가 야영했던 자리다. 숯불 주위에 쓸만한 것이 남아있을지도 모른다.',
+    choices:[
+      {label:'재와 주변을 뒤진다',icon:'🔥',req:'resource',
+       reward:{card:'wood',n:2,san:8},failPen:{hun:-10},
+       greatCard:'axe',greatBonus:{card:'wood',n:1,ap:1},
+       desc:'자원판정. 성공:목재×2+정신력+8 / 대성공(도끼):+목재+AP환급 / 실패:허기-10'},
+      {label:'불을 다시 피운다',icon:'🕯️',req:null,
+       reward:{san:14},
+       desc:'무조건. 따뜻한 불로 정신력+14 회복.'},
     ]},
 };
 

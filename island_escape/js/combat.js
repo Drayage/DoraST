@@ -86,12 +86,24 @@ function renderCombat(){
   document.getElementById('cbt-ename').textContent=e.name;
   document.getElementById('cbt-ehp').textContent=Math.max(0,e.curHp);
   document.getElementById('cbt-emhp').textContent=e.hp;
+  const edefEl=document.getElementById('cbt-edef'); if(edefEl) edefEl.textContent=e.def;
   document.getElementById('cbt-ehpbar').style.width=Math.max(0,e.curHp/e.hp*100)+'%';
   document.getElementById('cbt-intent').textContent=CBT.stunned?'💫 기절':`💥 공격: ${e.atk}`;
   const aT=CBT.atkZone.reduce((s,c)=>s+Math.max(0,c.atk),0);
   const dT=CBT.defZone.reduce((s,c)=>s+Math.max(0,c.def),0);
   document.getElementById('atk-tot').textContent=aT;
   document.getElementById('def-tot').textContent=dT;
+  // 예상 피해 미리보기
+  const prevEl=document.getElementById('cbt-preview');
+  if(prevEl){
+    let preAtk=0; let hasPierce=false;
+    CBT.atkZone.forEach(c=>{if(c.cbtFx==='pierce'){preAtk+=c.atk+4;hasPierce=true;}else if(c.cbtFx==='stun')preAtk+=c.atk+3;else preAtk+=Math.max(0,c.atk);});
+    let preDef=0; CBT.defZone.forEach(c=>{preDef+=c.cbtFx==='block'?c.def+5:Math.max(0,c.def);});
+    const dmgE=hasPierce?preAtk:Math.max(0,preAtk-e.def);
+    const eAk=CBT.stunned?0:e.atk; let dmgP=Math.max(0,eAk-preDef);
+    if(allCards().some(c=>c.id==='leather_armor')&&dmgP>0) dmgP=Math.max(0,dmgP-2);
+    prevEl.innerHTML=`예상: <span style="color:var(--red);">적 ${dmgE}피해</span> · <span style="color:${dmgP>0?'var(--red)':'var(--green)'};">내 ${dmgP}피해</span>`;
+  }
   renderZone('atk-zone',CBT.atkZone,'atk');
   renderZone('def-zone',CBT.defZone,'def');
   const hEl=document.getElementById('cbt-hand'); hEl.innerHTML='';
@@ -166,14 +178,18 @@ function resolveCombat(){
   resEl.innerHTML=lines.map(l=>`<div class="rl ${l.cls}">${l.t}</div>`).join('');
 
   if(e.curHp<=0){
-    // 승리 처리
+    // 승리 처리 — 기본 보상 + 랜덤 추가 전리품
     const rewardItems=[];
-    if(e.reward?.cards){ e.reward.cards.forEach(r=>{ addCard(r.id,r.n); const d=CARD_MAP[r.id]; rewardItems.push({icon:d?.icon||'📦',name:d?.name||r.id,n:r.n}); }); }
-    if(e.reward?.san){ G.san=Math.min(100,G.san+e.reward.san); }
+    if(e.reward?.san) G.san=Math.min(100,G.san+e.reward.san);
+    if(e.reward?.cards) e.reward.cards.forEach(r=>{ const d=CARD_MAP[r.id]; rewardItems.push({id:r.id,icon:d?.icon||'📦',name:d?.name||r.id,n:r.n}); });
+    if(e.altCards){
+      const bonus=e.altCards[Math.floor(Math.random()*e.altCards.length)];
+      bonus.forEach(r=>{ const d=CARD_MAP[r.id]; rewardItems.push({id:r.id,icon:d?.icon||'📦',name:d?.name||r.id,n:r.n}); });
+    }
     resEl.innerHTML+=`<div class="rl good" style="font-size:13px;margin-top:5px;">🏆 ${e.name} 처치!</div>`;
-    resEl.innerHTML+=`<div class="rl good">💎 보상: ${e.rewardDesc}</div>`;
+    resEl.innerHTML+=`<div class="rl good">💎 전리품: ${rewardItems.map(r=>r.icon+r.name+'×'+r.n).join(' ')} — 클릭해서 선택 획득</div>`;
     G.kills++; CBT.resolved=true;
-    log(`⚔️ ${e.name} 처치! 보상: ${e.rewardDesc}`,'success');
+    log(`⚔️ ${e.name} 처치! 전리품 선택 획득 가능`,'success');
     document.getElementById('btn-cbt-resolve').style.display='none';
     document.getElementById('btn-cbt-flee').style.display='none';
     document.getElementById('btn-cbt-close').style.display='';

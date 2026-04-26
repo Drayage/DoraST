@@ -24,9 +24,10 @@ function getDOM(){
 }
 
 function campBonus(tileId){
-  if(tileId==='cave')   return '정신력+5';
-  if(tileId==='forest') return '식량생성';
-  if(tileId==='shore')  return '물생성';
+  if(tileId==='beach')  return '카드사용+1드로우';
+  if(tileId==='cave')   return '취침 정신력+5';
+  if(tileId==='forest') return '취침 식량생성';
+  if(tileId==='shore')  return '취침 물생성';
   return '';
 }
 
@@ -81,12 +82,12 @@ function render(){
   p.tiles.forEach((t,i)=>{
     const el=document.createElement('div');
     el.className='tile'
-      +(t.revealed?` revealed ${t.cls}`:'fog')
+      +(t.revealed?` revealed ${t.cls}`:t.wasSeen?` seen-fog ${t.cls}`:'fog')
       +(i===p.pos?' player':'')
       +(t.hasCamp?' camp-t':'')
       +(t.revealed&&t.explored?' explored':'');
     if(t.revealed) el.textContent=i===p.pos?'🧍':(t.hasCamp?'🏕️':t.icon);
-    el.title=t.revealed?`${t.name}${t.explored?' ✓':''}`:' ';
+    el.title=t.revealed?`${t.name}${t.explored?' ✓':''}`:t.wasSeen?`${t.name} (안개 속)`:' ';
     el.onclick=()=>clickTile(i);
     mapFrag.appendChild(el);
   });

@@ -6,7 +6,7 @@ function doCamp(){
   if(G.tiles[G.pos].hasCamp){log('이미 캠프가 있다.','');return;}
   G.tiles[G.pos].hasCamp=true; G.camps.push(G.pos); G.ap-=8;
   const t=G.tiles[G.pos];
-  const bns={beach:'허기감소 완화',forest:'매일 식량 자동생성',cave:'매일 정신력+5',ruins:'탐색확률 향상',shore:'매일 물 자동생성'};
+  const bns={beach:'카드사용+1드로우',forest:'취침 식량 자동생성',cave:'취침 정신력+5',ruins:'없음',shore:'취침 물 자동생성'};
   log(`🏕️ ${t.name} 캠프 건설! (AP-8) — ${bns[t.id]||''}`, 'success');
   render();
 }

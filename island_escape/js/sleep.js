@@ -24,7 +24,7 @@ function doSleep(){
   if(G.day>5){
     const fog=G.tiles.filter((t,i)=>t.revealed&&!t.hasCamp&&i!==G.pos);
     const n=Math.floor(fog.length*.08);
-    for(let i=0;i<n;i++){const idx=Math.floor(Math.random()*fog.length);const ti=G.tiles.indexOf(fog[idx]);if(ti>=0)G.tiles[ti].revealed=false;fog.splice(idx,1);}
+    for(let i=0;i<n;i++){const idx=Math.floor(Math.random()*fog.length);const ti=G.tiles.indexOf(fog[idx]);if(ti>=0){G.tiles[ti].wasSeen=true;G.tiles[ti].revealed=false;}fog.splice(idx,1);}
   }
   drawCards(2);
   log(`🌙 ${G.day-1}일→${G.day}일. HP+${hpR} 정신력+${sanR}${bonAP?` 이른취침AP+${bonAP}`:''}${fatigueN?` 피로AP-${fatigueN*2}`:''}`, 'important');

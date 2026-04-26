@@ -1,5 +1,4 @@
 // ═══════════════ MAP ═══════════════
-// [버그수정] apCost() 실제 이동에 반영
 
 function buildMap(){
   G.tiles=[];
@@ -18,27 +17,20 @@ function getAdj(p){
   return res;
 }
 
-// 캠프에서 멀수록 이동 AP 증가 (3칸마다 +1)
-function apCost(to){
-  if(!G.camps.length) return 1;
-  let min=99;
-  G.camps.forEach(cp=>{
-    const dr=Math.abs(Math.floor(cp/10)-Math.floor(to/10));
-    const dc=Math.abs((cp%10)-(to%10));
-    min=Math.min(min, dr+dc);
-  });
-  return 1+Math.floor(min/3);
+// 맨해튼 거리 (칸당 AP1)
+function tileDist(a, b){
+  return Math.abs(Math.floor(a/10)-Math.floor(b/10))+Math.abs((a%10)-(b%10));
 }
 
 function clickTile(i){
   if(G.over) return;
   const t=G.tiles[i];
   if(!t.revealed||i===G.pos) return;
-  const cost=apCost(i);
-  if(G.ap<cost){log(`AP부족 (이동:AP${cost})`, 'danger'); render(); return;}
+  const cost=tileDist(G.pos, i);
+  if(G.ap<cost){log(`AP부족 (이동${cost}칸=AP${cost})`, ''); render(); return;}
   G.tiles[G.pos].hasPlayer=false;
   G.pos=i; t.hasPlayer=true; G.ap-=cost;
   getAdj(i).forEach(j=>G.tiles[j].revealed=true);
-  log(`📍 ${t.name}으로 이동 (AP-${cost})`, '');
+  log(`📍 ${t.name}으로 이동 (${cost}칸·AP-${cost})`, '');
   checkSurvival(); render();
 }

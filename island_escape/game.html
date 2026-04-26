@@ -52,6 +52,8 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 #grid{display:grid;grid-template-columns:repeat(10,29px);gap:2px;}
 .tile{width:29px;height:29px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;border:1px solid transparent;transition:all .1s;position:relative;user-select:none;}
 .tile.fog{background:#0d1420;cursor:default;}.tile.fog::after{content:'▓';color:#1e2d40;font-size:9px;}
+.tile.seen-fog{background:#161820;border-color:#222428;cursor:default;}
+.tile.seen-fog:hover{transform:none!important;border-color:#222428!important;}
 .tile:not(.fog):hover{border-color:var(--border2);transform:scale(1.1);z-index:2;}
 .tile.player{border-color:var(--accent)!important;border-width:2px;box-shadow:0 0 7px rgba(232,184,75,.4);}
 .tile.camp-t{box-shadow:inset 0 0 5px rgba(76,175,125,.3);}
@@ -340,7 +342,28 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
       탈출도 100%를 달성하면 구조된다 · DOOM이 100%에 달하면 최후가 찾아온다
     </span>
   </div>
-  <button class="btn primary" style="font-size:14px;padding:12px 32px;" onclick="startGame()">▶ 시작하기</button>
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+    <button class="btn primary" style="font-size:14px;padding:12px 32px;" onclick="startGame()">▶ 시작하기</button>
+    <button class="btn" style="font-size:12px;padding:10px 18px;" onclick="document.getElementById('rules-box').style.display=document.getElementById('rules-box').style.display==='block'?'none':'block'">📖 게임 규칙</button>
+  </div>
+  <div id="rules-box" style="display:none;max-width:480px;margin:16px auto 0;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:16px;text-align:left;font-family:var(--font-m);font-size:9px;line-height:1.9;color:var(--text2);">
+    <div style="color:var(--accent);font-family:var(--font-t);font-size:14px;margin-bottom:8px;">📋 게임 규칙</div>
+    <b style="color:var(--green);">🎉 승리</b> — 탈출도 100% 달성 시 구조됨.<br>
+    <b style="color:var(--red);">💀 패배</b> — ❤️체력 또는 🧠정신력이 0 / DOOM 100% 도달.<br>
+    <br>
+    <b style="color:var(--text);">⚙️ 기본 흐름</b><br>
+    타일을 클릭해 이동(칸당 AP1) → 🔍탐색(AP2)으로 이벤트 발동 → 판정 성공/실패 → 자원 획득<br>
+    🏕️캠프 건설(AP8) 후 🔨제작소에서 도구 제작 → 🎒수집으로 자원 안정 확보 → 탈출도 올리기<br>
+    <br>
+    <b style="color:var(--text);">🃏 카드 판정</b><br>
+    탐색/전투 시 덱 맨 위 카드를 뒤집어 태그(자원/도구)로 성공 여부 결정. 덱이 비면 버림더미를 섞어 재활용.<br>
+    <br>
+    <b style="color:var(--text);">🏕️ 캠프 보너스</b><br>
+    🌲숲: 취침마다 식량 자동생성 · 🌊해안: 취침마다 물 자동생성<br>
+    🪨동굴: 취침마다 정신력+5 · 🏖️해변: 카드사용 드로우+1<br>
+    <br>
+    <b style="color:var(--text);">📉 DOOM</b> — 매일 증가. 체력·허기·갈증이 0이면 피해. 빨리 탈출할수록 유리.
+  </div>
   <div class="title-tip">화면 크기에 따라 모바일/PC 레이아웃 자동 전환</div>
 </div>
 
@@ -448,7 +471,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
         <div class="help-h">📖 도움말</div>
         <div class="help-row"><b>🔍 탐색 (AP2)</b> — 새 타일 첫 방문 시 이벤트 발생. 덱 맨 위 카드 태그로 성공/실패 판정. 이미 탐색한 곳은 비활성화.</div>
         <div class="help-row"><b>🎒 수집 (AP3)</b> — 탐색 완료된 타일에서만 가능. 수집 장비 필요. 같은 곳 반복 수집 시 성공률 감소 (최소 20%).</div>
-        <div class="help-row"><b>🏕️ 캠프 건설 (AP8)</b> — 현재 타일에 캠프 설치. 제작 가능 + 취침 회복 증가. 숲/해안 캠프는 매일 자원 자동생성.</div>
+        <div class="help-row"><b>🏕️ 캠프 건설 (AP8)</b> — 현재 타일에 캠프 설치. 제작 가능 + 취침 회복 증가. 지형 보너스: 🌲숲(취침마다 식량생성) · 🌊해안(취침마다 물생성) · 🪨동굴(취침마다 정신력+5) · 🏖️해변(카드사용 드로우+1).</div>
         <div class="help-row"><b>🔨 제작 (AP1~)</b> — 캠프 위치에서만 사용 가능. 재료 소모해 도구·장비 제작. 뗏목 제작으로 탈출도 대폭 상승.</div>
         <div class="help-row"><b>✨ 카드 사용 (AP1)</b> — 덱에서 5장 드로우. 식량(허기+22)/물(갈증+28)/약초(HP+10) 즉시 사용. 🪢밧줄 보유 시 +1장.</div>
         <div class="help-row"><b>🌙 취침</b> — 다음날로 이동. 허기-14·갈증-18 소모. AP4 이상 남기고 자면 이른 취침 보너스(HP·정신력·AP 추가 회복).</div>
@@ -601,7 +624,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
       <div class="enemy-card">
         <div class="enemy-icon" id="cbt-eicon"></div>
         <div class="enemy-name" id="cbt-ename"></div>
-        <div style="font-size:9px;font-family:var(--font-m);color:var(--text3);">HP <span id="cbt-ehp">0</span>/<span id="cbt-emhp">0</span></div>
+        <div style="font-size:9px;font-family:var(--font-m);color:var(--text3);">HP <span id="cbt-ehp">0</span>/<span id="cbt-emhp">0</span> · DEF <span id="cbt-edef" style="color:var(--blue);">0</span></div>
         <div class="ehp-trk"><div class="ehp-fill" id="cbt-ehpbar" style="width:100%"></div></div>
         <div style="font-size:9px;color:var(--text2);font-family:var(--font-m);margin-top:4px;" id="cbt-intent"></div>
       </div>
@@ -646,6 +669,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
       <div class="zone atk-z"><div class="zone-title">⚔️ 공격 합계: <span id="atk-tot">0</span></div><div id="atk-zone"></div></div>
       <div class="zone def-z"><div class="zone-title">🛡️ 방어 합계: <span id="def-tot">0</span></div><div id="def-zone"></div></div>
     </div>
+    <div id="cbt-preview" style="font-size:9px;font-family:var(--font-m);text-align:center;padding:5px 8px;background:var(--bg3);border-radius:4px;margin-bottom:5px;color:var(--text3);">배정 후 예상 피해가 표시됩니다</div>
     <div style="font-size:8px;color:var(--text3);font-family:var(--font-m);margin-bottom:5px;">핸드 — 클릭하여 배정 | 배정된 카드 재클릭 시 해제</div>
     <div class="cbt-hd" id="cbt-hand"></div>
     <div class="res-area" id="cbt-res" style="display:none;"></div>
@@ -662,9 +686,9 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   <div id="item-box" class="mb">
     <div class="item-title" id="item-title">🎁 획득!</div>
     <div class="item-row" id="item-row"></div>
+    <div style="font-size:8px;color:var(--text3);font-family:var(--font-m);text-align:center;margin-bottom:7px;">카드를 클릭하면 개별 획득 · 원하지 않으면 아래 버튼으로 포기</div>
     <div style="display:flex;gap:8px;justify-content:center;">
-      <button class="btn" onclick="confirmItemPopup()">⏩ 스킵</button>
-      <button class="btn primary" onclick="confirmItemPopup()">✓ 획득 확인</button>
+      <button class="btn" onclick="skipItemPopup()">⏩ 나머지 모두 포기</button>
     </div>
   </div>
 </div>
@@ -686,19 +710,19 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 
 const TILE_TYPES=[
   {id:'beach', name:'해변',icon:'🏖️',cls:'t-beach',flavor:'해변의 모래사장을 걷는다. 파도 소리가 들려온다.',
-   events:['res_wood','res_metal','res_food','nothing'],
+   events:['res_wood','res_metal','res_food','old_fire','nothing'],
    gather:[{tool:'fishing_rod',res:'food',label:'낚시',flavor:'해변에서 낚싯대로 물고기를 잡는다.'}]},
   {id:'forest',name:'숲',  icon:'🌲',cls:'t-forest',flavor:'울창한 숲이다. 여러 동식물의 소리가 들린다.',
-   events:['res_food','res_herb','cbt_boar','cbt_snake','nothing'],
+   events:['res_wood','res_wood','res_food','res_herb','cbt_boar','cbt_snake','trap_pit'],
    gather:[
      {tool:'gathering_knife',res:'herb',label:'약초채집',flavor:'채집칼로 약초를 모은다.'},
      {tool:'axe',res:'wood',label:'나무베기',flavor:'도끼로 나무를 벤다.'},
    ]},
   {id:'cave',  name:'동굴',icon:'🪨',cls:'t-cave',flavor:'어두운 동굴 입구가 보인다. 안에서 차가운 공기가 흘러나온다.',
-   events:['res_metal','cbt_bat','find_shelter','nothing'],
+   events:['res_metal','res_metal','res_metal','cbt_bat','find_shelter','nothing'],
    gather:[{tool:'pickaxe',res:'metal',label:'채굴',flavor:'곡괭이로 동굴 벽을 캔다.'}]},
   {id:'ruins', name:'폐허',icon:'🏚️',cls:'t-ruins',flavor:'오래된 구조물의 잔해가 흩어져 있다. 무언가 숨겨져 있을 것 같다.',
-   events:['res_metal','find_blueprint','cbt_ghost','res_food'],
+   events:['res_metal','find_blueprint','cbt_ghost','res_food','survivor_note'],
    gather:[{tool:'torch',res:'metal',label:'유물탐색',flavor:'횃불로 폐허를 샅샅이 뒤진다.'}]},
   {id:'shore', name:'해안',icon:'🌊',cls:'t-shore',flavor:'거친 파도가 해안을 두드린다. 표류물이 밀려와 있다.',
    events:['res_food','res_metal','find_wreckage','nothing'],
@@ -723,15 +747,15 @@ const CARDS=[
    desc:'뗏목·도구 제작 핵심. 방어 판정에 유리.'},
   {id:'metal', name:'고철', icon:'⚙️', tag:'resource',atk:1,def:0,n:3,
    desc:'도구 제작·공격 판정. 해안에서 많이 발견.'},
-  {id:'food',  name:'식량', icon:'🍗',tag:'resource',atk:0,def:0,n:4,use:'eat',dur:3,
-   desc:'허기 +22 (칼 패시브 +8). 내구도 3회 사용 후 소진.'},
-  {id:'water', name:'물',   icon:'💧',tag:'resource',atk:0,def:0,n:3,use:'drink',dur:3,
-   desc:'갈증 +28. 내구도 3회 사용 후 소진.'},
+  {id:'food',  name:'식량', icon:'🍗',tag:'resource',atk:0,def:0,n:4,use:'eat',dur:2,
+   desc:'허기 +22 (칼 보유 시 +30). 내구도 2회 사용 후 소진.'},
+  {id:'water', name:'물',   icon:'💧',tag:'resource',atk:0,def:0,n:3,use:'drink',dur:2,
+   desc:'갈증 +28. 내구도 2회 사용 후 소진.'},
   {id:'herb',  name:'약초', icon:'🌿',tag:'resource',atk:0,def:0,n:2,use:'heal',dur:2,
    desc:'HP +10. 내구도 2회 사용 후 소진.'},
   // 도구 — 패시브 + 수집장비
   {id:'knife',    name:'칼',    icon:'🔪',tag:'tool',atk:4,def:1,n:0,
-   passiveDesc:'식량 회복 +8 (22→30)',
+   passiveDesc:'식량 섭취 허기+8 추가 (22→30)',
    desc:'패시브: 식량 회복 증가. 전투 공격력 4.'},
   {id:'torch',    name:'횃불',  icon:'🔦',tag:'tool',atk:2,def:1,n:0,gatherTool:true,
    passiveDesc:'탐색 tool 판정 성공 시 추가 보상 1장',
@@ -792,19 +816,23 @@ const CARDS=[
 
 const ENEMIES={
   cbt_boar:{name:'멧돼지',icon:'🐗',hp:30,atk:12,def:4,
-    reward:{cards:[{id:'food',n:2},{id:'hide',n:2}]},
-    rewardDesc:'식량×2 + 가죽×2'},
+    reward:{cards:[{id:'food',n:1}]},
+    altCards:[[{id:'hide',n:2}],[{id:'wood',n:2}]],
+    rewardDesc:'식량×1 + (가죽×2 또는 목재×2)'},
   cbt_snake:{name:'독사',  icon:'🐍',hp:18,atk:10,def:2,
-    reward:{cards:[{id:'herb',n:1},{id:'venom',n:1}]},
-    rewardDesc:'약초×1 + 독낭×1',
+    reward:{cards:[{id:'food',n:1}]},
+    altCards:[[{id:'herb',n:1},{id:'venom',n:1}],[{id:'metal',n:2}]],
+    rewardDesc:'식량×1 + (약초+독낭 또는 고철×2)',
     penalty:{card:'injury',desc:'독사에게 물려 부상 카드 추가'}},
   cbt_bat:{name:'박쥐떼',icon:'🦇',hp:22,atk:8, def:1,
-    reward:{cards:[{id:'feather',n:2}]},
-    rewardDesc:'깃털×2',
+    reward:{cards:[{id:'food',n:1}]},
+    altCards:[[{id:'feather',n:2}],[{id:'metal',n:1}]],
+    rewardDesc:'식량×1 + (깃털×2 또는 고철×1)',
     penalty:{san:-10,desc:'박쥐떼에 시달려 정신력 -10'}},
   cbt_ghost:{name:'환각존재',icon:'👻',hp:24,atk:10,def:3,
-    reward:{san:20,cards:[{id:'shard',n:2}]},
-    rewardDesc:'정신력+20 + 고대파편×2',
+    reward:{san:20,cards:[{id:'food',n:1}]},
+    altCards:[[{id:'shard',n:2}],[{id:'metal',n:2}]],
+    rewardDesc:'정신력+20 + 식량×1 + (파편×2 또는 고철×2)',
     penalty:{san:-20,desc:'환각에 시달려 정신력 -20'}},
 };
 
@@ -812,9 +840,9 @@ const EVENTS={
   res_wood:{
     name:'목재 더미 발견',flavor:'해안가에 파도에 쓸려온 통나무가 쌓여 있다.',
     choices:[
-      {label:'꼼꼼히 수거',icon:'🪵',req:'resource',reward:{card:'wood',n:2},failPen:{hun:-8},
-       greatCard:'axe',greatBonus:{card:'wood',n:1,ap:1},desc:'자원판정. 성공:목재×2 / 대성공(도끼):+목재+AP환급'},
-      {label:'빠르게만 챙긴다',icon:'👀',req:null,reward:{card:'wood',n:1},desc:'무조건 성공. 목재 1장.'},
+      {label:'꼼꼼히 수거',icon:'🪵',req:'resource',reward:{card:'wood',n:3},failPen:{hun:-12},
+       greatCard:'axe',greatBonus:{card:'wood',n:2,ap:1},desc:'자원판정. 성공:목재×3 / 대성공(도끼):+목재×2+AP환급 / 실패:허기-12'},
+      {label:'빠르게만 챙긴다',icon:'👀',req:null,reward:{card:'wood',n:1},desc:'무조건 성공. 목재×1.'},
     ]},
   res_food:{
     name:'먹을 것 발견',flavor:'덤불 사이에 먹을 수 있을 것 같은 것들이 보인다.',
@@ -840,9 +868,9 @@ const EVENTS={
   find_shelter:{
     name:'은신처 발견',flavor:'폭풍을 피할 수 있는 작은 동굴 입구가 보인다.',
     choices:[
-      {label:'깊이 탐색한다',icon:'🔦',req:'tool',reward:{san:14,card:'metal',n:1},failPen:{hp:-10},
-       greatCard:'torch',greatBonus:{san:10,ap:2},desc:'도구판정. 성공:정신력+고철 / 대성공(횃불):+정신력+AP×2'},
-      {label:'입구만 살핀다',icon:'👁️',req:null,reward:{san:8},desc:'무조건. 정신력 +8.'},
+      {label:'깊이 탐색한다',icon:'🔦',req:'tool',reward:{san:18,card:'metal',n:1},failPen:{hp:-15},
+       greatCard:'torch',greatBonus:{san:10,ap:2},desc:'도구판정. 성공:정신력+18+고철 / 대성공(횃불):+정신력+10+AP×2 / 실패:HP-15'},
+      {label:'입구만 살핀다',icon:'👁️',req:null,reward:{san:8},desc:'무조건. 정신력+8.'},
     ]},
   find_blueprint:{
     name:'탈출 설계도!',flavor:'낡은 상자 안에 뭔가 적힌 종이가 보인다.',
@@ -861,9 +889,42 @@ const EVENTS={
   nothing:{
     name:'아무것도 없음',flavor:'이 주변을 둘러봤지만 특별한 것은 없었다.',
     choices:[
-      {label:'한 번 더 살핀다',icon:'🔎',req:'tool',reward:{card:'food',n:1},
-       greatCard:'torch',greatBonus:{card:'food',n:1,ap:1},desc:'도구판정. 성공:식량 / 대성공(횃불):+식량+AP'},
+      {label:'한 번 더 살핀다',icon:'🔎',req:'tool',reward:{card:'food',n:2,ap:1},failPen:{hp:-8},
+       greatCard:'torch',greatBonus:{card:'metal',n:2},desc:'도구판정. 성공:식량×2+AP환급 / 대성공(횃불):고철×2 / 실패:HP-8'},
       {label:'그냥 돌아간다',icon:'↩️',req:null,reward:{},desc:'무조건. 빈손.'},
+    ]},
+  survivor_note:{
+    name:'생존자의 흔적',flavor:'누군가 이 곳에 있었던 것 같다. 낡은 메모와 흔적이 남아있다.',
+    choices:[
+      {label:'흔적을 철저히 조사',icon:'🔦',req:'tool',
+       reward:{card:'metal',n:1,escape:15},failPen:{hp:-8},
+       greatCard:'torch',greatBonus:{card:'wood',n:1,ap:2},
+       desc:'도구판정. 성공:고철×1+탈출+15% / 대성공(횃불):+목재+AP×2 / 실패:HP-8'},
+      {label:'메모만 빠르게 읽는다',icon:'📝',req:null,
+       reward:{escape:5},
+       desc:'무조건. 탈출도+5%.'},
+    ]},
+  trap_pit:{
+    name:'야생 덫 구덩이',flavor:'덤불 사이에 정교하게 파인 함정이 보인다. 먹이가 걸려든 것 같다.',
+    choices:[
+      {label:'전리품을 회수한다',icon:'🎯',req:'resource',
+       reward:{card:'food',n:3},failPen:{hp:-12},
+       greatCard:'gathering_knife',greatBonus:{card:'hide',n:1},
+       desc:'자원판정. 성공:식량×3 / 대성공(채집칼):+가죽×1 / 실패:HP-12'},
+      {label:'건드리지 않고 지나친다',icon:'🚶',req:null,
+       reward:{},
+       desc:'무조건. 빈손. 안전.'},
+    ]},
+  old_fire:{
+    name:'꺼진 모닥불 흔적',flavor:'누군가 야영했던 자리다. 숯불 주위에 쓸만한 것이 남아있을지도 모른다.',
+    choices:[
+      {label:'재와 주변을 뒤진다',icon:'🔥',req:'resource',
+       reward:{card:'wood',n:2,san:8},failPen:{hun:-10},
+       greatCard:'axe',greatBonus:{card:'wood',n:1,ap:1},
+       desc:'자원판정. 성공:목재×2+정신력+8 / 대성공(도끼):+목재+AP환급 / 실패:허기-10'},
+      {label:'불을 다시 피운다',icon:'🕯️',req:null,
+       reward:{san:14},
+       desc:'무조건. 따뜻한 불로 정신력+14 회복.'},
     ]},
 };
 
@@ -1011,45 +1072,60 @@ function flashDamage(){
   setTimeout(()=>el.classList.remove('hit'),180);
 }
 
-// items: [{id, icon, name, n}]  — id 있어야 확인 시 addCard 실행
+// items: [{id, icon, name, n}] — 팝업에서 개별 클릭으로 획득
 function showItemPopup(items, title, cb){
   _itemCb=cb;
-  _pendingItemCards=items;
-  document.getElementById('item-title').textContent=title;
-  const row=document.getElementById('item-row'); row.innerHTML='';
-  items.forEach(({id,icon,name,n},idx)=>{
-    const div=document.createElement('div'); div.className='item-card';
-    div.style.animationDelay=`${idx*0.1}s`;
-    div.innerHTML=`<div class="item-card-icon">${icon}</div><div class="item-card-name">${name}</div><div class="item-card-n">×${n}</div>`;
-    const def=id?CARD_MAP[id]:null;
-    if(def){
-      if(window.innerWidth>700){ div.addEventListener('mouseenter',()=>showTT(def,div)); div.addEventListener('mouseleave',hideTT); }
-      else { addCardTouchTT(div,def); }
-    }
-    row.appendChild(div);
+  _pendingItemCards=[];
+  items.forEach(item=>{
+    for(let i=0;i<(item.n||1);i++) _pendingItemCards.push({...item, n:1});
   });
+  _renderItemPopup(title||'🎁 획득!');
   document.getElementById('item-mo').style.display='flex';
 }
 
-function confirmItemPopup(){
-  document.getElementById('item-mo').style.display='none';
-  if(_pendingItemCards){
-    _pendingItemCards.forEach(({id,n})=>{ if(id) addCard(id,n); });
-    const names=_pendingItemCards.map(({icon,name,n})=>`${icon}${name}×${n}`).join(' ');
-    if(names) log(`📦 획득: ${names}`,'success');
+function _renderItemPopup(title){
+  document.getElementById('item-title').textContent=title;
+  const row=document.getElementById('item-row'); row.innerHTML='';
+  (_pendingItemCards||[]).forEach((item,idx)=>{
+    const div=document.createElement('div'); div.className='item-card';
+    div.style.animationDelay=`${idx*0.08}s`;
+    div.style.cursor='pointer';
+    div.innerHTML=`<div class="item-card-icon">${item.icon}</div><div class="item-card-name">${item.name}</div><div style="font-size:7px;color:var(--green);margin-top:3px;font-family:var(--font-m);">탭→획득</div>`;
+    div.onclick=(e)=>{ e.stopPropagation(); claimItem(idx); };
+    const def=item.id?CARD_MAP[item.id]:null;
+    if(def && window.innerWidth>700){
+      div.addEventListener('mouseenter',()=>showTT(def,div));
+      div.addEventListener('mouseleave',hideTT);
+    }
+    row.appendChild(div);
+  });
+}
+
+function claimItem(idx){
+  if(!_pendingItemCards||idx>=_pendingItemCards.length) return;
+  const item=_pendingItemCards[idx];
+  if(item.id) addCard(item.id, 1);
+  log(`📦 획득: ${item.icon}${item.name}`,'success');
+  _pendingItemCards.splice(idx,1);
+  if(!_pendingItemCards.length){
+    document.getElementById('item-mo').style.display='none';
     _pendingItemCards=null;
+    const cb=_itemCb; _itemCb=null;
+    if(cb) cb();
+    render();
+  } else {
+    _renderItemPopup(document.getElementById('item-title').textContent);
+    render();
   }
-  const cb=_itemCb; _itemCb=null;
-  if(cb) cb();
 }
 
 function skipItemPopup(){
   document.getElementById('item-mo').style.display='none';
-  if(_pendingItemCards){
-    const names=_pendingItemCards.map(({icon,name,n})=>`${icon}${name}×${n}`).join(' ');
-    if(names) log(`🚫 포기: ${names}`,'');
-    _pendingItemCards=null;
+  if(_pendingItemCards&&_pendingItemCards.length){
+    const names=_pendingItemCards.map(({icon,name})=>`${icon}${name}`).join(' ');
+    log(`🚫 포기: ${names}`,'');
   }
+  _pendingItemCards=null;
   const cb=_itemCb; _itemCb=null;
   if(cb) cb();
 }
@@ -1116,7 +1192,8 @@ function showTT(c, el){
   if(c.use){
     useEl.style.display='';
     const kB=hasTool('knife')?8:0;
-    const m={eat:`🍗 허기+${22+kB}`,drink:'💧 갈증+28',heal:'🌿 HP+10'};
+    const eatTxt=kB?`🍗 허기+30 (칼 패시브+8)`:`🍗 허기+22`;
+    const m={eat:eatTxt,drink:'💧 갈증+28',heal:'🌿 HP+10'};
     useEl.textContent=m[c.use]||'';
   } else useEl.style.display='none';
 
@@ -1229,7 +1306,6 @@ window.addEventListener('resize', ()=>{
 </script></script>
 <script>
 // ═══════════════ MAP ═══════════════
-// [버그수정] apCost() 실제 이동에 반영
 
 function buildMap(){
   G.tiles=[];
@@ -1248,28 +1324,21 @@ function getAdj(p){
   return res;
 }
 
-// 캠프에서 멀수록 이동 AP 증가 (3칸마다 +1)
-function apCost(to){
-  if(!G.camps.length) return 1;
-  let min=99;
-  G.camps.forEach(cp=>{
-    const dr=Math.abs(Math.floor(cp/10)-Math.floor(to/10));
-    const dc=Math.abs((cp%10)-(to%10));
-    min=Math.min(min, dr+dc);
-  });
-  return 1+Math.floor(min/3);
+// 맨해튼 거리 (칸당 AP1)
+function tileDist(a, b){
+  return Math.abs(Math.floor(a/10)-Math.floor(b/10))+Math.abs((a%10)-(b%10));
 }
 
 function clickTile(i){
   if(G.over) return;
   const t=G.tiles[i];
   if(!t.revealed||i===G.pos) return;
-  const cost=apCost(i);
-  if(G.ap<cost){log(`AP부족 (이동:AP${cost})`, 'danger'); render(); return;}
+  const cost=tileDist(G.pos, i);
+  if(G.ap<cost){log(`AP부족 (이동${cost}칸=AP${cost})`, ''); render(); return;}
   G.tiles[G.pos].hasPlayer=false;
   G.pos=i; t.hasPlayer=true; G.ap-=cost;
   getAdj(i).forEach(j=>G.tiles[j].revealed=true);
-  log(`📍 ${t.name}으로 이동 (AP-${cost})`, '');
+  log(`📍 ${t.name}으로 이동 (${cost}칸·AP-${cost})`, '');
   checkSurvival(); render();
 }
 
@@ -1494,7 +1563,7 @@ function doCamp(){
   if(G.tiles[G.pos].hasCamp){log('이미 캠프가 있다.','');return;}
   G.tiles[G.pos].hasCamp=true; G.camps.push(G.pos); G.ap-=8;
   const t=G.tiles[G.pos];
-  const bns={beach:'허기감소 완화',forest:'매일 식량 자동생성',cave:'매일 정신력+5',ruins:'탐색확률 향상',shore:'매일 물 자동생성'};
+  const bns={beach:'카드사용+1드로우',forest:'취침 식량 자동생성',cave:'취침 정신력+5',ruins:'없음',shore:'취침 물 자동생성'};
   log(`🏕️ ${t.name} 캠프 건설! (AP-8) — ${bns[t.id]||''}`, 'success');
   render();
 }
@@ -1616,9 +1685,12 @@ function openUseCard(){
   if(G.over) return;
   if(G.ap<1){log('AP부족 (카드사용:AP1)','danger');render();return;}
   G.ap-=1;
-  _ucHand=drawToHand(hasTool('rope')?6:5);
+  const beachCamp=G.camps.some(cp=>G.tiles[cp].id==='beach');
+  const drawN=5+(hasTool('rope')?1:0)+(beachCamp?1:0);
+  _ucHand=drawToHand(drawN);
   if(!_ucHand.length){log('덱이 비어있다.','danger');G.ap+=1;render();return;}
-  document.getElementById('uc-sub').textContent=`${_ucHand.length}장 드로우${hasTool('rope')?' (🪢밧줄+1장)':''} — 사용할 카드 선택`;
+  const bonusDesc=(hasTool('rope')?' (🪢밧줄+1)':'')+(beachCamp?' (🏖️해변캠프+1)':'');
+  document.getElementById('uc-sub').textContent=`${_ucHand.length}장 드로우${bonusDesc} — 사용할 카드 선택`;
   document.getElementById('uc-result').textContent='';
   document.getElementById('uc-mo').style.display='flex';
   renderUcCards(); render();
@@ -1717,7 +1789,7 @@ function doSleep(){
   if(G.day>5){
     const fog=G.tiles.filter((t,i)=>t.revealed&&!t.hasCamp&&i!==G.pos);
     const n=Math.floor(fog.length*.08);
-    for(let i=0;i<n;i++){const idx=Math.floor(Math.random()*fog.length);const ti=G.tiles.indexOf(fog[idx]);if(ti>=0)G.tiles[ti].revealed=false;fog.splice(idx,1);}
+    for(let i=0;i<n;i++){const idx=Math.floor(Math.random()*fog.length);const ti=G.tiles.indexOf(fog[idx]);if(ti>=0){G.tiles[ti].wasSeen=true;G.tiles[ti].revealed=false;}fog.splice(idx,1);}
   }
   drawCards(2);
   log(`🌙 ${G.day-1}일→${G.day}일. HP+${hpR} 정신력+${sanR}${bonAP?` 이른취침AP+${bonAP}`:''}${fatigueN?` 피로AP-${fatigueN*2}`:''}`, 'important');
@@ -1955,12 +2027,24 @@ function renderCombat(){
   document.getElementById('cbt-ename').textContent=e.name;
   document.getElementById('cbt-ehp').textContent=Math.max(0,e.curHp);
   document.getElementById('cbt-emhp').textContent=e.hp;
+  const edefEl=document.getElementById('cbt-edef'); if(edefEl) edefEl.textContent=e.def;
   document.getElementById('cbt-ehpbar').style.width=Math.max(0,e.curHp/e.hp*100)+'%';
   document.getElementById('cbt-intent').textContent=CBT.stunned?'💫 기절':`💥 공격: ${e.atk}`;
   const aT=CBT.atkZone.reduce((s,c)=>s+Math.max(0,c.atk),0);
   const dT=CBT.defZone.reduce((s,c)=>s+Math.max(0,c.def),0);
   document.getElementById('atk-tot').textContent=aT;
   document.getElementById('def-tot').textContent=dT;
+  // 예상 피해 미리보기
+  const prevEl=document.getElementById('cbt-preview');
+  if(prevEl){
+    let preAtk=0; let hasPierce=false;
+    CBT.atkZone.forEach(c=>{if(c.cbtFx==='pierce'){preAtk+=c.atk+4;hasPierce=true;}else if(c.cbtFx==='stun')preAtk+=c.atk+3;else preAtk+=Math.max(0,c.atk);});
+    let preDef=0; CBT.defZone.forEach(c=>{preDef+=c.cbtFx==='block'?c.def+5:Math.max(0,c.def);});
+    const dmgE=hasPierce?preAtk:Math.max(0,preAtk-e.def);
+    const eAk=CBT.stunned?0:e.atk; let dmgP=Math.max(0,eAk-preDef);
+    if(allCards().some(c=>c.id==='leather_armor')&&dmgP>0) dmgP=Math.max(0,dmgP-2);
+    prevEl.innerHTML=`예상: <span style="color:var(--red);">적 ${dmgE}피해</span> · <span style="color:${dmgP>0?'var(--red)':'var(--green)'};">내 ${dmgP}피해</span>`;
+  }
   renderZone('atk-zone',CBT.atkZone,'atk');
   renderZone('def-zone',CBT.defZone,'def');
   const hEl=document.getElementById('cbt-hand'); hEl.innerHTML='';
@@ -2035,14 +2119,18 @@ function resolveCombat(){
   resEl.innerHTML=lines.map(l=>`<div class="rl ${l.cls}">${l.t}</div>`).join('');
 
   if(e.curHp<=0){
-    // 승리 처리
+    // 승리 처리 — 기본 보상 + 랜덤 추가 전리품
     const rewardItems=[];
-    if(e.reward?.cards){ e.reward.cards.forEach(r=>{ addCard(r.id,r.n); const d=CARD_MAP[r.id]; rewardItems.push({icon:d?.icon||'📦',name:d?.name||r.id,n:r.n}); }); }
-    if(e.reward?.san){ G.san=Math.min(100,G.san+e.reward.san); }
+    if(e.reward?.san) G.san=Math.min(100,G.san+e.reward.san);
+    if(e.reward?.cards) e.reward.cards.forEach(r=>{ const d=CARD_MAP[r.id]; rewardItems.push({id:r.id,icon:d?.icon||'📦',name:d?.name||r.id,n:r.n}); });
+    if(e.altCards){
+      const bonus=e.altCards[Math.floor(Math.random()*e.altCards.length)];
+      bonus.forEach(r=>{ const d=CARD_MAP[r.id]; rewardItems.push({id:r.id,icon:d?.icon||'📦',name:d?.name||r.id,n:r.n}); });
+    }
     resEl.innerHTML+=`<div class="rl good" style="font-size:13px;margin-top:5px;">🏆 ${e.name} 처치!</div>`;
-    resEl.innerHTML+=`<div class="rl good">💎 보상: ${e.rewardDesc}</div>`;
+    resEl.innerHTML+=`<div class="rl good">💎 전리품: ${rewardItems.map(r=>r.icon+r.name+'×'+r.n).join(' ')} — 클릭해서 선택 획득</div>`;
     G.kills++; CBT.resolved=true;
-    log(`⚔️ ${e.name} 처치! 보상: ${e.rewardDesc}`,'success');
+    log(`⚔️ ${e.name} 처치! 전리품 선택 획득 가능`,'success');
     document.getElementById('btn-cbt-resolve').style.display='none';
     document.getElementById('btn-cbt-flee').style.display='none';
     document.getElementById('btn-cbt-close').style.display='';
@@ -2172,9 +2260,10 @@ function getDOM(){
 }
 
 function campBonus(tileId){
-  if(tileId==='cave')   return '정신력+5';
-  if(tileId==='forest') return '식량생성';
-  if(tileId==='shore')  return '물생성';
+  if(tileId==='beach')  return '카드사용+1드로우';
+  if(tileId==='cave')   return '취침 정신력+5';
+  if(tileId==='forest') return '취침 식량생성';
+  if(tileId==='shore')  return '취침 물생성';
   return '';
 }
 
@@ -2229,12 +2318,12 @@ function render(){
   p.tiles.forEach((t,i)=>{
     const el=document.createElement('div');
     el.className='tile'
-      +(t.revealed?` revealed ${t.cls}`:'fog')
+      +(t.revealed?` revealed ${t.cls}`:t.wasSeen?` seen-fog ${t.cls}`:'fog')
       +(i===p.pos?' player':'')
       +(t.hasCamp?' camp-t':'')
       +(t.revealed&&t.explored?' explored':'');
     if(t.revealed) el.textContent=i===p.pos?'🧍':(t.hasCamp?'🏕️':t.icon);
-    el.title=t.revealed?`${t.name}${t.explored?' ✓':''}`:' ';
+    el.title=t.revealed?`${t.name}${t.explored?' ✓':''}`:t.wasSeen?`${t.name} (안개 속)`:' ';
     el.onclick=()=>clickTile(i);
     mapFrag.appendChild(el);
   });

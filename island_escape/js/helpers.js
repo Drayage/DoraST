@@ -71,45 +71,60 @@ function flashDamage(){
   setTimeout(()=>el.classList.remove('hit'),180);
 }
 
-// items: [{id, icon, name, n}]  — id 있어야 확인 시 addCard 실행
+// items: [{id, icon, name, n}] — 팝업에서 개별 클릭으로 획득
 function showItemPopup(items, title, cb){
   _itemCb=cb;
-  _pendingItemCards=items;
-  document.getElementById('item-title').textContent=title;
-  const row=document.getElementById('item-row'); row.innerHTML='';
-  items.forEach(({id,icon,name,n},idx)=>{
-    const div=document.createElement('div'); div.className='item-card';
-    div.style.animationDelay=`${idx*0.1}s`;
-    div.innerHTML=`<div class="item-card-icon">${icon}</div><div class="item-card-name">${name}</div><div class="item-card-n">×${n}</div>`;
-    const def=id?CARD_MAP[id]:null;
-    if(def){
-      if(window.innerWidth>700){ div.addEventListener('mouseenter',()=>showTT(def,div)); div.addEventListener('mouseleave',hideTT); }
-      else { addCardTouchTT(div,def); }
-    }
-    row.appendChild(div);
+  _pendingItemCards=[];
+  items.forEach(item=>{
+    for(let i=0;i<(item.n||1);i++) _pendingItemCards.push({...item, n:1});
   });
+  _renderItemPopup(title||'🎁 획득!');
   document.getElementById('item-mo').style.display='flex';
 }
 
-function confirmItemPopup(){
-  document.getElementById('item-mo').style.display='none';
-  if(_pendingItemCards){
-    _pendingItemCards.forEach(({id,n})=>{ if(id) addCard(id,n); });
-    const names=_pendingItemCards.map(({icon,name,n})=>`${icon}${name}×${n}`).join(' ');
-    if(names) log(`📦 획득: ${names}`,'success');
+function _renderItemPopup(title){
+  document.getElementById('item-title').textContent=title;
+  const row=document.getElementById('item-row'); row.innerHTML='';
+  (_pendingItemCards||[]).forEach((item,idx)=>{
+    const div=document.createElement('div'); div.className='item-card';
+    div.style.animationDelay=`${idx*0.08}s`;
+    div.style.cursor='pointer';
+    div.innerHTML=`<div class="item-card-icon">${item.icon}</div><div class="item-card-name">${item.name}</div><div style="font-size:7px;color:var(--green);margin-top:3px;font-family:var(--font-m);">탭→획득</div>`;
+    div.onclick=(e)=>{ e.stopPropagation(); claimItem(idx); };
+    const def=item.id?CARD_MAP[item.id]:null;
+    if(def && window.innerWidth>700){
+      div.addEventListener('mouseenter',()=>showTT(def,div));
+      div.addEventListener('mouseleave',hideTT);
+    }
+    row.appendChild(div);
+  });
+}
+
+function claimItem(idx){
+  if(!_pendingItemCards||idx>=_pendingItemCards.length) return;
+  const item=_pendingItemCards[idx];
+  if(item.id) addCard(item.id, 1);
+  log(`📦 획득: ${item.icon}${item.name}`,'success');
+  _pendingItemCards.splice(idx,1);
+  if(!_pendingItemCards.length){
+    document.getElementById('item-mo').style.display='none';
     _pendingItemCards=null;
+    const cb=_itemCb; _itemCb=null;
+    if(cb) cb();
+    render();
+  } else {
+    _renderItemPopup(document.getElementById('item-title').textContent);
+    render();
   }
-  const cb=_itemCb; _itemCb=null;
-  if(cb) cb();
 }
 
 function skipItemPopup(){
   document.getElementById('item-mo').style.display='none';
-  if(_pendingItemCards){
-    const names=_pendingItemCards.map(({icon,name,n})=>`${icon}${name}×${n}`).join(' ');
-    if(names) log(`🚫 포기: ${names}`,'');
-    _pendingItemCards=null;
+  if(_pendingItemCards&&_pendingItemCards.length){
+    const names=_pendingItemCards.map(({icon,name})=>`${icon}${name}`).join(' ');
+    log(`🚫 포기: ${names}`,'');
   }
+  _pendingItemCards=null;
   const cb=_itemCb; _itemCb=null;
   if(cb) cb();
 }
