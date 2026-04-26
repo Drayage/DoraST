@@ -45,13 +45,30 @@ function showTT(c, el){
 
   tt.style.display='block';
   const r=el.getBoundingClientRect();
-  let left=r.right+8, top=r.top;
-  if(left+178>window.innerWidth) left=r.left-178;
-  left=Math.max(4,left);  // 왼쪽 화면 밖 방지
-  if(top+280>window.innerHeight) top=window.innerHeight-284;
-  tt.style.left=left+'px'; tt.style.top=Math.max(4,top)+'px';
+  const ttW=182, ttH=284;
+  const mob=window.innerWidth<=700;
+  let left, top;
+  if(!mob && r.right+8+ttW<=window.innerWidth){
+    left=r.right+8; top=r.top;
+    if(top+ttH>window.innerHeight) top=window.innerHeight-ttH-4;
+    top=Math.max(4,top);
+  } else if(!mob && r.left-ttW-8>=0){
+    left=r.left-ttW-8; top=r.top;
+    if(top+ttH>window.innerHeight) top=window.innerHeight-ttH-4;
+    top=Math.max(4,top);
+  } else {
+    left=Math.max(4,Math.min(r.left+r.width/2-ttW/2,window.innerWidth-ttW-4));
+    if(r.bottom+8+ttH<=window.innerHeight){ top=r.bottom+8; }
+    else { top=Math.max(4,r.top-ttH-8); }
+  }
+  tt.style.left=left+'px'; tt.style.top=top+'px';
 }
 
 function hideTT(){
   _ttTm=setTimeout(()=>document.getElementById('tt').style.display='none', 80);
 }
+
+document.addEventListener('click', e=>{
+  const tt=document.getElementById('tt');
+  if(tt&&tt.style.display==='block'&&!tt.contains(e.target)) tt.style.display='none';
+});

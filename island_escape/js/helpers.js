@@ -77,10 +77,15 @@ function showItemPopup(items, title, cb){
   _pendingItemCards=items;
   document.getElementById('item-title').textContent=title;
   const row=document.getElementById('item-row'); row.innerHTML='';
-  items.forEach(({icon,name,n},idx)=>{
+  items.forEach(({id,icon,name,n},idx)=>{
     const div=document.createElement('div'); div.className='item-card';
     div.style.animationDelay=`${idx*0.1}s`;
     div.innerHTML=`<div class="item-card-icon">${icon}</div><div class="item-card-name">${name}</div><div class="item-card-n">×${n}</div>`;
+    const def=id?CARD_MAP[id]:null;
+    if(def){
+      if(window.innerWidth>700){ div.addEventListener('mouseenter',()=>showTT(def,div)); div.addEventListener('mouseleave',hideTT); }
+      else { addCardTouchTT(div,def); }
+    }
     row.appendChild(div);
   });
   document.getElementById('item-mo').style.display='flex';

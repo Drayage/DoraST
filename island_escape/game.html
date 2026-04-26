@@ -433,6 +433,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
       <div class="info-box">
         <div class="lbl">캠프 현황</div>
         <div id="camp-info" style="color:var(--text2);">캠프 없음</div>
+        <div id="camp-bonuses" style="color:var(--text3);font-size:8px;line-height:1.7;margin-top:2px;white-space:pre;display:none;"></div>
       </div>
       <div class="info-box">
         <div class="lbl">활성 패시브</div>
@@ -1015,10 +1016,15 @@ function showItemPopup(items, title, cb){
   _pendingItemCards=items;
   document.getElementById('item-title').textContent=title;
   const row=document.getElementById('item-row'); row.innerHTML='';
-  items.forEach(({icon,name,n},idx)=>{
+  items.forEach(({id,icon,name,n},idx)=>{
     const div=document.createElement('div'); div.className='item-card';
     div.style.animationDelay=`${idx*0.1}s`;
     div.innerHTML=`<div class="item-card-icon">${icon}</div><div class="item-card-name">${name}</div><div class="item-card-n">×${n}</div>`;
+    const def=id?CARD_MAP[id]:null;
+    if(def){
+      if(window.innerWidth>700){ div.addEventListener('mouseenter',()=>showTT(def,div)); div.addEventListener('mouseleave',hideTT); }
+      else { addCardTouchTT(div,def); }
+    }
     row.appendChild(div);
   });
   document.getElementById('item-mo').style.display='flex';
@@ -1130,16 +1136,33 @@ function showTT(c, el){
 
   tt.style.display='block';
   const r=el.getBoundingClientRect();
-  let left=r.right+8, top=r.top;
-  if(left+178>window.innerWidth) left=r.left-178;
-  left=Math.max(4,left);  // 왼쪽 화면 밖 방지
-  if(top+280>window.innerHeight) top=window.innerHeight-284;
-  tt.style.left=left+'px'; tt.style.top=Math.max(4,top)+'px';
+  const ttW=182, ttH=284;
+  const mob=window.innerWidth<=700;
+  let left, top;
+  if(!mob && r.right+8+ttW<=window.innerWidth){
+    left=r.right+8; top=r.top;
+    if(top+ttH>window.innerHeight) top=window.innerHeight-ttH-4;
+    top=Math.max(4,top);
+  } else if(!mob && r.left-ttW-8>=0){
+    left=r.left-ttW-8; top=r.top;
+    if(top+ttH>window.innerHeight) top=window.innerHeight-ttH-4;
+    top=Math.max(4,top);
+  } else {
+    left=Math.max(4,Math.min(r.left+r.width/2-ttW/2,window.innerWidth-ttW-4));
+    if(r.bottom+8+ttH<=window.innerHeight){ top=r.bottom+8; }
+    else { top=Math.max(4,r.top-ttH-8); }
+  }
+  tt.style.left=left+'px'; tt.style.top=top+'px';
 }
 
 function hideTT(){
   _ttTm=setTimeout(()=>document.getElementById('tt').style.display='none', 80);
 }
+
+document.addEventListener('click', e=>{
+  const tt=document.getElementById('tt');
+  if(tt&&tt.style.display==='block'&&!tt.contains(e.target)) tt.style.display='none';
+});
 
 </script></script>
 <script>
@@ -1176,13 +1199,11 @@ function mobTab(t){
 
 function addCardTouchTT(el, card){
   if(window.innerWidth>700) return;
-  el.addEventListener('click', ()=>{
+  el.addEventListener('click', e=>{
+    e.stopPropagation();
     const tt=document.getElementById('tt');
-    if(tt.style.display==='block'){
-      tt.style.display='none';
-    } else {
-      showTT(card, el);
-    }
+    if(tt.style.display==='block'){ tt.style.display='none'; }
+    else { showTT(card, el); }
   });
 }
 
@@ -1528,7 +1549,10 @@ function renderCraft(){
       <button class="btn" style="${canDo?'border-color:var(--purple);color:var(--purple);':''}" onclick="doCraft('${rec.id}')" ${canDo?'':'disabled'}>
         🔨 제작 (AP${rec.ap})${!ok?' — 재료부족':!hasAP?' — AP부족':''}
       </button>`;
-    if(resultDef&&window.innerWidth>700){ div.addEventListener('mouseenter',()=>showTT(resultDef,div)); div.addEventListener('mouseleave',hideTT); }
+    if(resultDef){
+      if(window.innerWidth>700){ div.addEventListener('mouseenter',()=>showTT(resultDef,div)); div.addEventListener('mouseleave',hideTT); }
+      else { div.addEventListener('click',e=>{ e.stopPropagation(); const tt=document.getElementById('tt'); if(tt.style.display==='block') tt.style.display='none'; else showTT(resultDef,div); }); }
+    }
     lEl.appendChild(div);
   });
 }
@@ -2121,6 +2145,13 @@ function getDOM(){
   return _dom;
 }
 
+function campBonus(tileId){
+  if(tileId==='cave')   return '정신력+5';
+  if(tileId==='forest') return '식량생성';
+  if(tileId==='shore')  return '물생성';
+  return '';
+}
+
 function render(){
   const p=G, d=getDOM();
 
@@ -2145,12 +2176,20 @@ function render(){
   // 캠프 정보
   d.campInfo.textContent=p.camps.length?`캠프 ${p.camps.length}곳 (제작 가능)`:'캠프 없음 (취침이벤트↑)';
   d.campInfo.style.color=p.camps.length?'var(--green)':'var(--red)';
+  const campBonusesEl=document.getElementById('camp-bonuses');
+  if(campBonusesEl){
+    if(p.camps.length){
+      campBonusesEl.textContent=p.camps.map(cp=>{const t=p.tiles[cp];const b=campBonus(t.id);return `· ${t.icon}${t.name}${b?`: ${b}`:''}`;}).join('\n');
+      campBonusesEl.style.display='';
+    } else { campBonusesEl.style.display='none'; }
+  }
 
   // 현재 위치 지형
   const ct=p.tiles[p.pos];
   d.curTileIcon.textContent=ct.icon||'❓';
   d.curTileName.textContent=ct.name||'?';
-  d.curTileStatus.textContent=ct.hasCamp?'🏕️ 캠프':ct.explored?'✓ 탐색완료':'— 미탐색';
+  const bonus=ct.hasCamp?campBonus(ct.id):'';
+  d.curTileStatus.textContent=ct.hasCamp?`🏕️ 캠프${bonus?` (${bonus})`:''}`:ct.explored?'✓ 탐색완료':'— 미탐색';
   const gatherTools=ct.gather?.map(o=>CARD_MAP[o.tool]?.icon+CARD_MAP[o.tool]?.name).join(' ');
   d.curTileGather.textContent=gatherTools?`수집: ${gatherTools}`:'';
 

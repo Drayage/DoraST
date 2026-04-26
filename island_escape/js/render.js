@@ -23,6 +23,13 @@ function getDOM(){
   return _dom;
 }
 
+function campBonus(tileId){
+  if(tileId==='cave')   return '정신력+5';
+  if(tileId==='forest') return '식량생성';
+  if(tileId==='shore')  return '물생성';
+  return '';
+}
+
 function render(){
   const p=G, d=getDOM();
 
@@ -47,12 +54,20 @@ function render(){
   // 캠프 정보
   d.campInfo.textContent=p.camps.length?`캠프 ${p.camps.length}곳 (제작 가능)`:'캠프 없음 (취침이벤트↑)';
   d.campInfo.style.color=p.camps.length?'var(--green)':'var(--red)';
+  const campBonusesEl=document.getElementById('camp-bonuses');
+  if(campBonusesEl){
+    if(p.camps.length){
+      campBonusesEl.textContent=p.camps.map(cp=>{const t=p.tiles[cp];const b=campBonus(t.id);return `· ${t.icon}${t.name}${b?`: ${b}`:''}`;}).join('\n');
+      campBonusesEl.style.display='';
+    } else { campBonusesEl.style.display='none'; }
+  }
 
   // 현재 위치 지형
   const ct=p.tiles[p.pos];
   d.curTileIcon.textContent=ct.icon||'❓';
   d.curTileName.textContent=ct.name||'?';
-  d.curTileStatus.textContent=ct.hasCamp?'🏕️ 캠프':ct.explored?'✓ 탐색완료':'— 미탐색';
+  const bonus=ct.hasCamp?campBonus(ct.id):'';
+  d.curTileStatus.textContent=ct.hasCamp?`🏕️ 캠프${bonus?` (${bonus})`:''}`:ct.explored?'✓ 탐색완료':'— 미탐색';
   const gatherTools=ct.gather?.map(o=>CARD_MAP[o.tool]?.icon+CARD_MAP[o.tool]?.name).join(' ');
   d.curTileGather.textContent=gatherTools?`수집: ${gatherTools}`:'';
 

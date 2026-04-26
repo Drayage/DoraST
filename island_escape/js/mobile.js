@@ -31,13 +31,11 @@ function mobTab(t){
 
 function addCardTouchTT(el, card){
   if(window.innerWidth>700) return;
-  el.addEventListener('click', ()=>{
+  el.addEventListener('click', e=>{
+    e.stopPropagation();
     const tt=document.getElementById('tt');
-    if(tt.style.display==='block'){
-      tt.style.display='none';
-    } else {
-      showTT(card, el);
-    }
+    if(tt.style.display==='block'){ tt.style.display='none'; }
+    else { showTT(card, el); }
   });
 }
 
