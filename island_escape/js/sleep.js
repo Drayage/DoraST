@@ -63,8 +63,8 @@ function doSleep(){
   if(G.day>5){
     const fog=G.tiles.filter((t,i)=>{
       if(!t.revealed||t.hasCamp||i===G.pos) return false;
-      const dr=Math.abs(Math.floor(i/10)-Math.floor(G.pos/10));
-      const dc=Math.abs((i%10)-(G.pos%10));
+      const dr=Math.abs(Math.floor(i/7)-Math.floor(G.pos/7));
+      const dc=Math.abs((i%7)-(G.pos%7));
       return dr+dc>1;
     });
     const n=Math.floor(fog.length*.08);
@@ -215,6 +215,7 @@ function revealRaft(el, type){
     log('🛶 뗏목 제작 실패. 탈출도-10%','danger');
   }
   document.getElementById('se-ok').style.display='';
+  document.getElementById('se-ok').onclick=()=>closeSleepEvt();
   checkWin(); render();
 }
 
@@ -254,6 +255,7 @@ function revealDoomLottery(el,type){
     resEl.textContent=`✓ 기적적으로 살아남았다! 하지만 다음엔 더 어렵다. (생존카드 ${left}장 남음)`;
     log(`🌟 종말 복권: 생존! (생존카드 ${left}장 남음)`,'success');
     document.getElementById('se-ok').style.display='';
+    document.getElementById('se-ok').onclick=()=>closeSleepEvt();
   } else {
     el.classList.add('sc-bad'); el.textContent='🌀';
     resEl.style.color='var(--red)';
@@ -320,6 +322,7 @@ function revealSC(el, type){
     log('💀 취침이벤트: 악몽 — 피로카드 추가','danger');
   }
   document.getElementById('se-ok').style.display='';
+  document.getElementById('se-ok').onclick=()=>closeSleepEvt();
 }
 
 function rmStatusCard(){

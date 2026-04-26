@@ -1,14 +1,15 @@
 // ═══════════════ MAP ═══════════════
+// 7×7 = 49 타일, 시작위치 24 (행3 열3, 중앙)
 
 function buildMap(){
   G.tiles=[];
-  for(let i=0;i<50;i++){
+  for(let i=0;i<49;i++){
     const t=TILE_TYPES[Math.floor(Math.random()*TILE_TYPES.length)];
     G.tiles.push({...t, revealed:false, hasPlayer:false, hasCamp:false, explored:false});
   }
-  // 시작 위치(22) 반경 2 이내에 forest/beach/cave 보장
+  // 시작 위치(24) 반경 2 이내에 forest/beach/cave 보장
   const near=[];
-  for(let i=0;i<50;i++){
+  for(let i=0;i<49;i++){
     if(i!==G.pos && tileDist(i,G.pos)<=2) near.push(i);
   }
   ['forest','beach','cave'].forEach(tid=>{
@@ -26,15 +27,15 @@ function buildMap(){
 }
 
 function getAdj(p){
-  const r=Math.floor(p/10), c=p%10, res=[];
-  if(r>0) res.push(p-10); if(r<4) res.push(p+10);
-  if(c>0) res.push(p-1);  if(c<9) res.push(p+1);
+  const r=Math.floor(p/7), c=p%7, res=[];
+  if(r>0) res.push(p-7); if(r<6) res.push(p+7);
+  if(c>0) res.push(p-1); if(c<6) res.push(p+1);
   return res;
 }
 
 // 맨해튼 거리 (칸당 AP1)
 function tileDist(a, b){
-  return Math.abs(Math.floor(a/10)-Math.floor(b/10))+Math.abs((a%10)-(b%10));
+  return Math.abs(Math.floor(a/7)-Math.floor(b/7))+Math.abs((a%7)-(b%7));
 }
 
 function clickTile(i){

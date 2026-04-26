@@ -40,7 +40,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .doom-fill{height:4px;background:linear-gradient(90deg,var(--accent2),var(--red));transition:width .5s;}
 
 /* LAYOUT */
-#layout{display:grid;grid-template-columns:330px 1fr 244px;height:calc(100vh - 50px);}
+#layout{display:grid;grid-template-columns:410px 1fr 210px;height:calc(100vh - 50px);}
 #map-col{border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
 #ctr-col{display:flex;flex-direction:column;overflow:hidden;}
 #rgt-col{border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
@@ -49,16 +49,16 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 
 /* MAP */
 #map-wrap{padding:9px;overflow:auto;flex:1;}
-#grid{display:grid;grid-template-columns:repeat(10,29px);gap:2px;}
-.tile{width:29px;height:29px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;border:1px solid transparent;transition:all .1s;position:relative;user-select:none;}
-.tile.fog{background:#0d1420;cursor:default;}.tile.fog::after{content:'▓';color:#1e2d40;font-size:9px;}
+#grid{display:grid;grid-template-columns:repeat(7,52px);gap:3px;}
+.tile{width:52px;height:52px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;border:1px solid transparent;transition:all .1s;position:relative;user-select:none;}
+.tile.fog{background:#0d1420;cursor:default;}.tile.fog::after{content:'▓';color:#1e2d40;font-size:13px;}
 .tile.seen-fog{background:#10131a;border-color:#1a1f28;cursor:default;filter:grayscale(50%);}
-.tile.seen-fog::after{content:'░';color:#1e2438;font-size:10px;position:absolute;}
+.tile.seen-fog::after{content:'░';color:#1e2438;font-size:14px;position:absolute;}
 .tile.seen-fog:hover{transform:none!important;border-color:#1a1f28!important;}
-.tile:not(.fog):hover{border-color:var(--border2);transform:scale(1.1);z-index:2;}
-.tile.player{border-color:var(--accent)!important;border-width:2px;box-shadow:0 0 7px rgba(232,184,75,.4);}
-.tile.camp-t{box-shadow:inset 0 0 5px rgba(76,175,125,.3);}
-.tile.explored::after{content:'·';position:absolute;bottom:1px;right:2px;font-size:7px;color:var(--green2);}
+.tile:not(.fog):hover{border-color:var(--border2);transform:scale(1.08);z-index:2;}
+.tile.player{border-color:var(--accent)!important;border-width:2px;box-shadow:0 0 10px rgba(232,184,75,.45);}
+.tile.camp-t{box-shadow:inset 0 0 8px rgba(76,175,125,.35);}
+.tile.explored::after{content:'✓';position:absolute;bottom:2px;right:3px;font-size:8px;color:var(--green2);font-family:var(--font-m);}
 .tile.t-beach{background:#1a1a0e;border-color:#3a3010;}.tile.t-forest{background:#0e1a10;border-color:#103018;}
 .tile.t-cave{background:#141418;border-color:#2a2a32;}.tile.t-ruins{background:#14100e;border-color:#2a2018;}
 .tile.t-shore{background:#0e1420;border-color:#103040;}
@@ -92,15 +92,15 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 
 /* DECK */
 #deck-area{flex:1;display:flex;flex-direction:column;overflow:hidden;}
-#deck-scroll{padding:7px;overflow-y:auto;flex:1;}
-.dk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:5px;}
-.card{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;cursor:pointer;transition:all .14s;min-height:78px;}
+#deck-scroll{padding:6px;overflow-y:auto;flex:1;}
+.dk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:4px;}
+.card{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:5px 3px;display:flex;flex-direction:column;align-items:center;cursor:pointer;transition:all .14s;min-height:64px;}
 .card:hover{transform:translateY(-3px);border-color:var(--border2);}
 .card.card-disc{opacity:0.42;filter:grayscale(60%);border-style:dashed;}
-.card-icon{font-size:18px;margin-bottom:2px;}
-.card-name{font-size:7px;font-weight:700;color:var(--text);text-align:center;margin-bottom:2px;}
-.card-tag{font-size:6px;padding:1px 3px;border-radius:2px;font-family:var(--font-m);font-weight:600;margin-bottom:2px;}
-.card-stats{font-size:7px;color:var(--text3);font-family:var(--font-m);}
+.card-icon{font-size:15px;margin-bottom:2px;}
+.card-name{font-size:6.5px;font-weight:700;color:var(--text);text-align:center;margin-bottom:2px;}
+.card-tag{font-size:5.5px;padding:1px 3px;border-radius:2px;font-family:var(--font-m);font-weight:600;margin-bottom:2px;}
+.card-stats{font-size:6.5px;color:var(--text3);font-family:var(--font-m);}
 .tag-resource{background:var(--tag-resource);color:var(--tag-resource-t);}
 .tag-tool{background:var(--tag-tool);color:var(--tag-tool-t);}
 .tag-combat{background:var(--tag-combat);color:var(--tag-combat-t);}
@@ -114,26 +114,47 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .le.system{color:var(--accent);}.le.combat{color:var(--blue);}
 .le.gather{color:#70b0e0;}
 
-/* TOOLTIP */
-#tt{display:none;position:fixed;z-index:700;pointer-events:none;width:170px;}
-.tt-inner{background:var(--bg2);border:1px solid var(--border2);border-radius:9px;padding:11px 10px;box-shadow:0 8px 26px rgba(0,0,0,.65);}
-.tt-icon{font-size:26px;text-align:center;margin-bottom:5px;}
-.tt-name{font-family:var(--font-t);font-size:13px;color:var(--text);text-align:center;margin-bottom:3px;}
-.tt-sts{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:6px;}
-.tt-st{background:var(--bg4);border-radius:3px;padding:3px;text-align:center;}
-.tt-sl{font-size:7px;color:var(--text3);}.tt-sv{font-size:12px;font-weight:600;font-family:var(--font-m);}
+/* ══ CARD TOOLTIP ══ */
+@keyframes ttPop{from{opacity:0;transform:scale(.93) translateY(5px)}to{opacity:1;transform:scale(1) translateY(0)}}
+#tt{display:none;position:fixed;z-index:700;pointer-events:none;width:210px;}
+.tt-inner{background:linear-gradient(160deg,var(--bg2),var(--bg3));border:1px solid var(--border2);border-radius:10px;overflow:hidden;box-shadow:0 14px 44px rgba(0,0,0,.85),0 0 0 1px rgba(255,255,255,.03);animation:ttPop .13s cubic-bezier(.34,1.4,.64,1);}
+.tt-strip{height:3px;width:100%;}
+.tt-strip.resource{background:var(--tag-resource-t);}.tt-strip.tool{background:var(--tag-tool-t);}
+.tt-strip.combat{background:var(--tag-combat-t);}.tt-strip.status{background:var(--tag-status-t);}
+.tt-body{padding:11px 12px 13px;}
+.tt-icon{font-size:30px;text-align:center;margin-bottom:5px;}
+.tt-name{font-family:var(--font-t);font-size:14px;color:var(--text);text-align:center;margin-bottom:4px;}
+.tt-sts{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px;}
+.tt-st{background:var(--bg4);border-radius:5px;padding:4px 3px;text-align:center;border:1px solid var(--border);}
+.tt-sl{font-size:7px;color:var(--text3);font-family:var(--font-m);margin-bottom:1px;}
+.tt-sv{font-size:14px;font-weight:700;font-family:var(--font-m);}
 .tt-sv.pos{color:var(--green);}.tt-sv.neg{color:var(--red);}.tt-sv.zero{color:var(--text3);}
-.tt-desc{font-size:9px;color:var(--text2);line-height:1.5;border-top:1px solid var(--border);padding-top:6px;}
-.tt-fx{font-size:9px;margin-top:4px;padding:3px 6px;border-radius:3px;}
-.tt-use{color:var(--green);background:rgba(76,175,125,.1);}
-.tt-passive{color:var(--accent);background:rgba(232,184,75,.08);}
-.tt-cbt{color:var(--blue);background:rgba(74,144,212,.08);}
-.tt-gather{color:#70b0e0;background:rgba(112,176,224,.08);}
-.tt-consumable{color:var(--red);background:rgba(224,80,80,.08);}
+.tt-desc{font-size:9px;color:var(--text2);line-height:1.6;border-top:1px solid var(--border);padding-top:7px;}
+.tt-fx{font-size:9px;margin-top:5px;padding:4px 7px;border-radius:4px;line-height:1.5;}
+.tt-use{color:var(--green);background:rgba(76,175,125,.12);border:1px solid rgba(76,175,125,.2);}
+.tt-passive{color:var(--accent);background:rgba(232,184,75,.1);border:1px solid rgba(232,184,75,.16);}
+.tt-cbt{color:var(--blue);background:rgba(74,144,212,.1);border:1px solid rgba(74,144,212,.2);}
+.tt-gather{color:#70b0e0;background:rgba(112,176,224,.1);border:1px solid rgba(112,176,224,.18);}
+.tt-consumable{color:var(--red);background:rgba(224,80,80,.1);border:1px solid rgba(224,80,80,.18);}
+
+/* ══ TILE TOOLTIP ══ */
+#tile-tt{display:none;position:fixed;z-index:600;pointer-events:none;}
+.ttt-inner{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,.8);min-width:140px;animation:ttPop .1s ease-out;}
+.ttt-head{display:flex;align-items:center;gap:8px;padding:8px 11px 6px;border-bottom:1px solid var(--border);}
+.ttt-icon{font-size:20px;line-height:1;flex-shrink:0;}
+.ttt-name{font-family:var(--font-t);font-size:13px;color:var(--text);}
+#ttt-rows{padding:5px 11px 8px;}
+.ttt-row{font-size:9px;font-family:var(--font-m);color:var(--text2);padding:2px 0;line-height:1.5;}
+.ttt-row b{color:var(--text);}
+.ttt-row.ap{color:var(--accent);}
+.ttt-row.done{color:var(--green);}
+.ttt-row.camp{color:var(--green);}
+.ttt-row.fog{color:var(--text3);}
+.ttt-row.todo{color:var(--text3);}
 
 /* MODALS */
-.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:50;align-items:center;justify-content:center;}
-.mb{background:var(--bg2);border:1px solid var(--border2);border-radius:13px;padding:20px;max-width:95vw;}
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:50;align-items:center;justify-content:center;overflow-y:auto;padding:16px;}
+.mb{background:var(--bg2);border:1px solid var(--border2);border-radius:13px;padding:20px;max-width:95vw;max-height:90vh;overflow-y:auto;}
 .mo-title{font-family:var(--font-t);margin-bottom:4px;}
 
 /* DECK VIEWER */
@@ -557,7 +578,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
         <div class="help-row"><b>✨ 카드 사용 (AP1)</b> — 덱에서 5장 드로우. 식량(허기+22)/물(갈증+28)/약초(HP+10) 즉시 사용. 🪢밧줄 보유 시 +1장, 🏖️해변 캠프 시 +1장.</div>
         <div class="help-row"><b>🌙 취침</b> — 다음날로 이동. 허기-14·갈증-18 소모. HP 회복. 덱 전체 셔플. AP4↑ 남기고 자면 <b>이른 취침</b>: HP 추가 회복+AP+2.<br>정신력: 회복되지만 고립감으로 매일 소모(캠프 없음 -5/있음 -2). 🪨동굴 캠프(취침+5) 유지 권장.<br>취침 이벤트 확률: 캠프 위=2~4% · 캠프 인접=5~12% · 캠프 없음=20~60%+</div>
         <div class="help-row"><b>⚔️ 전투 전 조우</b> — 탐색 중 적 발견 시 선택창 등장:<br>
-          ⚔️ <b>기습</b>: 즉시 전투, 첫 라운드 전투카드 2장+ 보장. 단 도주 비용 HP-15.<br>
+          ⚔️ <b>기습</b>: 즉시 전투, 첫 라운드 전투카드 1장 보장. 단 도주 비용 HP-15.<br>
           👁 <b>상황탐색</b>: 도구 카드 비율(40%+)에 따라 아이템만 획득. 실패 시 전투 시작.<br>
           💨 <b>도망</b>: 허기-5 정신력-10. 전투 중 도주는 HP-8 (망토 HP-2, 기습 후엔 HP-15).<br>
           처치 라운드에는 적의 반격이 없음. 사망 예정 시 확인창 표시.</div>
@@ -590,22 +611,36 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   </button>
 </div>
 
-<!-- TOOLTIP -->
+<!-- CARD TOOLTIP -->
 <div id="tt"><div class="tt-inner">
-  <div class="tt-icon" id="tt-icon"></div>
-  <div class="tt-name" id="tt-name"></div>
-  <div style="text-align:center;margin-bottom:6px;" id="tt-tag"></div>
-  <div class="tt-sts">
-    <div class="tt-st"><div class="tt-sl">공격</div><div class="tt-sv" id="tt-atk">0</div></div>
-    <div class="tt-st"><div class="tt-sl">방어</div><div class="tt-sv" id="tt-def">0</div></div>
+  <div class="tt-strip" id="tt-strip"></div>
+  <div class="tt-body">
+    <div class="tt-icon" id="tt-icon"></div>
+    <div class="tt-name" id="tt-name"></div>
+    <div style="text-align:center;margin-bottom:8px;" id="tt-tag"></div>
+    <div class="tt-sts">
+      <div class="tt-st"><div class="tt-sl">⚔️ 공격</div><div class="tt-sv" id="tt-atk">0</div></div>
+      <div class="tt-st"><div class="tt-sl">🛡️ 방어</div><div class="tt-sv" id="tt-def">0</div></div>
+    </div>
+    <div class="tt-desc" id="tt-desc"></div>
+    <div class="tt-fx tt-consumable" id="tt-con" style="display:none;"></div>
+    <div class="tt-fx tt-use" id="tt-use" style="display:none;"></div>
+    <div class="tt-fx tt-passive" id="tt-pass" style="display:none;"></div>
+    <div class="tt-fx tt-cbt" id="tt-cbt" style="display:none;"></div>
+    <div class="tt-fx tt-gather" id="tt-ga" style="display:none;"></div>
   </div>
-  <div class="tt-desc" id="tt-desc"></div>
-  <div class="tt-fx tt-consumable" id="tt-con" style="display:none;"></div>
-  <div class="tt-fx tt-use" id="tt-use" style="display:none;"></div>
-  <div class="tt-fx tt-passive" id="tt-pass" style="display:none;"></div>
-  <div class="tt-fx tt-cbt" id="tt-cbt" style="display:none;"></div>
-  <div class="tt-fx tt-gather" id="tt-ga" style="display:none;"></div>
 </div></div>
+
+<!-- TILE TOOLTIP -->
+<div id="tile-tt">
+  <div class="ttt-inner">
+    <div class="ttt-head">
+      <span class="ttt-icon" id="ttt-icon"></span>
+      <span class="ttt-name" id="ttt-name"></span>
+    </div>
+    <div id="ttt-rows"></div>
+  </div>
+</div>
 
 <!-- DECK VIEWER -->
 <div id="dv-mo" class="mo" onclick="if(event.target===this)closeDv()">
@@ -1171,7 +1206,7 @@ function initGame(){
     hp:100, san:100, hun:80, thi:80,
     doom:0, escape:0,
     doomPhase:0, doomRate:0, doomSurvives:0,
-    camps:[], tiles:[], pos:22,
+    camps:[], tiles:[], pos:24,
     deck:[], disc:[],
     weather:WEATHER[0], tomorrow:WEATHER[1],
     over:false, win:false, logs:[], kills:0,
@@ -1493,13 +1528,17 @@ function _saveRun(win){
 </script></script>
 <script>
 // ═══════════════ TOOLTIP ═══════════════
-// [버그수정] eat +22(not +20), heal +10(not +8), pierce +4(not +3), block +5(not +4)
 
 let _ttLock=false;
 
 function showTT(c, el){
   clearTimeout(_ttTm);
   const tt=document.getElementById('tt');
+
+  // 태그별 컬러 스트립
+  const strip=document.getElementById('tt-strip');
+  if(strip) strip.className='tt-strip '+(c.tag||'');
+
   document.getElementById('tt-icon').textContent=c.icon;
   document.getElementById('tt-name').textContent=c.name;
   document.getElementById('tt-tag').innerHTML=`<span class="card-tag tag-${c.tag}" style="font-size:7px;">${c.tag}</span>`;
@@ -1524,7 +1563,7 @@ function showTT(c, el){
   } else useEl.style.display='none';
 
   const pEl=document.getElementById('tt-pass');
-  if(c.passiveDesc){pEl.style.display='';pEl.textContent='⭐ '+c.passiveDesc+' (중복불가)';}
+  if(c.passiveDesc){pEl.style.display='';pEl.textContent='⭐ '+c.passiveDesc;}
   else pEl.style.display='none';
 
   const cEl=document.getElementById('tt-cbt');
@@ -1540,7 +1579,7 @@ function showTT(c, el){
 
   tt.style.display='block';
   const r=el.getBoundingClientRect();
-  const ttW=182, ttH=284;
+  const ttW=210, ttH=300;
   const mob=window.innerWidth<=700;
   let left, top;
   if(!mob && r.right+8+ttW<=window.innerWidth){
@@ -1561,6 +1600,50 @@ function showTT(c, el){
 
 function hideTT(){
   _ttTm=setTimeout(()=>document.getElementById('tt').style.display='none', 80);
+}
+
+// ── 타일 툴팁 ──
+function showTileTT(mx, my, t, i){
+  if(window.innerWidth<=700) return;
+  const tt=document.getElementById('tile-tt');
+  if(!tt) return;
+  if(!t.revealed && !t.wasSeen){ tt.style.display='none'; return; }
+
+  let icon='', name='', rows=[];
+  if(t.wasSeen && !t.revealed){
+    icon='🌫️'; name=t.name;
+    rows.push({cls:'fog', html:'안개에 가려진 지역'});
+  } else {
+    icon=i===G.pos?'🧍':(t.hasCamp?'🏕️':t.icon);
+    name=t.name;
+    if(i===G.pos){
+      rows.push({cls:'cur', html:'📍 현재 위치'});
+    } else {
+      const ap=tileDist(G.pos,i);
+      rows.push({cls:'ap', html:`🚶 이동 <b>AP ${ap}</b>`});
+    }
+    if(t.hasCamp) rows.push({cls:'camp', html:'🏕️ 캠프 설치됨'});
+    if(t.explored) rows.push({cls:'done', html:'✓ 탐색 완료'});
+    else if(t.revealed) rows.push({cls:'todo', html:'🔍 미탐색 (AP2 필요)'});
+  }
+
+  document.getElementById('ttt-icon').textContent=icon;
+  document.getElementById('ttt-name').textContent=name;
+  const rowsEl=document.getElementById('ttt-rows');
+  rowsEl.innerHTML=rows.map(r=>`<div class="ttt-row ${r.cls}">${r.html}</div>`).join('');
+
+  tt.style.display='block';
+  const ttW=160, ttH=40+rows.length*20;
+  let left=mx+16, top=my-8;
+  if(left+ttW>window.innerWidth-4) left=mx-ttW-10;
+  if(top+ttH>window.innerHeight-4) top=window.innerHeight-ttH-4;
+  top=Math.max(4,top);
+  tt.style.left=left+'px'; tt.style.top=top+'px';
+}
+
+function hideTileTT(){
+  const tt=document.getElementById('tile-tt');
+  if(tt) tt.style.display='none';
 }
 
 document.addEventListener('click', e=>{
@@ -1632,16 +1715,17 @@ window.addEventListener('resize', ()=>{
 </script></script>
 <script>
 // ═══════════════ MAP ═══════════════
+// 7×7 = 49 타일, 시작위치 24 (행3 열3, 중앙)
 
 function buildMap(){
   G.tiles=[];
-  for(let i=0;i<50;i++){
+  for(let i=0;i<49;i++){
     const t=TILE_TYPES[Math.floor(Math.random()*TILE_TYPES.length)];
     G.tiles.push({...t, revealed:false, hasPlayer:false, hasCamp:false, explored:false});
   }
-  // 시작 위치(22) 반경 2 이내에 forest/beach/cave 보장
+  // 시작 위치(24) 반경 2 이내에 forest/beach/cave 보장
   const near=[];
-  for(let i=0;i<50;i++){
+  for(let i=0;i<49;i++){
     if(i!==G.pos && tileDist(i,G.pos)<=2) near.push(i);
   }
   ['forest','beach','cave'].forEach(tid=>{
@@ -1659,15 +1743,15 @@ function buildMap(){
 }
 
 function getAdj(p){
-  const r=Math.floor(p/10), c=p%10, res=[];
-  if(r>0) res.push(p-10); if(r<4) res.push(p+10);
-  if(c>0) res.push(p-1);  if(c<9) res.push(p+1);
+  const r=Math.floor(p/7), c=p%7, res=[];
+  if(r>0) res.push(p-7); if(r<6) res.push(p+7);
+  if(c>0) res.push(p-1); if(c<6) res.push(p+1);
   return res;
 }
 
 // 맨해튼 거리 (칸당 AP1)
 function tileDist(a, b){
-  return Math.abs(Math.floor(a/10)-Math.floor(b/10))+Math.abs((a%10)-(b%10));
+  return Math.abs(Math.floor(a/7)-Math.floor(b/7))+Math.abs((a%7)-(b%7));
 }
 
 function clickTile(i){
@@ -2237,8 +2321,8 @@ function doSleep(){
   if(G.day>5){
     const fog=G.tiles.filter((t,i)=>{
       if(!t.revealed||t.hasCamp||i===G.pos) return false;
-      const dr=Math.abs(Math.floor(i/10)-Math.floor(G.pos/10));
-      const dc=Math.abs((i%10)-(G.pos%10));
+      const dr=Math.abs(Math.floor(i/7)-Math.floor(G.pos/7));
+      const dc=Math.abs((i%7)-(G.pos%7));
       return dr+dc>1;
     });
     const n=Math.floor(fog.length*.08);
@@ -2389,6 +2473,7 @@ function revealRaft(el, type){
     log('🛶 뗏목 제작 실패. 탈출도-10%','danger');
   }
   document.getElementById('se-ok').style.display='';
+  document.getElementById('se-ok').onclick=()=>closeSleepEvt();
   checkWin(); render();
 }
 
@@ -2428,6 +2513,7 @@ function revealDoomLottery(el,type){
     resEl.textContent=`✓ 기적적으로 살아남았다! 하지만 다음엔 더 어렵다. (생존카드 ${left}장 남음)`;
     log(`🌟 종말 복권: 생존! (생존카드 ${left}장 남음)`,'success');
     document.getElementById('se-ok').style.display='';
+    document.getElementById('se-ok').onclick=()=>closeSleepEvt();
   } else {
     el.classList.add('sc-bad'); el.textContent='🌀';
     resEl.style.color='var(--red)';
@@ -2494,6 +2580,7 @@ function revealSC(el, type){
     log('💀 취침이벤트: 악몽 — 피로카드 추가','danger');
   }
   document.getElementById('se-ok').style.display='';
+  document.getElementById('se-ok').onclick=()=>closeSleepEvt();
 }
 
 function rmStatusCard(){
@@ -2515,14 +2602,14 @@ function closeSleepEvt(){
 
 function drawCombatHand(){ return drawToHand(5); }
 
-// 기습: 첫 라운드 전투카드 2장 이상 보장
+// 기습: 첫 라운드 전투카드 1장 보장
 function drawAmbushHand(){
   const isCbt = c => c.atk>0 || c.tag==='combat';
   const cbtInDeck = G.deck.filter(isCbt);
-  if(cbtInDeck.length>=2){
-    const restInDeck = G.deck.filter(c=>!isCbt(c));
-    // pop은 끝에서 → 전투카드를 끝에 배치하면 먼저 뽑힘
-    G.deck = [...restInDeck, ...cbtInDeck];
+  if(cbtInDeck.length>=1){
+    // 전투카드 1장만 끝에 배치 → pop으로 먼저 뽑힘
+    const pick = cbtInDeck[0];
+    G.deck = [...G.deck.filter(c=>c!==pick), pick];
   }
   return drawToHand(5);
 }
@@ -3048,8 +3135,8 @@ function render(){
       +(t.hasCamp?' camp-t':'')
       +(t.revealed&&t.explored?' explored':'');
     if(t.revealed) el.textContent=i===p.pos?'🧍':(t.hasCamp?'🏕️':t.icon);
-    const moveCost=i!==p.pos?` (이동 AP${tileDist(p.pos,i)})`:' (현재위치)';
-    el.title=t.revealed?`${t.name}${t.explored?' ✓':''}${moveCost}`:t.wasSeen?`${t.name} (안개 속)`:' ';
+    el.addEventListener('mousemove', e=>showTileTT(e.clientX,e.clientY,t,i));
+    el.addEventListener('mouseleave', hideTileTT);
     el.onclick=()=>clickTile(i);
     mapFrag.appendChild(el);
   });

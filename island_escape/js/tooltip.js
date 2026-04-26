@@ -1,11 +1,15 @@
 // ═══════════════ TOOLTIP ═══════════════
-// [버그수정] eat +22(not +20), heal +10(not +8), pierce +4(not +3), block +5(not +4)
 
 let _ttLock=false;
 
 function showTT(c, el){
   clearTimeout(_ttTm);
   const tt=document.getElementById('tt');
+
+  // 태그별 컬러 스트립
+  const strip=document.getElementById('tt-strip');
+  if(strip) strip.className='tt-strip '+(c.tag||'');
+
   document.getElementById('tt-icon').textContent=c.icon;
   document.getElementById('tt-name').textContent=c.name;
   document.getElementById('tt-tag').innerHTML=`<span class="card-tag tag-${c.tag}" style="font-size:7px;">${c.tag}</span>`;
@@ -30,7 +34,7 @@ function showTT(c, el){
   } else useEl.style.display='none';
 
   const pEl=document.getElementById('tt-pass');
-  if(c.passiveDesc){pEl.style.display='';pEl.textContent='⭐ '+c.passiveDesc+' (중복불가)';}
+  if(c.passiveDesc){pEl.style.display='';pEl.textContent='⭐ '+c.passiveDesc;}
   else pEl.style.display='none';
 
   const cEl=document.getElementById('tt-cbt');
@@ -46,7 +50,7 @@ function showTT(c, el){
 
   tt.style.display='block';
   const r=el.getBoundingClientRect();
-  const ttW=182, ttH=284;
+  const ttW=210, ttH=300;
   const mob=window.innerWidth<=700;
   let left, top;
   if(!mob && r.right+8+ttW<=window.innerWidth){
@@ -67,6 +71,50 @@ function showTT(c, el){
 
 function hideTT(){
   _ttTm=setTimeout(()=>document.getElementById('tt').style.display='none', 80);
+}
+
+// ── 타일 툴팁 ──
+function showTileTT(mx, my, t, i){
+  if(window.innerWidth<=700) return;
+  const tt=document.getElementById('tile-tt');
+  if(!tt) return;
+  if(!t.revealed && !t.wasSeen){ tt.style.display='none'; return; }
+
+  let icon='', name='', rows=[];
+  if(t.wasSeen && !t.revealed){
+    icon='🌫️'; name=t.name;
+    rows.push({cls:'fog', html:'안개에 가려진 지역'});
+  } else {
+    icon=i===G.pos?'🧍':(t.hasCamp?'🏕️':t.icon);
+    name=t.name;
+    if(i===G.pos){
+      rows.push({cls:'cur', html:'📍 현재 위치'});
+    } else {
+      const ap=tileDist(G.pos,i);
+      rows.push({cls:'ap', html:`🚶 이동 <b>AP ${ap}</b>`});
+    }
+    if(t.hasCamp) rows.push({cls:'camp', html:'🏕️ 캠프 설치됨'});
+    if(t.explored) rows.push({cls:'done', html:'✓ 탐색 완료'});
+    else if(t.revealed) rows.push({cls:'todo', html:'🔍 미탐색 (AP2 필요)'});
+  }
+
+  document.getElementById('ttt-icon').textContent=icon;
+  document.getElementById('ttt-name').textContent=name;
+  const rowsEl=document.getElementById('ttt-rows');
+  rowsEl.innerHTML=rows.map(r=>`<div class="ttt-row ${r.cls}">${r.html}</div>`).join('');
+
+  tt.style.display='block';
+  const ttW=160, ttH=40+rows.length*20;
+  let left=mx+16, top=my-8;
+  if(left+ttW>window.innerWidth-4) left=mx-ttW-10;
+  if(top+ttH>window.innerHeight-4) top=window.innerHeight-ttH-4;
+  top=Math.max(4,top);
+  tt.style.left=left+'px'; tt.style.top=top+'px';
+}
+
+function hideTileTT(){
+  const tt=document.getElementById('tile-tt');
+  if(tt) tt.style.display='none';
 }
 
 document.addEventListener('click', e=>{

@@ -3,14 +3,14 @@
 
 function drawCombatHand(){ return drawToHand(5); }
 
-// 기습: 첫 라운드 전투카드 2장 이상 보장
+// 기습: 첫 라운드 전투카드 1장 보장
 function drawAmbushHand(){
   const isCbt = c => c.atk>0 || c.tag==='combat';
   const cbtInDeck = G.deck.filter(isCbt);
-  if(cbtInDeck.length>=2){
-    const restInDeck = G.deck.filter(c=>!isCbt(c));
-    // pop은 끝에서 → 전투카드를 끝에 배치하면 먼저 뽑힘
-    G.deck = [...restInDeck, ...cbtInDeck];
+  if(cbtInDeck.length>=1){
+    // 전투카드 1장만 끝에 배치 → pop으로 먼저 뽑힘
+    const pick = cbtInDeck[0];
+    G.deck = [...G.deck.filter(c=>c!==pick), pick];
   }
   return drawToHand(5);
 }

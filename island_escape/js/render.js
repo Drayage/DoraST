@@ -105,8 +105,8 @@ function render(){
       +(t.hasCamp?' camp-t':'')
       +(t.revealed&&t.explored?' explored':'');
     if(t.revealed) el.textContent=i===p.pos?'🧍':(t.hasCamp?'🏕️':t.icon);
-    const moveCost=i!==p.pos?` (이동 AP${tileDist(p.pos,i)})`:' (현재위치)';
-    el.title=t.revealed?`${t.name}${t.explored?' ✓':''}${moveCost}`:t.wasSeen?`${t.name} (안개 속)`:' ';
+    el.addEventListener('mousemove', e=>showTileTT(e.clientX,e.clientY,t,i));
+    el.addEventListener('mouseleave', hideTileTT);
     el.onclick=()=>clickTile(i);
     mapFrag.appendChild(el);
   });

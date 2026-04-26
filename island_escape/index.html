@@ -202,7 +202,7 @@
         <div class="help-row"><b>✨ 카드 사용 (AP1)</b> — 덱에서 5장 드로우. 식량(허기+22)/물(갈증+28)/약초(HP+10) 즉시 사용. 🪢밧줄 보유 시 +1장, 🏖️해변 캠프 시 +1장.</div>
         <div class="help-row"><b>🌙 취침</b> — 다음날로 이동. 허기-14·갈증-18 소모. HP 회복. 덱 전체 셔플. AP4↑ 남기고 자면 <b>이른 취침</b>: HP 추가 회복+AP+2.<br>정신력: 회복되지만 고립감으로 매일 소모(캠프 없음 -5/있음 -2). 🪨동굴 캠프(취침+5) 유지 권장.<br>취침 이벤트 확률: 캠프 위=2~4% · 캠프 인접=5~12% · 캠프 없음=20~60%+</div>
         <div class="help-row"><b>⚔️ 전투 전 조우</b> — 탐색 중 적 발견 시 선택창 등장:<br>
-          ⚔️ <b>기습</b>: 즉시 전투, 첫 라운드 전투카드 2장+ 보장. 단 도주 비용 HP-15.<br>
+          ⚔️ <b>기습</b>: 즉시 전투, 첫 라운드 전투카드 1장 보장. 단 도주 비용 HP-15.<br>
           👁 <b>상황탐색</b>: 도구 카드 비율(40%+)에 따라 아이템만 획득. 실패 시 전투 시작.<br>
           💨 <b>도망</b>: 허기-5 정신력-10. 전투 중 도주는 HP-8 (망토 HP-2, 기습 후엔 HP-15).<br>
           처치 라운드에는 적의 반격이 없음. 사망 예정 시 확인창 표시.</div>
@@ -235,22 +235,36 @@
   </button>
 </div>
 
-<!-- TOOLTIP -->
+<!-- CARD TOOLTIP -->
 <div id="tt"><div class="tt-inner">
-  <div class="tt-icon" id="tt-icon"></div>
-  <div class="tt-name" id="tt-name"></div>
-  <div style="text-align:center;margin-bottom:6px;" id="tt-tag"></div>
-  <div class="tt-sts">
-    <div class="tt-st"><div class="tt-sl">공격</div><div class="tt-sv" id="tt-atk">0</div></div>
-    <div class="tt-st"><div class="tt-sl">방어</div><div class="tt-sv" id="tt-def">0</div></div>
+  <div class="tt-strip" id="tt-strip"></div>
+  <div class="tt-body">
+    <div class="tt-icon" id="tt-icon"></div>
+    <div class="tt-name" id="tt-name"></div>
+    <div style="text-align:center;margin-bottom:8px;" id="tt-tag"></div>
+    <div class="tt-sts">
+      <div class="tt-st"><div class="tt-sl">⚔️ 공격</div><div class="tt-sv" id="tt-atk">0</div></div>
+      <div class="tt-st"><div class="tt-sl">🛡️ 방어</div><div class="tt-sv" id="tt-def">0</div></div>
+    </div>
+    <div class="tt-desc" id="tt-desc"></div>
+    <div class="tt-fx tt-consumable" id="tt-con" style="display:none;"></div>
+    <div class="tt-fx tt-use" id="tt-use" style="display:none;"></div>
+    <div class="tt-fx tt-passive" id="tt-pass" style="display:none;"></div>
+    <div class="tt-fx tt-cbt" id="tt-cbt" style="display:none;"></div>
+    <div class="tt-fx tt-gather" id="tt-ga" style="display:none;"></div>
   </div>
-  <div class="tt-desc" id="tt-desc"></div>
-  <div class="tt-fx tt-consumable" id="tt-con" style="display:none;"></div>
-  <div class="tt-fx tt-use" id="tt-use" style="display:none;"></div>
-  <div class="tt-fx tt-passive" id="tt-pass" style="display:none;"></div>
-  <div class="tt-fx tt-cbt" id="tt-cbt" style="display:none;"></div>
-  <div class="tt-fx tt-gather" id="tt-ga" style="display:none;"></div>
 </div></div>
+
+<!-- TILE TOOLTIP -->
+<div id="tile-tt">
+  <div class="ttt-inner">
+    <div class="ttt-head">
+      <span class="ttt-icon" id="ttt-icon"></span>
+      <span class="ttt-name" id="ttt-name"></span>
+    </div>
+    <div id="ttt-rows"></div>
+  </div>
+</div>
 
 <!-- DECK VIEWER -->
 <div id="dv-mo" class="mo" onclick="if(event.target===this)closeDv()">

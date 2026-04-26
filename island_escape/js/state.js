@@ -18,7 +18,7 @@ function initGame(){
     hp:100, san:100, hun:80, thi:80,
     doom:0, escape:0,
     doomPhase:0, doomRate:0, doomSurvives:0,
-    camps:[], tiles:[], pos:22,
+    camps:[], tiles:[], pos:24,
     deck:[], disc:[],
     weather:WEATHER[0], tomorrow:WEATHER[1],
     over:false, win:false, logs:[], kills:0,
