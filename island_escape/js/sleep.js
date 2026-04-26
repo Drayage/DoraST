@@ -10,6 +10,7 @@ function doSleep(){
     if(t.id==='cave')   { sanR+=5; }
     if(t.id==='forest') { addCard('food',1); log('🌲 숲캠프: 식량 자동생성','success'); }
     if(t.id==='shore')  { addCard('water',1); log('🌊 해안캠프: 물 자동생성','success'); }
+    if(t.id==='ruins')  { G.ap=Math.min(G.maxAP+4,G.ap+1); log('🏚️ 폐허캠프: AP+1','success'); }
   });
   const fatigueN=allCards().filter(c=>c.id==='fatigue').length;
   G.hun=Math.max(0,G.hun-14); G.thi=Math.max(0,G.thi-18);

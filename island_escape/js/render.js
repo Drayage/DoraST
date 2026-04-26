@@ -28,6 +28,7 @@ function campBonus(tileId){
   if(tileId==='cave')   return '취침 정신력+5';
   if(tileId==='forest') return '취침 식량생성';
   if(tileId==='shore')  return '취침 물생성';
+  if(tileId==='ruins')  return '취침 AP+1';
   return '';
 }
 

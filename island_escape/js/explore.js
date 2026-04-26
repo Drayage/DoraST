@@ -120,7 +120,16 @@ function doJudgment(evt, ch){
 
 function applyR(r, lines){
   if(!r) return;
-  if(r.card){addCard(r.card,r.n||1);const d=CARD_MAP[r.card];lines.push(`${d?.icon||''}${d?.name||r.card}×${r.n||1}`);if(_pendingItems)_pendingItems.push({icon:d?.icon||'📦',name:d?.name||r.card,n:r.n||1});}
+  if(r.card){
+    const d=CARD_MAP[r.card];
+    lines.push(`${d?.icon||''}${d?.name||r.card}×${r.n||1}`);
+    if(_pendingItems!=null){
+      // 팝업에서 클릭으로 획득 — addCard는 claimItem에서 처리
+      for(let i=0;i<(r.n||1);i++) _pendingItems.push({id:r.card,icon:d?.icon||'📦',name:d?.name||r.card,n:1});
+    } else {
+      addCard(r.card,r.n||1);
+    }
+  }
   if(r.san)   {G.san=Math.min(100,G.san+r.san);  lines.push(`정신력+${r.san}`);}
   if(r.escape){G.escape=Math.min(100,G.escape+r.escape);lines.push(`탈출+${r.escape}%`);}
   if(r.hun)   {G.hun=Math.min(100,G.hun+r.hun);  lines.push(`허기+${r.hun}`);}

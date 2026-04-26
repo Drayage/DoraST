@@ -22,7 +22,7 @@ function initGame(){
     over:false, win:false, logs:[], kills:0,
     gatherCnt:{},
   };
-  _pendingItems=null; _itemCb=null; _pendingItemCards=null;
+  _pendingItems=null; _itemCb=null; _pendingItemCards=null; _ucHand=[];
   buildDeck(); buildMap();
   document.getElementById('go-scr').style.display='none';
   initMobile();

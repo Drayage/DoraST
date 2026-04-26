@@ -976,7 +976,7 @@ function initGame(){
     over:false, win:false, logs:[], kills:0,
     gatherCnt:{},
   };
-  _pendingItems=null; _itemCb=null; _pendingItemCards=null;
+  _pendingItems=null; _itemCb=null; _pendingItemCards=null; _ucHand=[];
   buildDeck(); buildMap();
   document.getElementById('go-scr').style.display='none';
   initMobile();
@@ -1466,7 +1466,16 @@ function doJudgment(evt, ch){
 
 function applyR(r, lines){
   if(!r) return;
-  if(r.card){addCard(r.card,r.n||1);const d=CARD_MAP[r.card];lines.push(`${d?.icon||''}${d?.name||r.card}×${r.n||1}`);if(_pendingItems)_pendingItems.push({icon:d?.icon||'📦',name:d?.name||r.card,n:r.n||1});}
+  if(r.card){
+    const d=CARD_MAP[r.card];
+    lines.push(`${d?.icon||''}${d?.name||r.card}×${r.n||1}`);
+    if(_pendingItems!=null){
+      // 팝업에서 클릭으로 획득 — addCard는 claimItem에서 처리
+      for(let i=0;i<(r.n||1);i++) _pendingItems.push({id:r.card,icon:d?.icon||'📦',name:d?.name||r.card,n:1});
+    } else {
+      addCard(r.card,r.n||1);
+    }
+  }
   if(r.san)   {G.san=Math.min(100,G.san+r.san);  lines.push(`정신력+${r.san}`);}
   if(r.escape){G.escape=Math.min(100,G.escape+r.escape);lines.push(`탈출+${r.escape}%`);}
   if(r.hun)   {G.hun=Math.min(100,G.hun+r.hun);  lines.push(`허기+${r.hun}`);}
@@ -1563,7 +1572,7 @@ function doCamp(){
   if(G.tiles[G.pos].hasCamp){log('이미 캠프가 있다.','');return;}
   G.tiles[G.pos].hasCamp=true; G.camps.push(G.pos); G.ap-=8;
   const t=G.tiles[G.pos];
-  const bns={beach:'카드사용+1드로우',forest:'취침 식량 자동생성',cave:'취침 정신력+5',ruins:'없음',shore:'취침 물 자동생성'};
+  const bns={beach:'카드사용+1드로우',forest:'취침 식량 자동생성',cave:'취침 정신력+5',ruins:'취침 AP+1',shore:'취침 물 자동생성'};
   log(`🏕️ ${t.name} 캠프 건설! (AP-8) — ${bns[t.id]||''}`, 'success');
   render();
 }
@@ -1775,6 +1784,7 @@ function doSleep(){
     if(t.id==='cave')   { sanR+=5; }
     if(t.id==='forest') { addCard('food',1); log('🌲 숲캠프: 식량 자동생성','success'); }
     if(t.id==='shore')  { addCard('water',1); log('🌊 해안캠프: 물 자동생성','success'); }
+    if(t.id==='ruins')  { G.ap=Math.min(G.maxAP+4,G.ap+1); log('🏚️ 폐허캠프: AP+1','success'); }
   });
   const fatigueN=allCards().filter(c=>c.id==='fatigue').length;
   G.hun=Math.max(0,G.hun-14); G.thi=Math.max(0,G.thi-18);
@@ -2264,6 +2274,7 @@ function campBonus(tileId){
   if(tileId==='cave')   return '취침 정신력+5';
   if(tileId==='forest') return '취침 식량생성';
   if(tileId==='shore')  return '취침 물생성';
+  if(tileId==='ruins')  return '취침 AP+1';
   return '';
 }
 
