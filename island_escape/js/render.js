@@ -44,6 +44,8 @@ function render(){
   d.hvAp.textContent=p.ap;
   const doom=Math.min(100,p.doom);
   d.doomPct.textContent=doom; d.doomFill.style.width=doom+'%';
+  const doomRateEl=document.getElementById('doom-rate-hdr');
+  if(doomRateEl) doomRateEl.textContent=p.doomRate>0?`+${p.doomRate}%/일`:p.doomPhase>=4?'+1~3%/일':'';
   d.hvEsc.textContent=p.escape;
 
   // 스탯 바
@@ -78,8 +80,15 @@ function render(){
   d.curTileName.textContent=ct.name||'?';
   const bonus=ct.hasCamp?campBonus(ct.id):'';
   d.curTileStatus.textContent=ct.hasCamp?`🏕️ 캠프${bonus?` (${bonus})`:''}`:ct.explored?'✓ 탐색완료':'— 미탐색';
-  const gatherTools=ct.gather?.map(o=>CARD_MAP[o.tool]?.icon+CARD_MAP[o.tool]?.name).join(' ');
-  d.curTileGather.textContent=gatherTools?`수집: ${gatherTools}`:'';
+  // 수집 도구 + 수집 횟수 표시
+  const gatherParts=(ct.gather||[]).map(o=>{
+    const key=`${p.pos}_${o.tool}`;
+    const cnt=G.gatherCnt[key]||0;
+    const icon=CARD_MAP[o.tool]?.icon||'';
+    const name=CARD_MAP[o.tool]?.name||o.tool;
+    return `${icon}${name}${cnt>0?`(${cnt}회)`:''}`;
+  });
+  d.curTileGather.textContent=gatherParts.length?`수집: ${gatherParts.join(' ')}`:'';
 
   // 패시브 목록
   const cards=allCards();
@@ -96,7 +105,8 @@ function render(){
       +(t.hasCamp?' camp-t':'')
       +(t.revealed&&t.explored?' explored':'');
     if(t.revealed) el.textContent=i===p.pos?'🧍':(t.hasCamp?'🏕️':t.icon);
-    el.title=t.revealed?`${t.name}${t.explored?' ✓':''}`:t.wasSeen?`${t.name} (안개 속)`:' ';
+    const moveCost=i!==p.pos?` (이동 AP${tileDist(p.pos,i)})`:' (현재위치)';
+    el.title=t.revealed?`${t.name}${t.explored?' ✓':''}${moveCost}`:t.wasSeen?`${t.name} (안개 속)`:' ';
     el.onclick=()=>clickTile(i);
     mapFrag.appendChild(el);
   });
@@ -127,13 +137,41 @@ function render(){
   d.logMain.innerHTML=
     p.logs.slice(0,25).map(l=>`<div class="le ${l.type||''}">${l.msg}</div>`).join('');
 
-  // 버튼 활성화
+  // 버튼 활성화 + 툴팁
+  const warns=[];
+  if(p.hp<=20) warns.push('❤️위험');
+  if(p.hun<=10) warns.push('🍗부족');
+  if(p.thi<=10) warns.push('💧부족');
+  const warnTip=warns.length?` ⚠️ ${warns.join(' ')}`:' ';
+
   d.btnExp.disabled=p.ap<2||p.over||ct.explored;
+  d.btnExp.title=`탐색 AP2${warnTip}`;
+
   const hasGaTool=ct.explored&&(ct.gather||[]).some(o=>cards.some(c=>c.id===o.tool));
   d.btnGa.disabled=p.ap<3||p.over||!ct.explored||!hasGaTool;
   d.btnGa.innerHTML=ct.explored&&!hasGaTool?'🎒 도구없음 <span class="apb">AP3</span>':'🎒 수집 <span class="apb">AP3</span>';
+  d.btnGa.title=`수집 AP3 (허기-5 갈증-6)${warnTip}`;
+
+  const ctBonus=campBonus(ct.id);
   d.btnCamp.disabled=p.ap<8||p.over||ct.hasCamp;
+  d.btnCamp.title=`캠프 건설 AP8${ctBonus?' — 보너스: '+ctBonus:''}`;
+
   d.btnCraft.disabled=p.over||!ct.hasCamp;
+
+  // 카드사용 드로우 수 동적 표시
+  const beachCamp=p.camps.some(cp=>p.tiles[cp].id==='beach');
+  const drawN=5+(hasTool('rope')?1:0)+(beachCamp?1:0);
   d.btnUse.disabled=p.ap<1||p.over;
+  d.btnUse.innerHTML=`✨ 카드 사용 — ${drawN}장 드로우 <span class="apb">AP1</span>`;
+
+  // 취침 hover 미리보기
+  const sleepEarly=p.ap>=4;
+  const sHpR=sleepEarly?15:9;
+  const sSanR=sleepEarly?4:2;
+  const sDrain=p.camps.length?2:5;
+  const sSanNet=sSanR-sDrain;
+  const sEvt=calcSleepEvtChance(sleepEarly);
+  const sDoom=p.doomRate>0?` DOOM+${p.doomRate}%`:p.doomPhase>=4?' DOOM+1~3%':'';
   d.btnSleep.disabled=p.over;
+  d.btnSleep.title=`HP+${sHpR} 정신력${sSanNet>=0?'+':''}${sSanNet} 허기-14 갈증-18${sleepEarly?' 이른취침AP+2':''}${sEvt>0?` 이벤트${sEvt}%`:''}${sDoom}`;
 }

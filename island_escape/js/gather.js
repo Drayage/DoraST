@@ -42,9 +42,13 @@ function openGather(){
 
 function doGather(opt, key, rate){
   document.getElementById('ga-mo').style.display='none';
-  G.ap-=3; G.gatherCnt[key]=(G.gatherCnt[key]||0)+1;
+  G.ap-=3;
   G.hun-=5; G.thi-=6;
-  if(Math.random()*100<rate){
+  const bonus = G.gatherBonus[key]||0;
+  const effectiveRate = Math.min(95, rate + bonus);
+  if(Math.random()*100 < effectiveRate){
+    G.gatherCnt[key]=(G.gatherCnt[key]||0)+1; // 성공 시만 횟수 증가
+    G.gatherBonus[key]=0;                       // 숨겨진 보너스 초기화
     const n=Math.random()<0.28?2:1;
     const d=CARD_MAP[opt.res];
     log(`🎒 ${opt.label} 성공! ${d?.icon||''}${d?.name||opt.res}×${n} (AP-3)`,'gather');
@@ -52,6 +56,7 @@ function doGather(opt, key, rate){
       checkSurvival(); render();
     });
   } else {
+    G.gatherBonus[key]=(G.gatherBonus[key]||0)+5; // 실패 시 숨겨진 +5%
     log(`🎒 ${opt.label} 실패... 빈손 (AP-3)`,'danger');
     checkSurvival(); render();
   }

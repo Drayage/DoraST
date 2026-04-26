@@ -6,6 +6,21 @@ function buildMap(){
     const t=TILE_TYPES[Math.floor(Math.random()*TILE_TYPES.length)];
     G.tiles.push({...t, revealed:false, hasPlayer:false, hasCamp:false, explored:false});
   }
+  // 시작 위치(22) 반경 2 이내에 forest/beach/cave 보장
+  const near=[];
+  for(let i=0;i<50;i++){
+    if(i!==G.pos && tileDist(i,G.pos)<=2) near.push(i);
+  }
+  ['forest','beach','cave'].forEach(tid=>{
+    if(!near.some(i=>G.tiles[i].id===tid)){
+      const candidates=near.filter(i=>!['forest','beach','cave'].includes(G.tiles[i].id));
+      if(candidates.length){
+        const idx=candidates[Math.floor(Math.random()*candidates.length)];
+        const tDef=TILE_TYPES.find(t=>t.id===tid);
+        if(tDef) G.tiles[idx]={...tDef,revealed:false,hasPlayer:false,hasCamp:false,explored:false};
+      }
+    }
+  });
   G.tiles[G.pos].revealed=true; G.tiles[G.pos].hasPlayer=true;
   getAdj(G.pos).forEach(i=>G.tiles[i].revealed=true);
 }

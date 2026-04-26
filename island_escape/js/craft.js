@@ -78,6 +78,42 @@ function renderCraft(){
   });
 }
 
+function openRecipes(){
+  const mEl=document.getElementById('recipe-mats');
+  mEl.innerHTML='<span style="color:var(--text3);margin-right:3px;">현재 보유:</span>';
+  ['wood','metal','food','water','herb','hide','feather','venom','shard'].forEach(id=>{
+    const d=CARD_MAP[id]; if(!d) return;
+    const cnt=cntInDeck(id);
+    if(cnt>0) mEl.innerHTML+=`<span style="background:var(--bg4);padding:2px 6px;border-radius:3px;margin-right:3px;">${d.icon}${d.name}<b style="color:var(--accent);margin-left:2px;">×${cnt}</b></span>`;
+  });
+  const lEl=document.getElementById('recipe-list'); lEl.innerHTML='';
+  RECIPES.forEach(rec=>{
+    const ok=canCraft(rec);
+    const resultDef=rec.result?CARD_MAP[rec.result]:null;
+    const costHtml=rec.cost.map(c=>{
+      const d=CARD_MAP[c.id]; const have=cntInDeck(c.id);
+      return `<span style="color:${have>=c.n?'var(--green)':'var(--red)'};">${d.icon}${d.name}×${c.n}(${have})</span>`;
+    }).join('+');
+    const resHtml=rec.raftLottery
+      ?`<span style="color:var(--green);">🎲 뽑기</span>`
+      :`<span style="color:var(--accent);">${resultDef?.icon||''}${resultDef?.name||rec.result}</span>`;
+    const div=document.createElement('div');
+    div.className='cr-recipe'+(ok?' avail':'');
+    div.innerHTML=`
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:18px;">${rec.icon}</span>
+        <div style="flex:1;">
+          <div style="font-family:var(--font-t);font-size:12px;color:${ok?'var(--text)':'var(--text3)'};">${rec.name}</div>
+          <div style="font-size:7px;font-family:var(--font-m);color:var(--text3);">${rec.cat} · AP${rec.ap}</div>
+        </div>
+      </div>
+      <div style="font-size:8px;font-family:var(--font-m);">재료: ${costHtml} → ${resHtml}</div>
+      <div style="font-size:8px;color:var(--text3);font-family:var(--font-m);">${rec.desc}</div>`;
+    lEl.appendChild(div);
+  });
+  document.getElementById('recipe-mo').style.display='flex';
+}
+
 function doCraft(id){
   const rec=RECIPES.find(r=>r.id===id);
   if(!rec||!canCraft(rec)) return;
