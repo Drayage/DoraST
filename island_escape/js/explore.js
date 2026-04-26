@@ -119,7 +119,7 @@ function doJudgment(evt, ch){
         applyR(ch.reward,lines);
         if(hasTool('torch')&&ch.req==='tool'){
           if(!G.deck.length&&G.disc.length){G.deck=shuffle(G.disc);G.disc=[];}
-          if(G.deck.length){const b=G.deck.pop();G.disc.push(b);bonLines.push(`🔦 횃불 패시브: ${b.icon}${b.name} 추가`);}
+          if(G.deck.length){const b=G.deck.pop();G.disc.push(b);bonLines.push(`🕯️ 횃불 패시브: ${b.icon}${b.name} 추가`);}
         }
       } else {
         resEl.className='jdg-res fail'; resEl.textContent='✗ 실패...';

@@ -905,7 +905,7 @@ const CARDS=[
   {id:'knife',    name:'칼',    icon:'🔪',tag:'tool',atk:4,def:1,n:0,
    passiveDesc:'식량 섭취 허기+8 추가 (22→30)',
    desc:'패시브: 식량 회복 증가. 전투 공격력 4.'},
-  {id:'torch',    name:'횃불',  icon:'🔦',tag:'tool',atk:2,def:1,n:0,gatherTool:true,
+  {id:'torch',    name:'횃불',  icon:'🕯️',tag:'tool',atk:2,def:1,n:0,gatherTool:true,
    passiveDesc:'탐색 tool 판정 성공 시 추가 보상 1장',
    desc:'패시브: 탐색 tool 성공 시 추가보상 1장 드로우. ATK2 DEF1.',
    gatherDesc:'🏚️ 폐허에서 수집 가능 → ⚙️고철 1~2개 획득'},
@@ -1031,7 +1031,7 @@ const EVENTS={
   find_shelter:{
     name:'은신처 발견',flavor:'폭풍을 피할 수 있는 작은 동굴 입구가 보인다.',
     choices:[
-      {label:'깊이 탐색한다',icon:'🔦',req:'tool',reward:{san:10,card:'metal',n:1},failPen:{hp:-15},
+      {label:'깊이 탐색한다',icon:'🕯️',req:'tool',reward:{san:10,card:'metal',n:1},failPen:{hp:-15},
        greatCard:'torch',greatBonus:{san:8,ap:2},desc:'도구판정. 성공:정신력+10+고철 / 대성공(횃불):+정신력+8+AP×2 / 실패:HP-15'},
       {label:'입구만 살핀다',icon:'👁️',req:null,reward:{san:5},desc:'무조건. 정신력+5.'},
     ]},
@@ -1059,7 +1059,7 @@ const EVENTS={
   survivor_note:{
     name:'생존자의 흔적',flavor:'누군가 이 곳에 있었던 것 같다. 낡은 메모와 흔적이 남아있다.',
     choices:[
-      {label:'흔적을 철저히 조사',icon:'🔦',req:'tool',
+      {label:'흔적을 철저히 조사',icon:'🕯️',req:'tool',
        reward:{card:'metal',n:1,escape:15},failPen:{hp:-8},
        greatCard:'torch',greatBonus:{card:'wood',n:1,ap:2},
        desc:'도구판정. 성공:고철×1+탈출+15% / 대성공(횃불):+목재+AP×2 / 실패:HP-8'},
@@ -1081,7 +1081,7 @@ const EVENTS={
   haunted_spot:{
     name:'으스스한 기운',flavor:'이 폐허에서 무언가를 강하게 느꼈다. 환각인지 현실인지 경계가 흐려지기 시작한다.',
     choices:[
-      {label:'정신을 다잡고 탐색한다',icon:'🔦',req:'tool',
+      {label:'정신을 다잡고 탐색한다',icon:'🕯️',req:'tool',
        reward:{card:'metal',n:1},failPen:{san:-18},
        greatCard:'torch',greatBonus:{san:10,escape:5},
        desc:'도구판정. 성공:고철×1 / 대성공(횃불):정신력+10+탈출+5% / 실패:정신력-18'},
@@ -1114,7 +1114,7 @@ const EVENTS={
 
 const RECIPES=[
   {id:'r_knife',   cat:'생존',name:'칼',       icon:'🔪',result:'knife',          rn:1,ap:1,cost:[{id:'wood',n:1},{id:'metal',n:2}],  desc:'패시브:식량회복+8. 전투ATK4.'},
-  {id:'r_torch',   cat:'수집',name:'횃불',     icon:'🔦',result:'torch',          rn:1,ap:1,cost:[{id:'wood',n:2}],                   desc:'패시브:탐색추가보상. 폐허수집장비.'},
+  {id:'r_torch',   cat:'수집',name:'횃불',     icon:'🕯️',result:'torch',          rn:1,ap:1,cost:[{id:'wood',n:2}],                   desc:'패시브:탐색추가보상. 폐허수집장비.'},
   {id:'r_rope',    cat:'생존',name:'밧줄',     icon:'🪢',result:'rope',           rn:1,ap:1,cost:[{id:'wood',n:1},{id:'food',n:1}],   desc:'패시브:드로우+1. 방어DEF3.'},
   {id:'r_axe',     cat:'수집',name:'도끼',     icon:'🪓',result:'axe',            rn:1,ap:1,cost:[{id:'wood',n:2},{id:'metal',n:1}],  desc:'숲 나무베기. 전투ATK3.'},
   {id:'r_gknife',  cat:'수집',name:'채집칼',   icon:'🗡️',result:'gathering_knife',rn:1,ap:1,cost:[{id:'metal',n:2}],                  desc:'숲 약초채집. 전투ATK2.'},
@@ -1806,7 +1806,7 @@ function doJudgment(evt, ch){
         applyR(ch.reward,lines);
         if(hasTool('torch')&&ch.req==='tool'){
           if(!G.deck.length&&G.disc.length){G.deck=shuffle(G.disc);G.disc=[];}
-          if(G.deck.length){const b=G.deck.pop();G.disc.push(b);bonLines.push(`🔦 횃불 패시브: ${b.icon}${b.name} 추가`);}
+          if(G.deck.length){const b=G.deck.pop();G.disc.push(b);bonLines.push(`🕯️ 횃불 패시브: ${b.icon}${b.name} 추가`);}
         }
       } else {
         resEl.className='jdg-res fail'; resEl.textContent='✗ 실패...';
