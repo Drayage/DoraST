@@ -9,22 +9,121 @@ function checkSurvival(){
 }
 
 function checkWin(){
-  if(G.escape>=100){
-    G.over=true;
-    document.getElementById('go-title').textContent='🎉 탈출 성공!';
-    document.getElementById('go-title').className='go-title win';
-    document.getElementById('go-sub').textContent=`${G.day}일 만에 탈출!`;
-    document.getElementById('go-stats').innerHTML=`생존 일수: ${G.day}일<br>처치: ${G.kills}마리`;
-    document.getElementById('go-scr').style.display='flex';
-  }
+  if(G.escape>=100&&!G.over) showEnding(true, null);
 }
 
 function triggerGameOver(reason){
   if(G.over) return;
-  G.over=true;
-  document.getElementById('go-title').textContent='💀 게임 오버';
-  document.getElementById('go-title').className='go-title dead';
-  document.getElementById('go-sub').textContent=reason+` (${G.day}일차)`;
-  document.getElementById('go-stats').innerHTML=`생존 일수: ${G.day}일<br>처치: ${G.kills}마리<br>탈출도: ${G.escape}%`;
-  document.getElementById('go-scr').style.display='flex';
+  showEnding(false, reason);
+}
+
+// ── 엔딩 화면 ──
+
+function showEnding(win, reason){
+  G.over=true; G.win=win;
+  const headline=_endHeadline(win, reason);
+  const statsHtml=_endStats();
+  const hlItems=_endHighlights(win);
+  const prevLines=_prevRunComp();
+  _saveRun(win);
+
+  const goEl=document.getElementById('go-scr');
+  goEl.innerHTML=`
+    <div class="go-card">
+      <div class="go-headline ${win?'win':'dead'}">${headline.main}</div>
+      <div class="go-reason">${headline.sub}</div>
+      <div class="go-sg">${statsHtml}</div>
+      ${hlItems.length?`<div class="go-hls">${hlItems.map(h=>`<div class="go-hl">${h}</div>`).join('')}</div>`:''}
+      ${prevLines.length?`<div class="go-prev">${prevLines.map(p=>`<span class="go-pi">${p}</span>`).join('')}</div>`:''}
+      <button class="btn primary" onclick="initGame()" style="font-size:13px;padding:11px 28px;margin-top:16px;">🔄 다시 도전</button>
+    </div>`;
+  goEl.style.display='flex';
+  render();
+}
+
+function _endHeadline(win, reason){
+  if(win){
+    let main='탈출 성공';
+    if(G.hp>=70&&G.san>=70&&G.day<=15) main='완벽한 생존';
+    else if(G.hp<20||G.san<20)         main='간신히 살아남았다';
+    return {main, sub:`${G.day}일 만에 섬을 탈출했다.`};
+  }
+  let main;
+  if(G.escape>=80)       main='거의 탈출할 뻔했다';
+  else if(G.escape>=50)  main='한 걸음이 부족했다';
+  else if(G.san<=0)      main='마음이 먼저 무너졌다';
+  else if(G.day<=4)      main='첫 발부터 쉽지 않았다';
+  else if(G.doomSurvives>0) main='섬은 아직 널 놓아주지 않았다';
+  else {
+    const pool=[
+      '준비는 됐지만, 타이밍을 놓쳤다',
+      '섬은 아직 널 놓아주지 않았다',
+      '이번엔 운이 따르지 않았다',
+      '다음엔 다를 것이다',
+    ];
+    main=pool[G.day%pool.length];
+  }
+  return {main, sub: reason ? `${reason} (${G.day}일 생존)` : `${G.day}일 생존`};
+}
+
+function _endStats(){
+  const explored=G.tiles.filter(t=>t.explored).length;
+  const rows=[
+    ['📅 생존일수', `${G.day}일`],
+    ['🛶 탈출 진행', `${G.escape}%`],
+    ['🌋 DOOM', `${Math.min(100,G.doom)}%`],
+    ['⚔️ 처치', `${G.kills}마리`],
+    ['🗺️ 탐험 타일', `${explored}칸`],
+    ['🚶 이동 거리', `${G.tilesMoved||0}칸`],
+    ['🏕️ 캠프', `${G.camps.length}곳`],
+    ['❤️ 최후 HP', `${G.hp}`],
+  ];
+  return rows.map(([l,v])=>`<div class="go-si"><span class="go-sl">${l}</span><span class="go-sv">${v}</span></div>`).join('');
+}
+
+function _endHighlights(win){
+  const h=[];
+  const explored=G.tiles.filter(t=>t.explored).length;
+
+  if(G.doomSurvives>0)         h.push(`🌟 화산의 불길에서 ${G.doomSurvives}번 살아남았다`);
+  if(G.doomPhase>=3)            h.push('🌋 화산 분화를 두 눈으로 목격했다');
+  if(G.kills>=5)                h.push(`⚔️ 총 ${G.kills}마리를 쓰러뜨렸다`);
+  else if(G.kills===0&&G.day>3) h.push('⚔️ 한 번도 싸우지 않았다 (평화주의?)');
+  if(!win&&G.escape>=80)        h.push(`🛶 탈출까지 단 ${100-G.escape}%가 남아있었다`);
+  else if(!win&&G.escape===0)   h.push('🛶 뗏목을 한 번도 만들지 못했다');
+  if(G.camps.length===0&&G.day>=5) h.push('🏕️ 캠프 없이 맨몸으로 버텼다');
+  else if(G.camps.length>=3)    h.push(`🏕️ ${G.camps.length}곳에 캠프를 세웠다`);
+  if(explored>=20)              h.push(`🗺️ 섬 ${explored}곳을 샅샅이 뒤졌다`);
+  if(G.day>=20)                 h.push(`📅 ${G.day}일이라는 긴 시간을 버텼다`);
+  if(G.tilesMoved>=60)          h.push(`🚶 총 ${G.tilesMoved}칸을 부지런히 이동했다`);
+
+  return shuffle([...h]).slice(0,3);
+}
+
+function _prevRunComp(){
+  try{
+    const prev=JSON.parse(localStorage.getItem('ie_prev')||'null');
+    if(!prev) return [];
+    const lines=[];
+    const rc=(prev.runCount||1)+1;
+    lines.push(`${rc}번째 도전`);
+    const dd=G.day-prev.day;
+    if(dd>0)       lines.push(`지난 시도보다 +${dd}일 생존`);
+    else if(dd<0)  lines.push(`지난 시도보다 ${-dd}일 일찍 탈락`);
+    const ed=G.escape-prev.escape;
+    if(ed>0)            lines.push(`탈출도 +${ed}% 향상`);
+    if(!prev.win&&G.win) lines.push('🎉 첫 탈출 성공!');
+    if(prev.escape===0&&G.escape>0) lines.push('처음으로 뗏목을 만들었다');
+    return lines.slice(0,3);
+  }catch(e){ return []; }
+}
+
+function _saveRun(win){
+  try{
+    const prev=JSON.parse(localStorage.getItem('ie_prev')||'{}');
+    localStorage.setItem('ie_prev',JSON.stringify({
+      day:G.day, escape:G.escape, kills:G.kills, win,
+      runCount:(prev.runCount||0)+1,
+    }));
+  }catch(e){}
 }

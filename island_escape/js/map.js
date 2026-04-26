@@ -44,7 +44,7 @@ function clickTile(i){
   const cost=tileDist(G.pos, i);
   if(G.ap<cost){log(`AP부족 (이동${cost}칸=AP${cost})`, ''); render(); return;}
   G.tiles[G.pos].hasPlayer=false;
-  G.pos=i; t.hasPlayer=true; G.ap-=cost;
+  G.pos=i; t.hasPlayer=true; G.ap-=cost; G.tilesMoved+=cost;
   getAdj(i).forEach(j=>G.tiles[j].revealed=true);
   log(`📍 ${t.name}으로 이동 (${cost}칸·AP-${cost})`, '');
   checkSurvival(); render();

@@ -231,13 +231,23 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .rl{margin-bottom:1px;}.rl.good{color:var(--green);}.rl.bad{color:var(--red);}.rl.neutral{color:var(--text2);}
 .cbt-btn-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;margin-top:8px;}
 
-/* GAMEOVER */
-#go-scr{display:none;position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:200;align-items:center;justify-content:center;flex-direction:column;gap:13px;}
-.go-title{font-family:var(--font-t);font-size:42px;letter-spacing:.05em;}
-.go-title.dead{color:var(--red);text-shadow:0 0 26px rgba(224,80,80,.5);}
-.go-title.win{color:var(--accent);text-shadow:0 0 26px rgba(232,184,75,.5);}
-.go-sub{font-size:12px;color:var(--text2);font-family:var(--font-m);}
-.go-stats{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 18px;font-family:var(--font-m);font-size:10px;color:var(--text2);line-height:2;}
+/* GAMEOVER / ENDING */
+#go-scr{display:none;position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:200;align-items:center;justify-content:center;overflow-y:auto;padding:24px 16px;}
+.go-card{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:26px 28px;max-width:460px;width:92%;text-align:center;}
+.go-headline{font-family:var(--font-t);font-size:34px;letter-spacing:.02em;margin-bottom:7px;line-height:1.2;}
+.go-headline.dead{color:var(--red);text-shadow:0 0 26px rgba(224,80,80,.5);}
+.go-headline.win{color:var(--accent);text-shadow:0 0 26px rgba(232,184,75,.5);}
+.go-reason{font-size:11px;color:var(--text2);font-family:var(--font-m);margin-bottom:18px;}
+.go-sg{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:14px;text-align:left;}
+.go-si{background:var(--bg3);border-radius:6px;padding:6px 9px;display:flex;justify-content:space-between;align-items:center;}
+.go-sl{font-size:9px;color:var(--text3);font-family:var(--font-m);}
+.go-sv{font-size:11px;font-weight:700;color:var(--text);font-family:var(--font-m);}
+.go-hls{background:var(--bg3);border-radius:8px;padding:9px 12px;margin-bottom:12px;text-align:left;}
+.go-hl{font-size:10px;color:var(--text2);font-family:var(--font-m);padding:4px 0;border-bottom:1px solid var(--border);}
+.go-hl:last-child{border-bottom:none;}
+.go-prev{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-bottom:4px;}
+.go-pi{background:rgba(232,184,75,.1);border:1px solid var(--accent2);border-radius:12px;padding:3px 9px;font-size:9px;color:var(--accent);font-family:var(--font-m);}
+@media(max-width:700px){.go-headline{font-size:26px;}.go-card{padding:18px 16px;}}
 
 ::-webkit-scrollbar{width:3px;height:3px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
@@ -358,6 +368,27 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
       탐색하고 · 수집하고 · 제작하라<br>
       탈출도 100%를 달성하면 구조된다 · DOOM이 100%에 달하면 최후가 찾아온다
     </span>
+  </div>
+  <!-- 덱 구성 선택 -->
+  <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:13px 18px;max-width:460px;width:92%;">
+    <div style="color:var(--text3);font-size:8px;font-family:var(--font-m);text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px;">덱 구성 선택</div>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+      <div style="background:var(--bg4);border:2px solid var(--accent2);border-radius:8px;padding:10px 16px;text-align:center;cursor:default;min-width:90px;">
+        <div style="font-size:20px;">🏝️</div>
+        <div style="font-size:9px;font-weight:700;color:var(--accent);margin-top:3px;">기본 덱</div>
+        <div style="font-size:7px;color:var(--green);font-family:var(--font-m);margin-top:2px;">선택됨 ✓</div>
+      </div>
+      <div style="background:var(--bg3);border:1px dashed var(--border);border-radius:8px;padding:10px 16px;text-align:center;opacity:.4;min-width:90px;">
+        <div style="font-size:20px;">⚔️</div>
+        <div style="font-size:9px;font-weight:700;color:var(--text3);margin-top:3px;">전사 덱</div>
+        <div style="font-size:7px;color:var(--text3);font-family:var(--font-m);margin-top:2px;">준비 중</div>
+      </div>
+      <div style="background:var(--bg3);border:1px dashed var(--border);border-radius:8px;padding:10px 16px;text-align:center;opacity:.4;min-width:90px;">
+        <div style="font-size:20px;">🌿</div>
+        <div style="font-size:9px;font-weight:700;color:var(--text3);margin-top:3px;">생존가 덱</div>
+        <div style="font-size:7px;color:var(--text3);font-family:var(--font-m);margin-top:2px;">준비 중</div>
+      </div>
+    </div>
   </div>
   <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
     <button class="btn primary" style="font-size:14px;padding:12px 32px;" onclick="startGame()">▶ 시작하기</button>
@@ -795,13 +826,8 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 <!-- DAMAGE FX -->
 <div id="dmg-fx"></div>
 
-<!-- GAMEOVER -->
-<div id="go-scr">
-  <div class="go-title" id="go-title">💀 게임 오버</div>
-  <div class="go-sub" id="go-sub"></div>
-  <div class="go-stats" id="go-stats"></div>
-  <button class="btn primary" onclick="initGame()" style="font-size:13px;padding:9px 20px;">🔄 다시 시작</button>
-</div>
+<!-- GAMEOVER / ENDING (내용은 showEnding()으로 동적 생성) -->
+<div id="go-scr"></div>
 
 <!-- JS: 로드 순서 중요 -->
 <script>
@@ -1107,7 +1133,7 @@ function initGame(){
     deck:[], disc:[],
     weather:WEATHER[0], tomorrow:WEATHER[1],
     over:false, win:false, logs:[], kills:0,
-    gatherCnt:{}, gatherBonus:{},
+    gatherCnt:{}, gatherBonus:{}, tilesMoved:0,
   };
   _pendingItems=null; _itemCb=null; _pendingItemCards=null; _ucHand=[];
   buildDeck(); buildMap();
@@ -1286,24 +1312,123 @@ function checkSurvival(){
 }
 
 function checkWin(){
-  if(G.escape>=100){
-    G.over=true;
-    document.getElementById('go-title').textContent='🎉 탈출 성공!';
-    document.getElementById('go-title').className='go-title win';
-    document.getElementById('go-sub').textContent=`${G.day}일 만에 탈출!`;
-    document.getElementById('go-stats').innerHTML=`생존 일수: ${G.day}일<br>처치: ${G.kills}마리`;
-    document.getElementById('go-scr').style.display='flex';
-  }
+  if(G.escape>=100&&!G.over) showEnding(true, null);
 }
 
 function triggerGameOver(reason){
   if(G.over) return;
-  G.over=true;
-  document.getElementById('go-title').textContent='💀 게임 오버';
-  document.getElementById('go-title').className='go-title dead';
-  document.getElementById('go-sub').textContent=reason+` (${G.day}일차)`;
-  document.getElementById('go-stats').innerHTML=`생존 일수: ${G.day}일<br>처치: ${G.kills}마리<br>탈출도: ${G.escape}%`;
-  document.getElementById('go-scr').style.display='flex';
+  showEnding(false, reason);
+}
+
+// ── 엔딩 화면 ──
+
+function showEnding(win, reason){
+  G.over=true; G.win=win;
+  const headline=_endHeadline(win, reason);
+  const statsHtml=_endStats();
+  const hlItems=_endHighlights(win);
+  const prevLines=_prevRunComp();
+  _saveRun(win);
+
+  const goEl=document.getElementById('go-scr');
+  goEl.innerHTML=`
+    <div class="go-card">
+      <div class="go-headline ${win?'win':'dead'}">${headline.main}</div>
+      <div class="go-reason">${headline.sub}</div>
+      <div class="go-sg">${statsHtml}</div>
+      ${hlItems.length?`<div class="go-hls">${hlItems.map(h=>`<div class="go-hl">${h}</div>`).join('')}</div>`:''}
+      ${prevLines.length?`<div class="go-prev">${prevLines.map(p=>`<span class="go-pi">${p}</span>`).join('')}</div>`:''}
+      <button class="btn primary" onclick="initGame()" style="font-size:13px;padding:11px 28px;margin-top:16px;">🔄 다시 도전</button>
+    </div>`;
+  goEl.style.display='flex';
+  render();
+}
+
+function _endHeadline(win, reason){
+  if(win){
+    let main='탈출 성공';
+    if(G.hp>=70&&G.san>=70&&G.day<=15) main='완벽한 생존';
+    else if(G.hp<20||G.san<20)         main='간신히 살아남았다';
+    return {main, sub:`${G.day}일 만에 섬을 탈출했다.`};
+  }
+  let main;
+  if(G.escape>=80)       main='거의 탈출할 뻔했다';
+  else if(G.escape>=50)  main='한 걸음이 부족했다';
+  else if(G.san<=0)      main='마음이 먼저 무너졌다';
+  else if(G.day<=4)      main='첫 발부터 쉽지 않았다';
+  else if(G.doomSurvives>0) main='섬은 아직 널 놓아주지 않았다';
+  else {
+    const pool=[
+      '준비는 됐지만, 타이밍을 놓쳤다',
+      '섬은 아직 널 놓아주지 않았다',
+      '이번엔 운이 따르지 않았다',
+      '다음엔 다를 것이다',
+    ];
+    main=pool[G.day%pool.length];
+  }
+  return {main, sub: reason ? `${reason} (${G.day}일 생존)` : `${G.day}일 생존`};
+}
+
+function _endStats(){
+  const explored=G.tiles.filter(t=>t.explored).length;
+  const rows=[
+    ['📅 생존일수', `${G.day}일`],
+    ['🛶 탈출 진행', `${G.escape}%`],
+    ['🌋 DOOM', `${Math.min(100,G.doom)}%`],
+    ['⚔️ 처치', `${G.kills}마리`],
+    ['🗺️ 탐험 타일', `${explored}칸`],
+    ['🚶 이동 거리', `${G.tilesMoved||0}칸`],
+    ['🏕️ 캠프', `${G.camps.length}곳`],
+    ['❤️ 최후 HP', `${G.hp}`],
+  ];
+  return rows.map(([l,v])=>`<div class="go-si"><span class="go-sl">${l}</span><span class="go-sv">${v}</span></div>`).join('');
+}
+
+function _endHighlights(win){
+  const h=[];
+  const explored=G.tiles.filter(t=>t.explored).length;
+
+  if(G.doomSurvives>0)         h.push(`🌟 화산의 불길에서 ${G.doomSurvives}번 살아남았다`);
+  if(G.doomPhase>=3)            h.push('🌋 화산 분화를 두 눈으로 목격했다');
+  if(G.kills>=5)                h.push(`⚔️ 총 ${G.kills}마리를 쓰러뜨렸다`);
+  else if(G.kills===0&&G.day>3) h.push('⚔️ 한 번도 싸우지 않았다 (평화주의?)');
+  if(!win&&G.escape>=80)        h.push(`🛶 탈출까지 단 ${100-G.escape}%가 남아있었다`);
+  else if(!win&&G.escape===0)   h.push('🛶 뗏목을 한 번도 만들지 못했다');
+  if(G.camps.length===0&&G.day>=5) h.push('🏕️ 캠프 없이 맨몸으로 버텼다');
+  else if(G.camps.length>=3)    h.push(`🏕️ ${G.camps.length}곳에 캠프를 세웠다`);
+  if(explored>=20)              h.push(`🗺️ 섬 ${explored}곳을 샅샅이 뒤졌다`);
+  if(G.day>=20)                 h.push(`📅 ${G.day}일이라는 긴 시간을 버텼다`);
+  if(G.tilesMoved>=60)          h.push(`🚶 총 ${G.tilesMoved}칸을 부지런히 이동했다`);
+
+  return shuffle([...h]).slice(0,3);
+}
+
+function _prevRunComp(){
+  try{
+    const prev=JSON.parse(localStorage.getItem('ie_prev')||'null');
+    if(!prev) return [];
+    const lines=[];
+    const rc=(prev.runCount||1)+1;
+    lines.push(`${rc}번째 도전`);
+    const dd=G.day-prev.day;
+    if(dd>0)       lines.push(`지난 시도보다 +${dd}일 생존`);
+    else if(dd<0)  lines.push(`지난 시도보다 ${-dd}일 일찍 탈락`);
+    const ed=G.escape-prev.escape;
+    if(ed>0)            lines.push(`탈출도 +${ed}% 향상`);
+    if(!prev.win&&G.win) lines.push('🎉 첫 탈출 성공!');
+    if(prev.escape===0&&G.escape>0) lines.push('처음으로 뗏목을 만들었다');
+    return lines.slice(0,3);
+  }catch(e){ return []; }
+}
+
+function _saveRun(win){
+  try{
+    const prev=JSON.parse(localStorage.getItem('ie_prev')||'{}');
+    localStorage.setItem('ie_prev',JSON.stringify({
+      day:G.day, escape:G.escape, kills:G.kills, win,
+      runCount:(prev.runCount||0)+1,
+    }));
+  }catch(e){}
 }
 
 </script></script>
@@ -1493,7 +1618,7 @@ function clickTile(i){
   const cost=tileDist(G.pos, i);
   if(G.ap<cost){log(`AP부족 (이동${cost}칸=AP${cost})`, ''); render(); return;}
   G.tiles[G.pos].hasPlayer=false;
-  G.pos=i; t.hasPlayer=true; G.ap-=cost;
+  G.pos=i; t.hasPlayer=true; G.ap-=cost; G.tilesMoved+=cost;
   getAdj(i).forEach(j=>G.tiles[j].revealed=true);
   log(`📍 ${t.name}으로 이동 (${cost}칸·AP-${cost})`, '');
   checkSurvival(); render();

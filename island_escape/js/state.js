@@ -21,7 +21,7 @@ function initGame(){
     deck:[], disc:[],
     weather:WEATHER[0], tomorrow:WEATHER[1],
     over:false, win:false, logs:[], kills:0,
-    gatherCnt:{}, gatherBonus:{},
+    gatherCnt:{}, gatherBonus:{}, tilesMoved:0,
   };
   _pendingItems=null; _itemCb=null; _pendingItemCards=null; _ucHand=[];
   buildDeck(); buildMap();
