@@ -346,23 +346,42 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
     <button class="btn primary" style="font-size:14px;padding:12px 32px;" onclick="startGame()">▶ 시작하기</button>
     <button class="btn" style="font-size:12px;padding:10px 18px;" onclick="document.getElementById('rules-box').style.display=document.getElementById('rules-box').style.display==='block'?'none':'block'">📖 게임 규칙</button>
   </div>
-  <div id="rules-box" style="display:none;max-width:480px;margin:16px auto 0;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:16px;text-align:left;font-family:var(--font-m);font-size:9px;line-height:1.9;color:var(--text2);">
-    <div style="color:var(--accent);font-family:var(--font-t);font-size:14px;margin-bottom:8px;">📋 게임 규칙</div>
+  <div id="rules-box" style="display:none;max-width:500px;margin:16px auto 0;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:16px;text-align:left;font-family:var(--font-m);font-size:9px;line-height:1.9;color:var(--text2);">
+    <div style="color:var(--accent);font-family:var(--font-t);font-size:14px;margin-bottom:10px;">📋 게임 규칙 &amp; 핵심 개념</div>
+
     <b style="color:var(--green);">🎉 승리</b> — 탈출도 100% 달성 시 구조됨.<br>
-    <b style="color:var(--red);">💀 패배</b> — ❤️체력 또는 🧠정신력이 0 / DOOM 100% 도달.<br>
+    <b style="color:var(--red);">💀 패배</b> — ❤️체력 또는 🧠정신력이 0 / ☠️DOOM 100% 도달.<br>
     <br>
+
     <b style="color:var(--text);">⚙️ 기본 흐름</b><br>
-    타일을 클릭해 이동(칸당 AP1) → 🔍탐색(AP2)으로 이벤트 발동 → 판정 성공/실패 → 자원 획득<br>
-    🏕️캠프 건설(AP8) 후 🔨제작소에서 도구 제작 → 🎒수집으로 자원 안정 확보 → 탈출도 올리기<br>
+    타일 클릭 → 이동(1칸=AP1) → 🔍탐색(AP2) → 이벤트 판정 → 자원 획득<br>
+    🏕️캠프 건설(AP8) → 🔨제작소에서 도구 제작 → 🎒수집(AP3)으로 자원 확보 → 탈출도 ↑<br>
     <br>
+
     <b style="color:var(--text);">🃏 카드 판정</b><br>
-    탐색/전투 시 덱 맨 위 카드를 뒤집어 태그(자원/도구)로 성공 여부 결정. 덱이 비면 버림더미를 섞어 재활용.<br>
+    탐색·전투 시 덱 맨 위 카드 태그(자원/도구)로 성공 여부 결정.<br>
+    덱이 비면 버림더미를 자동으로 섞어 재활용. <b>취침 시에도 전체 덱 셔플.</b><br>
     <br>
-    <b style="color:var(--text);">🏕️ 캠프 보너스</b><br>
-    🌲숲: 취침마다 식량 자동생성 · 🌊해안: 취침마다 물 자동생성<br>
-    🪨동굴: 취침마다 정신력+5 · 🏖️해변: 카드사용 드로우+1<br>
+
+    <b style="color:var(--text);">🌙 취침</b><br>
+    HP·정신력 회복, 허기-14·갈증-18 소모, 날씨 변경, 덱 전체 셔플.<br>
+    AP4 이상 남기고 자면 <b>이른 취침</b> — 회복↑·AP+2·이벤트 확률↓.<br>
+    취침 이벤트 확률: 캠프 위=2~4% · 인접=5~12% · 캠프 없음=최대 60%+<br>
     <br>
-    <b style="color:var(--text);">📉 DOOM</b> — 매일 증가. 체력·허기·갈증이 0이면 피해. 빨리 탈출할수록 유리.
+
+    <b style="color:var(--text);">🏕️ 캠프 보너스 (취침 시 발동)</b><br>
+    🌲숲: 식량 자동생성 · 🌊해안: 물 자동생성<br>
+    🪨동굴: 정신력+5 · 🏖️해변: 카드사용 드로우+1 · 🏚️폐허: AP+1<br>
+    <br>
+
+    <b style="color:var(--text);">⚔️ 전투</b><br>
+    탐색 중 적 조우 시 시작. 카드를 공격/방어에 배정 후 라운드 해결.<br>
+    도망 가능(HP-8, 망토 보유 시 HP-2). 승리 시 식량+랜덤 보상.<br>
+    <br>
+
+    <b style="color:var(--text);">☠️ DOOM</b><br>
+    매일 취침 시 증가 (1~5일: +2/일, 이후 최대 +12/일). 로그에 표시됨.<br>
+    HP·정신력이 낮거나 상태이상이 많을수록 취침 이벤트 확률 ↑.
   </div>
   <div class="title-tip">화면 크기에 따라 모바일/PC 레이아웃 자동 전환</div>
 </div>
@@ -430,7 +449,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
       <div id="deck-scroll">
         <div class="dk-grid" id="deck-grid"></div>
         <div style="margin-top:8px;padding:7px;background:var(--bg3);border-radius:5px;font-size:8px;color:var(--text3);font-family:var(--font-m);line-height:1.8;">
-          🍗💧🌿 내구도 소진 시 영구 제거 | 🔨 제작 캠프(AP1~) | 🎒 수집 탐색완료+장비 필요 | AP10으로 시작
+          🍗💧🌿 내구도 소진 시 영구 제거 | 취침 시 전체 셔플 | 🔨 제작 캠프(AP1~) | 🎒 수집 탐색완료+장비 필요
         </div>
       </div>
     </div>
@@ -464,22 +483,23 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
         <div id="passive-info" style="color:var(--text3);line-height:1.6;">없음</div>
       </div>
       <div class="info-box" style="line-height:1.8;">
-        <div class="lbl">조작</div>
-        <span style="color:var(--text3);">타일클릭→이동(AP1~, 캠프 거리 비례) | 탐색→이벤트+판정<br>수집→탐색완료+장비(반복 시 성공률 감소) | 제작→캠프(AP소모)<br>카드사용(AP1)→🔋내구도 소진 시 영구제거 | 캠프건설AP8<br>취침→허기갈증 소모 | 일찍자면 노숙이벤트↓</span>
+        <div class="lbl">조작 요약</div>
+        <span style="color:var(--text3);">이동: 타일클릭 (1칸=AP1) | 탐색AP2 | 수집AP3 (탐색완료+장비 필요)<br>캠프건설AP8 | 제작: 캠프위치+AP | 카드사용AP1 (5장드로우)<br>취침: 덱셔플+HP회복+허기·갈증소모 | AP4↑ 이른취침 보너스</span>
       </div>
       <!-- 도움말 (모바일 도움말 탭용) -->
       <div id="help-section" class="help-section">
         <div class="help-h">📖 도움말</div>
-        <div class="help-row"><b>🔍 탐색 (AP2)</b> — 새 타일 첫 방문 시 이벤트 발생. 덱 맨 위 카드 태그로 성공/실패 판정. 이미 탐색한 곳은 비활성화.</div>
-        <div class="help-row"><b>🎒 수집 (AP3)</b> — 탐색 완료된 타일에서만 가능. 수집 장비 필요. 같은 곳 반복 수집 시 성공률 감소 (최소 20%).</div>
-        <div class="help-row"><b>🏕️ 캠프 건설 (AP8)</b> — 현재 타일에 캠프 설치. 제작 가능 + 취침 회복 증가. 지형 보너스: 🌲숲(취침마다 식량생성) · 🌊해안(취침마다 물생성) · 🪨동굴(취침마다 정신력+5) · 🏖️해변(카드사용 드로우+1).</div>
-        <div class="help-row"><b>🔨 제작 (AP1~)</b> — 캠프 위치에서만 사용 가능. 재료 소모해 도구·장비 제작. 뗏목 제작으로 탈출도 대폭 상승.</div>
-        <div class="help-row"><b>✨ 카드 사용 (AP1)</b> — 덱에서 5장 드로우. 식량(허기+22)/물(갈증+28)/약초(HP+10) 즉시 사용. 🪢밧줄 보유 시 +1장.</div>
-        <div class="help-row"><b>🌙 취침</b> — 다음날로 이동. 허기-14·갈증-18 소모. AP4 이상 남기고 자면 이른 취침 보너스(HP·정신력·AP 추가 회복).</div>
-        <div class="help-row"><b>🗺️ 이동</b> — 안개 걷힌 타일 클릭. 거리 1칸당 AP1 소모. 캠프 지나치면 할인 없음.</div>
-        <div class="help-row"><b>⚔️ 전투</b> — 탐색 중 적 조우 시 자동 시작. 카드를 공격/방어에 배정 후 라운드 해결. 도망(HP-8, 망토 있으면 HP-2).</div>
-        <div class="help-row"><b>🃏 덱 순환</b> — 카드 사용/전투 후 버림더미로 이동. 덱이 소진되면 버림더미를 섞어 자동 재순환. 내구도 있는 카드는 소진 시 영구 제거.</div>
-        <div class="help-row"><b>📊 위기 지표</b> — HP·정신력 0 또는 DOOM 100% 시 게임오버. 탈출도 100% 달성 시 탈출 성공.</div>
+        <div class="help-row"><b>🗺️ 이동</b> — 안개 걷힌 타일 클릭. 거리 1칸당 AP1 소모. 한 번에 여러 칸 이동 가능.</div>
+        <div class="help-row"><b>🔍 탐색 (AP2)</b> — 새 타일 첫 방문 시 이벤트 발생. 덱 맨 위 카드 태그로 성공/실패 판정. 이미 탐색한 곳은 재탐색 불가.</div>
+        <div class="help-row"><b>🎒 수집 (AP3)</b> — 탐색 완료 타일 + 수집 장비 보유 시 가능. 같은 곳 반복 수집 시 성공률 감소 (최소 20%).</div>
+        <div class="help-row"><b>🏕️ 캠프 건설 (AP8)</b> — 현재 타일에 캠프 설치. 제작 가능 + 취침 이벤트 확률 대폭 감소. 지형 보너스:<br>🌲숲: 식량 자동생성 · 🌊해안: 물 자동생성 · 🪨동굴: 정신력+5 · 🏖️해변: 카드사용 드로우+1 · 🏚️폐허: AP+1</div>
+        <div class="help-row"><b>🔨 제작 (AP1~)</b> — 캠프 위치에서만 사용 가능. 재료 소모해 도구·장비 제작. 뗏목 제작(AP14+재료) → 탈출도 +15~30%.</div>
+        <div class="help-row"><b>✨ 카드 사용 (AP1)</b> — 덱에서 5장 드로우. 식량(허기+22)/물(갈증+28)/약초(HP+10) 즉시 사용. 🪢밧줄 보유 시 +1장, 🏖️해변 캠프 시 +1장.</div>
+        <div class="help-row"><b>🌙 취침</b> — 다음날로 이동. 허기-14·갈증-18 소모. HP·정신력 회복. 덱 전체 셔플(버림더미 포함). AP4↑ 남기고 자면 <b>이른 취침</b>: 회복 추가+AP+2.<br>취침 이벤트 확률: 캠프 위=2~4% · 캠프 인접=5~12% · 캠프 없음=20~60%+</div>
+        <div class="help-row"><b>⚔️ 전투</b> — 탐색 중 적 조우 시 자동 시작. 카드를 공격/방어에 배정 후 라운드 해결. 도망 가능(HP-8, 망토 보유 시 HP-2). 승리 시 식량+랜덤 보상.</div>
+        <div class="help-row"><b>🃏 덱 순환</b> — 카드 사용/전투 후 버림더미로 이동. 덱 소진 시 자동 재순환. 취침 시 전체 셔플. 내구도(🔋) 소진 카드는 영구 제거.</div>
+        <div class="help-row"><b>☠️ DOOM</b> — 매일 취침 시 증가 (초반 +2/일, 6일 이후 최대 +12/일). HP·정신력 낮거나 상태이상 많을수록 취침 이벤트 확률 ↑.</div>
+        <div class="help-row"><b>📊 승패 조건</b> — 탈출도 100% 달성 시 탈출 성공. HP·정신력 0 또는 DOOM 100% 도달 시 게임오버.</div>
       </div>
     </div>
   </div>
@@ -1778,7 +1798,9 @@ function closeUseCard(){
 function doSleep(){
   if(G.over) return;
   const early=G.ap>=4;
-  G.day++; G.doom+=G.day>5?Math.min(12,G.day-3):2;
+  G.day++;
+  const doomInc=G.day>5?Math.min(12,G.day-3):2;
+  G.doom+=doomInc;
   let hpR=early?15:9, sanR=early?11:6;
   G.camps.forEach(cp=>{
     const t=G.tiles[cp];
@@ -1802,8 +1824,9 @@ function doSleep(){
     const n=Math.floor(fog.length*.08);
     for(let i=0;i<n;i++){const idx=Math.floor(Math.random()*fog.length);const ti=G.tiles.indexOf(fog[idx]);if(ti>=0){G.tiles[ti].wasSeen=true;G.tiles[ti].revealed=false;}fog.splice(idx,1);}
   }
-  drawCards(2);
-  log(`🌙 ${G.day-1}일→${G.day}일. HP+${hpR} 정신력+${sanR}${bonAP?` 이른취침AP+${bonAP}`:''}${fatigueN?` 피로AP-${fatigueN*2}`:''}`, 'important');
+  // 덱 전체 셔플 (버림더미 합산)
+  G.deck=shuffle(G.deck.concat(G.disc)); G.disc=[];
+  log(`🌙 ${G.day-1}일→${G.day}일. HP+${hpR} 정신력+${sanR}${bonAP?` 이른취침AP+${bonAP}`:''}${fatigueN?` 피로AP-${fatigueN*2}`:''} | ☠️DOOM+${doomInc}(${Math.min(100,G.doom)}%)`, 'important');
   if(Math.random()*100<calcSleepEvtChance(early)){
     showSleepEvt();
   } else {

@@ -3,7 +3,9 @@
 function doSleep(){
   if(G.over) return;
   const early=G.ap>=4;
-  G.day++; G.doom+=G.day>5?Math.min(12,G.day-3):2;
+  G.day++;
+  const doomInc=G.day>5?Math.min(12,G.day-3):2;
+  G.doom+=doomInc;
   let hpR=early?15:9, sanR=early?11:6;
   G.camps.forEach(cp=>{
     const t=G.tiles[cp];
@@ -27,8 +29,9 @@ function doSleep(){
     const n=Math.floor(fog.length*.08);
     for(let i=0;i<n;i++){const idx=Math.floor(Math.random()*fog.length);const ti=G.tiles.indexOf(fog[idx]);if(ti>=0){G.tiles[ti].wasSeen=true;G.tiles[ti].revealed=false;}fog.splice(idx,1);}
   }
-  drawCards(2);
-  log(`🌙 ${G.day-1}일→${G.day}일. HP+${hpR} 정신력+${sanR}${bonAP?` 이른취침AP+${bonAP}`:''}${fatigueN?` 피로AP-${fatigueN*2}`:''}`, 'important');
+  // 덱 전체 셔플 (버림더미 합산)
+  G.deck=shuffle(G.deck.concat(G.disc)); G.disc=[];
+  log(`🌙 ${G.day-1}일→${G.day}일. HP+${hpR} 정신력+${sanR}${bonAP?` 이른취침AP+${bonAP}`:''}${fatigueN?` 피로AP-${fatigueN*2}`:''} | ☠️DOOM+${doomInc}(${Math.min(100,G.doom)}%)`, 'important');
   if(Math.random()*100<calcSleepEvtChance(early)){
     showSleepEvt();
   } else {
