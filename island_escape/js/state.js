@@ -16,11 +16,12 @@ function initGame(){
     day:1, ap:10, maxAP:10,
     hp:100, san:100, hun:80, thi:80,
     doom:0, escape:0,
+    doomPhase:0, doomRate:0, doomSurvives:0,
     camps:[], tiles:[], pos:22,
     deck:[], disc:[],
     weather:WEATHER[0], tomorrow:WEATHER[1],
     over:false, win:false, logs:[], kills:0,
-    gatherCnt:{},
+    gatherCnt:{}, gatherBonus:{},
   };
   _pendingItems=null; _itemCb=null; _pendingItemCards=null; _ucHand=[];
   buildDeck(); buildMap();

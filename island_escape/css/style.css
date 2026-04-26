@@ -298,6 +298,22 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 #dmg-fx{position:fixed;inset:0;background:rgba(224,80,80,.3);pointer-events:none;z-index:9998;opacity:0;transition:opacity .14s ease-out;}
 #dmg-fx.hit{opacity:1;}
 
+/* ══ DOOM EVENT ══ */
+#doom-ev-mo{z-index:95;}
+#doom-ev-box{width:480px;max-width:95vw;}
+
+/* ══ ENCOUNTER ══ */
+#enc-mo{z-index:55;}
+#enc-box{width:480px;}
+
+/* ══ CONFIRM ══ */
+#conf-mo{z-index:400;}
+#conf-box{width:380px;max-width:90vw;}
+
+/* ══ RECIPE VIEWER ══ */
+#recipe-mo{z-index:75;align-items:flex-start;padding-top:48px;overflow-y:auto;}
+#recipe-box{width:640px;max-width:95vw;max-height:88vh;overflow-y:auto;}
+
 /* ══ ITEM POPUP ══ */
 #item-mo{z-index:200;}
 #item-box{width:400px;text-align:center;}

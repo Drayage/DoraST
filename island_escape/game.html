@@ -306,6 +306,22 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 #dmg-fx{position:fixed;inset:0;background:rgba(224,80,80,.3);pointer-events:none;z-index:9998;opacity:0;transition:opacity .14s ease-out;}
 #dmg-fx.hit{opacity:1;}
 
+/* ══ DOOM EVENT ══ */
+#doom-ev-mo{z-index:95;}
+#doom-ev-box{width:480px;max-width:95vw;}
+
+/* ══ ENCOUNTER ══ */
+#enc-mo{z-index:55;}
+#enc-box{width:480px;}
+
+/* ══ CONFIRM ══ */
+#conf-mo{z-index:400;}
+#conf-box{width:380px;max-width:90vw;}
+
+/* ══ RECIPE VIEWER ══ */
+#recipe-mo{z-index:75;align-items:flex-start;padding-top:48px;overflow-y:auto;}
+#recipe-box{width:640px;max-width:95vw;max-height:88vh;overflow-y:auto;}
+
 /* ══ ITEM POPUP ══ */
 #item-mo{z-index:200;}
 #item-box{width:400px;text-align:center;}
@@ -703,6 +719,60 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   </div>
 </div>
 
+<!-- DOOM EVENT -->
+<div id="doom-ev-mo" class="mo">
+  <div id="doom-ev-box" class="mb">
+    <div id="doom-title" style="font-family:var(--font-t);font-size:22px;color:var(--red);text-align:center;margin-bottom:10px;text-shadow:0 0 16px rgba(224,80,80,.4);"></div>
+    <div id="doom-story" style="font-size:11px;color:var(--text2);line-height:1.9;white-space:pre-line;background:var(--bg3);border-left:3px solid var(--red2);padding:11px 14px;border-radius:5px;margin-bottom:10px;"></div>
+    <div style="background:var(--bg3);border-radius:6px;padding:9px 11px;margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:9px;font-family:var(--font-m);color:var(--text3);margin-bottom:4px;">
+        <span>DOOM <span id="doom-pct2" style="color:var(--red);font-weight:700;">0</span>%</span>
+        <span id="doom-rate2" style="color:var(--accent);"></span>
+      </div>
+      <div style="height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;">
+        <div id="doom-pbar" style="height:6px;background:linear-gradient(90deg,var(--accent2),var(--red));width:0%;transition:width .6s;"></div>
+      </div>
+    </div>
+    <div id="doom-detail" style="font-size:10px;color:var(--accent);font-family:var(--font-m);text-align:center;margin-bottom:13px;"></div>
+    <div style="text-align:center;">
+      <button class="btn primary" id="doom-ok" style="font-size:12px;padding:7px 18px;">계속 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ENCOUNTER -->
+<div id="enc-mo" class="mo">
+  <div id="enc-box" class="mb">
+    <div class="mo-title" id="enc-title" style="font-size:18px;color:var(--red);margin-bottom:6px;text-align:center;"></div>
+    <div id="enc-desc" style="font-size:11px;color:var(--text2);margin-bottom:13px;line-height:1.7;text-align:center;font-style:italic;"></div>
+    <div id="enc-choices"></div>
+  </div>
+</div>
+
+<!-- CONFIRM -->
+<div id="conf-mo" class="mo" onclick="if(event.target===this)closeConfirm()">
+  <div id="conf-box" class="mb" style="text-align:center;">
+    <div id="conf-title" style="font-family:var(--font-t);font-size:17px;color:var(--accent);margin-bottom:7px;"></div>
+    <div id="conf-msg" style="font-size:11px;color:var(--text2);line-height:1.7;white-space:pre-line;margin-bottom:15px;"></div>
+    <div style="display:flex;gap:10px;justify-content:center;">
+      <button class="btn primary" id="conf-ok">확인</button>
+      <button class="btn" onclick="closeConfirm()">취소</button>
+    </div>
+  </div>
+</div>
+
+<!-- RECIPE VIEWER -->
+<div id="recipe-mo" class="mo" onclick="if(event.target===this)this.style.display='none'">
+  <div id="recipe-box" class="mb">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;">
+      <div style="font-family:var(--font-t);font-size:16px;color:var(--purple);">📋 제작 레시피 도감</div>
+      <button class="btn" onclick="document.getElementById('recipe-mo').style.display='none'">✕ 닫기</button>
+    </div>
+    <div id="recipe-mats" style="display:flex;gap:5px;flex-wrap:wrap;padding:7px;background:var(--bg3);border-radius:6px;font-family:var(--font-m);font-size:9px;margin-bottom:10px;"></div>
+    <div id="recipe-list" style="display:grid;grid-template-columns:1fr 1fr;gap:7px;"></div>
+  </div>
+</div>
+
 <!-- ITEM POPUP -->
 <div id="item-mo" class="mo" onclick="if(event.target===this)skipItemPopup()">
   <div id="item-box" class="mb">
@@ -838,20 +908,32 @@ const CARDS=[
 
 const ENEMIES={
   cbt_boar:{name:'멧돼지',icon:'🐗',hp:30,atk:12,def:4,
+    encDesc:'덤불 속에서 성난 멧돼지가 으르렁거린다. 강한 돌진이 예상된다.',
+    observeReward:[{id:'food',n:2},{id:'hide',n:1}],
+    observeText:'멧돼지가 자리를 피한 틈에 먹이와 가죽을 챙겼다.',
     reward:{cards:[{id:'food',n:1}]},
     altCards:[[{id:'hide',n:2}],[{id:'wood',n:2}]],
     rewardDesc:'식량×1 + (가죽×2 또는 목재×2)'},
   cbt_snake:{name:'독사',  icon:'🐍',hp:18,atk:10,def:2,
+    encDesc:'바위 틈에서 독사가 혀를 날름거린다. 독이 있어 물리면 위험하다.',
+    observeReward:[{id:'herb',n:1},{id:'venom',n:1}],
+    observeText:'독사 굴 근처에서 약초와 독낭을 조심스럽게 채취했다.',
     reward:{cards:[{id:'food',n:1}]},
     altCards:[[{id:'herb',n:1},{id:'venom',n:1}],[{id:'metal',n:2}]],
     rewardDesc:'식량×1 + (약초+독낭 또는 고철×2)',
     penalty:{card:'injury',desc:'독사에게 물려 부상 카드 추가'}},
   cbt_bat:{name:'박쥐떼',icon:'🦇',hp:22,atk:8, def:1,
+    encDesc:'동굴 천장에 수백 마리의 박쥐가 매달려 있다. 자극하면 떼로 공격한다.',
+    observeReward:[{id:'feather',n:2},{id:'food',n:1}],
+    observeText:'박쥐들이 잠든 틈에 깃털을 모으고 먹이를 챙겼다.',
     reward:{cards:[{id:'food',n:1}]},
     altCards:[[{id:'feather',n:2}],[{id:'metal',n:1}]],
     rewardDesc:'식량×1 + (깃털×2 또는 고철×1)',
     penalty:{san:-10,desc:'박쥐떼에 시달려 정신력 -10'}},
   cbt_ghost:{name:'환각존재',icon:'👻',hp:24,atk:10,def:3,
+    encDesc:'공기가 일그러지며 빛나는 형상이 나타났다. 섬의 저주인가, 환각인가.',
+    observeReward:[{id:'shard',n:2}],
+    observeText:'형상이 사라진 자리에 고대 파편이 남아 있었다.',
     reward:{san:12,cards:[{id:'food',n:1}]},
     altCards:[[{id:'shard',n:2}],[{id:'metal',n:2}]],
     rewardDesc:'정신력+12 + 식량×1 + (파편×2 또는 고철×2)',
@@ -1013,11 +1095,12 @@ function initGame(){
     day:1, ap:10, maxAP:10,
     hp:100, san:100, hun:80, thi:80,
     doom:0, escape:0,
+    doomPhase:0, doomRate:0, doomSurvives:0,
     camps:[], tiles:[], pos:22,
     deck:[], disc:[],
     weather:WEATHER[0], tomorrow:WEATHER[1],
     over:false, win:false, logs:[], kills:0,
-    gatherCnt:{},
+    gatherCnt:{}, gatherBonus:{},
   };
   _pendingItems=null; _itemCb=null; _pendingItemCards=null; _ucHand=[];
   buildDeck(); buildMap();
@@ -1162,6 +1245,16 @@ function claimItem(idx){
   }
 }
 
+function showConfirm(title, msg, cb){
+  document.getElementById('conf-title').textContent=title;
+  document.getElementById('conf-msg').textContent=msg;
+  document.getElementById('conf-ok').onclick=()=>{closeConfirm();cb();};
+  document.getElementById('conf-mo').style.display='flex';
+}
+function closeConfirm(){
+  document.getElementById('conf-mo').style.display='none';
+}
+
 function skipItemPopup(){
   document.getElementById('item-mo').style.display='none';
   if(_pendingItemCards&&_pendingItemCards.length){
@@ -1181,9 +1274,8 @@ function checkSurvival(){
   G.hun=Math.max(0,G.hun); G.thi=Math.max(0,G.thi);
   if(G.hun===0){ G.hp=Math.max(0,G.hp-5); log('🍗 굶주림! HP-5','danger'); }
   if(G.thi===0){ G.hp=Math.max(0,G.hp-8); log('💧 탈수! HP-8','danger'); }
-  if(G.hp<=0)    triggerGameOver('체력이 소진되었습니다.');
-  if(G.san<=0)   triggerGameOver('정신력이 무너졌습니다.');
-  if(G.doom>=100)triggerGameOver('섬의 종말이 도래했습니다.');
+  if(G.hp<=0)  triggerGameOver('체력이 소진되었습니다.');
+  if(G.san<=0) triggerGameOver('정신력이 무너졌습니다.');
 }
 
 function checkWin(){
@@ -1241,7 +1333,7 @@ function showTT(c, el){
   } else useEl.style.display='none';
 
   const pEl=document.getElementById('tt-pass');
-  if(c.passiveDesc){pEl.style.display='';pEl.textContent='⭐ '+c.passiveDesc;}
+  if(c.passiveDesc){pEl.style.display='';pEl.textContent='⭐ '+c.passiveDesc+' (중복불가)';}
   else pEl.style.display='none';
 
   const cEl=document.getElementById('tt-cbt');
@@ -1396,7 +1488,7 @@ function doExplore(){
   if(t.explored){log('이미 탐색한 지역이다.','');return;}
   G.ap-=2; t.explored=true;
   const evtId=t.events[Math.floor(Math.random()*t.events.length)];
-  if(ENEMIES[evtId]){ startCombat(evtId); return; }
+  if(ENEMIES[evtId]){ showEncounter(evtId); return; }
   const evt=EVENTS[evtId];
   if(!evt){log('이벤트 오류','danger');return;}
   showExploreChoice(evt);
@@ -1817,13 +1909,47 @@ function closeUseCard(){
 <script>
 // ═══════════════ SLEEP ═══════════════
 
+// ── 화산 종말 시나리오 ──
+const DOOM_STORY=[
+  {phase:0,
+   title:'🌋 불길한 진동',
+   story:'첫 번째 밤, 묵직한 울림이 섬 전체를 흔들었다.\n눈을 떠보니 모래사장에 선명한 균열이 생겨 있었다.\n\n섬 중앙을 바라보니 열기 섞인 연기가 피어오르고 있었다.\n\n이 섬은... 화산섬이었다.',
+   detail:'종말 진행도 +1% → 이후 매 취침마다 +2% 증가',
+   doomAdd:1,rateAfter:2,nextPhase:1},
+  {phase:1,minDay:6,
+   title:'🔥 화산의 눈뜸',
+   story:'섬 중앙에서 검은 연기 기둥이 솟구쳤다.\n\n땅이 뜨거워지고, 나무들이 시들어간다.\n발밑에서 열기가 올라오는 게 느껴진다.\n\n화산이 깨어났다. 더 이상 망설일 시간이 없다.',
+   detail:'종말 진행도 +15% → 이후 매 취침마다 +3% 증가',
+   doomAdd:15,rateAfter:3,nextPhase:2},
+  {phase:2,minDay:11,
+   title:'🌊 마그마의 전진',
+   story:'동쪽 절벽에서 붉은 마그마가 쏟아져 내렸다.\n해안선의 바닷물이 끓어오르고\n유황 냄새가 폐부를 찌른다.\n\n섬의 절반이 이미 불길에 잠식되고 있다.',
+   detail:'종말 진행도 +25% → 이후 매 취침마다 +4% 증가',
+   doomAdd:25,rateAfter:4,nextPhase:3},
+  {phase:3,minDay:16,
+   title:'💥 분화 임박',
+   story:'화산이 폭발했다.\n\n거대한 화염 기둥이 하늘을 찌르고\n화산재가 사방을 뒤덮었다.\n용암이 모든 것을 집어삼키며 흘러온다.\n\n지금 이 순간부터 — 매 순간이 생사의 갈림길이다.',
+   detail:'종말 진행도 → 80% | 종말 단계: 매 취침 회복 감소·추가 피해',
+   doomSet:80,rateAfter:0,nextPhase:4},
+];
+
+const DOOM_ENDGAME_FL=[
+  {txt:'밤새 용암이 조금 더 가까워졌다. 열기에 잠을 설쳤다.',hpPen:3,sanPen:2},
+  {txt:'화산재가 폐부를 찌른다. 밤새 기침이 멈추지 않았다.',hpPen:5,sanPen:3},
+  {txt:'지열로 인해 잠자리가 뜨거웠다. 충분히 회복하지 못했다.',hpPen:2,sanPen:4},
+  {txt:'폭발음이 귀를 찢었다. 공포에 잠들기 어려웠다.',hpPen:2,sanPen:5},
+  {txt:'용암 전선이 5미터 더 가까워졌다.',hpPen:4,sanPen:2},
+  {txt:'유황 가스가 진동한다. 눈과 목이 따갑다.',hpPen:6,sanPen:1},
+];
+
 function doSleep(){
   if(G.over) return;
   const early=G.ap>=4;
   G.day++;
-  const doomInc=G.day>5?Math.min(12,G.day-3):2;
-  G.doom+=doomInc;
+
   let hpR=early?15:9, sanR=early?4:2;
+  if(G.doomPhase===4){ hpR=Math.max(0,hpR-4); sanR=Math.max(0,sanR-2); }
+
   G.camps.forEach(cp=>{
     const t=G.tiles[cp];
     if(t.id==='cave')   { sanR+=5; }
@@ -1853,33 +1979,91 @@ function doSleep(){
     const n=Math.floor(fog.length*.08);
     for(let i=0;i<n;i++){const idx=Math.floor(Math.random()*fog.length);const ti=G.tiles.indexOf(fog[idx]);if(ti>=0){G.tiles[ti].wasSeen=true;G.tiles[ti].revealed=false;}fog.splice(idx,1);}
   }
-  // 덱 전체 셔플 (버림더미 합산)
   G.deck=shuffle(G.deck.concat(G.disc)); G.disc=[];
+
   const sanNet=sanR-sanDrain;
-  log(`🌙 ${G.day-1}일→${G.day}일. HP+${hpR} 정신력${sanNet>=0?'+':''}${sanNet}(회복${sanR}-고립${sanDrain})${bonAP?` 이른취침AP+${bonAP}`:''}${fatigueN?` 피로AP-${fatigueN*2}`:''} | ☠️DOOM+${doomInc}(${Math.min(100,G.doom)}%)`, 'important');
-  if(Math.random()*100<calcSleepEvtChance(early)){
-    showSleepEvt();
-  } else {
-    checkSurvival(); checkWin(); render();
+  const doomHint=G.doomRate>0?` | 🌋DOOM+${G.doomRate}/일(${G.doom}%)`:G.doomPhase>=4?` | 🌋DOOM ${G.doom}%`:'';
+  log(`🌙 ${G.day-1}일→${G.day}일. HP+${hpR} 정신력${sanNet>=0?'+':''}${sanNet}${bonAP?` 이른취침AP+${bonAP}`:''}${fatigueN?` 피로AP-${fatigueN*2}`:''}${doomHint}`,'important');
+
+  _processDoom(early);
+}
+
+function _processDoom(early){
+  // 스토리 이벤트 확인
+  const storyEvt=DOOM_STORY.find(e=>e.phase===G.doomPhase&&(e.minDay===undefined||G.day>=e.minDay));
+  if(storyEvt){
+    if(storyEvt.doomSet!==undefined) G.doom=storyEvt.doomSet;
+    else G.doom=Math.min(100,G.doom+(storyEvt.doomAdd||0));
+    G.doomRate=storyEvt.rateAfter;
+    G.doomPhase=storyEvt.nextPhase;
+    log(`🌋 종말이벤트: ${storyEvt.title} — DOOM ${G.doom}%`,'danger');
+    _showDoomModal(storyEvt.title,storyEvt.story,storyEvt.detail,()=>_afterDoom(early));
+    return;
   }
+  // 일일 수동 증가
+  if(G.doomRate>0 && G.doomPhase<4) G.doom=Math.min(100,G.doom+G.doomRate);
+
+  // 종말 단계 (80%+)
+  if(G.doomPhase===4){
+    const add=1+Math.floor(Math.random()*3);
+    G.doom=Math.min(100,G.doom+add);
+    const fl=DOOM_ENDGAME_FL[Math.floor(Math.random()*DOOM_ENDGAME_FL.length)];
+    G.hp=Math.max(0,G.hp-fl.hpPen); G.san=Math.max(0,G.san-fl.sanPen);
+    if(fl.hpPen>0) flashDamage();
+    log(`🌋 ${fl.txt} HP-${fl.hpPen} 정신력-${fl.sanPen} DOOM+${add}(${G.doom}%)`,'danger');
+    if(G.doom>=100){
+      checkSurvival(); if(G.over) return;
+      _showDoomModal('🌋 종말 임박',fl.txt+'\n\n종말 진행도가 100%에 도달했다.\n다음 취침부터 생사의 복권이 시작된다.',`DOOM ${G.doom}%`,()=>_afterDoom(early));
+      return;
+    }
+    _showDoomModal('🌋 종말 진행',fl.txt+`\n\n체력 -${fl.hpPen} · 정신력 -${fl.sanPen}`,`종말 +${add}% → ${G.doom}%`,()=>_afterDoom(early));
+    return;
+  }
+  _afterDoom(early);
+}
+
+function _afterDoom(early){
+  checkSurvival(); if(G.over) return;
+  checkWin(); if(G.over) return;
+  // DOOM 100% → 복권으로 대체
+  if(G.doom>=100 && G.doomPhase>=4){
+    showDoomLottery(); return;
+  }
+  if(Math.random()*100<calcSleepEvtChance(early)) showSleepEvt();
+  else render();
+}
+
+function _showDoomModal(title,story,detail,cb){
+  document.getElementById('doom-title').textContent=title;
+  document.getElementById('doom-story').textContent=story;
+  document.getElementById('doom-detail').textContent=detail;
+  document.getElementById('doom-pbar').style.width=Math.min(100,G.doom)+'%';
+  document.getElementById('doom-pct2').textContent=G.doom;
+  document.getElementById('doom-rate2').textContent=
+    G.doomPhase>=4?'(매 취침 +1~3%)':G.doomRate>0?`(매 취침 +${G.doomRate}%)`:'';
+  document.getElementById('doom-ok').onclick=()=>{
+    document.getElementById('doom-ev-mo').style.display='none';
+    if(cb) cb();
+  };
+  document.getElementById('doom-ev-mo').style.display='flex';
+  render();
 }
 
 function calcSleepEvtChance(early){
   let c;
   if(!G.camps.length){
-    c=early?20:60;
+    c=early?20:50;
   } else {
-    const minD=Math.min(...G.camps.map(cp=>{
-      return Math.abs(Math.floor(cp/10)-Math.floor(G.pos/10))+Math.abs((cp%10)-(G.pos%10));
-    }));
-    if(minD===0)      c=early?2:4;    // 캠프 위에서 취침 — 거의 없음
-    else if(minD===1) c=early?5:12;   // 인접
-    else              c=early?8:15+(minD-2)*7;
+    const minD=Math.min(...G.camps.map(cp=>tileDist(cp,G.pos)));
+    if(minD===0)      c=0;
+    else if(minD===1) c=early?3:5;
+    else if(minD===2) c=early?5:10;
+    else              c=early?5+(minD-2)*5:10+(minD-2)*8;
   }
   const stN=allCards().filter(c=>c.tag==='status').length;
   c+=stN*6;
-  if(G.hp<40) c+=8; if(G.hun<30) c+=8; if(G.thi<30) c+=8; if(G.ap<=2) c+=4;
-  return Math.min(c,95);
+  if(G.hp<40) c+=10; if(G.hun<30) c+=8; if(G.thi<30) c+=8; if(G.ap<=2) c+=4;
+  return Math.min(c,80);
 }
 
 function applyWeather(){
@@ -1895,6 +2079,7 @@ function applyWeather(){
 function showRaftLottery(){
   const deck5=shuffle(['great','ok','ok','ok','fail']);
   document.getElementById('se-ok').textContent='확인 →';
+  document.getElementById('se-ok').onclick=null;
   document.getElementById('se-title').textContent='🛶 뗏목 부품 제작 — 뽑기!';
   document.getElementById('se-flavor').textContent='부품을 조립하다 보니 결과가 어떻게 될지 알 수 없다. 5장 중 1장을 선택하라.';
   document.getElementById('se-hint').textContent='대성공(1): 탈출+30% | 성공(3): 탈출+15% | 실패(1): 탈출-10%';
@@ -1903,8 +2088,7 @@ function showRaftLottery(){
   const cardsEl=document.getElementById('se-cards'); cardsEl.innerHTML='';
   deck5.forEach(type=>{
     const div=document.createElement('div'); div.className='sc';
-    div.dataset.type=type;
-    div.onclick=()=>revealRaft(div,type);
+    div.dataset.type=type; div.onclick=()=>revealRaft(div,type);
     cardsEl.appendChild(div);
   });
   document.getElementById('se-mo').style.display='flex';
@@ -1938,6 +2122,57 @@ function revealRaft(el, type){
   checkWin(); render();
 }
 
+function showDoomLottery(){
+  const survN=Math.max(0,4-G.doomSurvives);
+  const dieN=Math.min(5,1+G.doomSurvives);
+  const deck5=shuffle([...Array(survN).fill('survive'),...Array(dieN).fill('death')]);
+  document.getElementById('se-ok').textContent='다음날로 →';
+  document.getElementById('se-ok').onclick=null;
+  document.getElementById('se-title').textContent='🌋 최후의 불길';
+  document.getElementById('se-flavor').textContent=
+    survN===0
+      ?'돌아올 수 없는 선을 넘었다. 이 불지옥에서 살아남을 방법이 없다.'
+      :'섬이 거의 완전히 용암에 잠겼다. 5장 중 1장을 선택하라.';
+  document.getElementById('se-hint').textContent=`생존 ${survN}장 · 죽음 ${dieN}장 (${G.doomSurvives}번 생존)`;
+  document.getElementById('se-result').textContent='';
+  document.getElementById('se-ok').style.display='none';
+  const cardsEl=document.getElementById('se-cards'); cardsEl.innerHTML='';
+  deck5.forEach(type=>{
+    const div=document.createElement('div'); div.className='sc';
+    div.dataset.type=type; div.onclick=()=>revealDoomLottery(div,type);
+    cardsEl.appendChild(div);
+  });
+  document.getElementById('se-mo').style.display='flex';
+}
+
+function revealDoomLottery(el,type){
+  if(el.classList.contains('revealed')) return;
+  document.querySelectorAll('.sc:not(.revealed)').forEach(c=>c.onclick=null);
+  el.classList.add('revealed');
+  const resEl=document.getElementById('se-result');
+  if(type==='survive'){
+    el.classList.add('sc-ok'); el.textContent='🌟';
+    G.doomSurvives++;
+    const left=Math.max(0,4-G.doomSurvives);
+    resEl.style.color='var(--green)';
+    resEl.textContent=`✓ 기적적으로 살아남았다! 하지만 다음엔 더 어렵다. (생존카드 ${left}장 남음)`;
+    log(`🌟 종말 복권: 생존! (생존카드 ${left}장 남음)`,'success');
+    document.getElementById('se-ok').style.display='';
+  } else {
+    el.classList.add('sc-bad'); el.textContent='💀';
+    resEl.style.color='var(--red)';
+    resEl.textContent='💀 용암이 모든 것을 삼켰다.';
+    log('💀 종말 복권: 사망 — 화산에 의해 최후를 맞이했다.','danger');
+    document.getElementById('se-ok').textContent='게임 오버';
+    document.getElementById('se-ok').onclick=()=>{
+      document.getElementById('se-mo').style.display='none';
+      triggerGameOver('🌋 화산 폭발로 인해 섬이 완전히 소멸했습니다.');
+    };
+    document.getElementById('se-ok').style.display='';
+  }
+  render();
+}
+
 function showSleepEvt(){
   const stN=allCards().filter(c=>c.tag==='status').length;
   const bad=(G.hp<40||G.hun<20||G.thi<20||G.ap<=2);
@@ -1946,6 +2181,7 @@ function showSleepEvt(){
   if(stN>=4||(stN>=2&&bad)){ okN=1; failN=1; badN=3; }
   const deck5=shuffle([...Array(okN).fill('ok'),...Array(failN).fill('fail'),...Array(badN).fill('bad')]);
   document.getElementById('se-ok').textContent='다음날로 →';
+  document.getElementById('se-ok').onclick=null;
   document.getElementById('se-title').textContent='🌙 취침 이벤트';
   document.getElementById('se-flavor').textContent=
     !G.camps.length
@@ -2009,16 +2245,121 @@ function closeSleepEvt(){
 
 function drawCombatHand(){ return drawToHand(5); }
 
-function startCombat(evtId){
+// 기습: 첫 라운드 전투카드 2장 이상 보장
+function drawAmbushHand(){
+  const isCbt = c => c.atk>0 || c.tag==='combat';
+  const cbtInDeck = G.deck.filter(isCbt);
+  if(cbtInDeck.length>=2){
+    const restInDeck = G.deck.filter(c=>!isCbt(c));
+    // pop은 끝에서 → 전투카드를 끝에 배치하면 먼저 뽑힘
+    G.deck = [...restInDeck, ...cbtInDeck];
+  }
+  return drawToHand(5);
+}
+
+// 전투 전 조우 모달
+function showEncounter(evtId){
+  const enemy = ENEMIES[evtId];
+  if(!enemy){ startCombat(evtId,false,false); return; }
+  const cards = allCards();
+  const toolCnt = cards.filter(c=>c.tag==='tool').length;
+  const obsRate = Math.min(95, 40 + Math.round(toolCnt/Math.max(1,cards.length)*100));
+
+  document.getElementById('enc-title').textContent = `${enemy.icon} ${enemy.name} 발견!`;
+  document.getElementById('enc-desc').textContent = enemy.encDesc || '위험한 기운이 도사리고 있다.';
+  const el = document.getElementById('enc-choices'); el.innerHTML='';
+
+  // 1. 기습
+  const ambDiv = document.createElement('div'); ambDiv.className='ex-choice fi';
+  ambDiv.innerHTML=`
+    <div class="ex-ci">⚔️</div>
+    <div>
+      <div class="ex-cn">기습 공격</div>
+      <div class="ex-cd">선제 공격으로 유리한 위치를 점한다.</div>
+      <div style="font-size:8px;margin-top:3px;">
+        <span style="color:var(--green);">★ 첫 라운드 전투카드 2장 이상 보장</span>
+        <span style="color:var(--red);margin-left:6px;">✗ 도주 시 HP-15</span>
+      </div>
+    </div>`;
+  ambDiv.onclick=()=>{
+    document.getElementById('enc-mo').style.display='none';
+    log(`⚔️ 기습 공격! ${enemy.name}에게 선제 공격!`,'danger');
+    startCombat(evtId,true,true);
+  };
+
+  // 2. 상황탐색
+  const obsRewardTxt = (enemy.observeReward||[]).map(r=>{
+    const d=CARD_MAP[r.id];
+    return `${d?.icon||''}${d?.name||r.id}×${r.n||1}`;
+  }).join(' ');
+  const obsDiv = document.createElement('div'); obsDiv.className='ex-choice fi';
+  obsDiv.innerHTML=`
+    <div class="ex-ci">👁</div>
+    <div>
+      <div class="ex-cn">상황을 살핀다 <span style="color:var(--text3);font-size:8px;">성공률 ${obsRate}%</span></div>
+      <div class="ex-cd">도구 비율에 따라 싸우지 않고 이득을 취할 수 있다.</div>
+      <div style="font-size:8px;margin-top:3px;">
+        <span style="color:var(--green);">✓ ${obsRewardTxt||'아이템 획득'}</span>
+        <span style="color:var(--red);margin-left:6px;">✗ 실패: 전투</span>
+      </div>
+    </div>`;
+  obsDiv.onclick=()=>{
+    document.getElementById('enc-mo').style.display='none';
+    encObserve(evtId, enemy, obsRate);
+  };
+
+  // 3. 도망
+  const fleeDiv = document.createElement('div'); fleeDiv.className='ex-choice fi';
+  fleeDiv.innerHTML=`
+    <div class="ex-ci">💨</div>
+    <div>
+      <div class="ex-cn">도망친다</div>
+      <div class="ex-cd">그 자리를 피해 달아난다.</div>
+      <div style="font-size:8px;margin-top:3px;color:var(--red);">✗ 허기-5 · 정신력-10</div>
+    </div>`;
+  fleeDiv.onclick=()=>{
+    document.getElementById('enc-mo').style.display='none';
+    encFlee();
+  };
+
+  el.appendChild(ambDiv); el.appendChild(obsDiv); el.appendChild(fleeDiv);
+  document.getElementById('enc-mo').style.display='flex';
+}
+
+function encObserve(evtId, enemy, rate){
+  if(Math.random()*100 < rate){
+    log(`👁 상황탐색 성공! 싸우지 않고 이득을 취했다.`,'success');
+    if(enemy.observeReward){
+      const items=enemy.observeReward.map(r=>{
+        const d=CARD_MAP[r.id];
+        return {id:r.id,icon:d?.icon||'📦',name:d?.name||r.id,n:r.n||1};
+      });
+      showItemPopup(items, `👁 ${enemy.observeText||'탐색 성공!'}`, ()=>{checkSurvival();render();});
+    } else { checkSurvival(); render(); }
+  } else {
+    log(`👁 상황탐색 실패! ${enemy.name}이 공격해온다!`,'danger');
+    startCombat(evtId, false, false);
+  }
+}
+
+function encFlee(){
+  G.hun = Math.max(0, G.hun-5);
+  G.san = Math.max(0, G.san-10);
+  log('💨 도망쳤다. 허기-5 정신력-10','danger');
+  checkSurvival(); render();
+}
+
+function startCombat(evtId, ambush, fightChosen){
   const enemy=ENEMIES[evtId];
-  CBT={enemy:{...enemy,curHp:enemy.hp},hand:[],atkZone:[],defZone:[],resolved:false,turn:1,stunned:false,poisoned:false};
-  CBT.hand=drawCombatHand(); _cbtMode=null;
+  CBT={enemy:{...enemy,curHp:enemy.hp},hand:[],atkZone:[],defZone:[],resolved:false,turn:1,stunned:false,poisoned:false,penaltyApplied:false,fightChosen:!!fightChosen};
+  CBT.hand = ambush ? drawAmbushHand() : drawCombatHand();
+  _cbtMode=null;
   ['btn-cbt-resolve','btn-cbt-flee'].forEach(id=>document.getElementById(id).style.display='');
   document.getElementById('btn-cbt-close').style.display='none';
   document.getElementById('cbt-res').style.display='none';
   document.getElementById('cbt-mo').style.display='flex';
   renderCombat();
-  log(`⚔️ ${enemy.name} 출현! 전투 시작.`,'danger');
+  log(`⚔️ ${enemy.name} 전투 시작${ambush?' (기습! 전투카드 우선)':''}.`,'danger');
 }
 
 function setCbtMode(m){
@@ -2163,20 +2504,37 @@ function resolveCombat(){
 
   const poisonDmg=CBT.poisoned?3:0;
   if(CBT.poisoned) lines.push({t:`☠️ 독 지속피해: 적 -3`,cls:'good'});
-  if(poisonApplied) CBT.poisoned=true;
 
   // 일반 공격은 적 방어를 뺌, 관통 공격은 방어 무시
   const dmgE=Math.max(0,normalAtk-e.def)+pierceAtk+poisonDmg;
-  const eA=CBT.stunned?0:e.atk;
-  let dmgP=Math.max(0,eA-pD);
-  if(hasArmor&&dmgP>0){ dmgP=Math.max(0,dmgP-2); lines.push({t:`🧥 가죽갑옷: 피해-2`,cls:'good'}); }
 
+  // 처치 시 반격 없음
+  const willKillEnemy = (e.curHp - dmgE) <= 0;
+  const eA=CBT.stunned?0:e.atk;
+  let dmgP = willKillEnemy ? 0 : Math.max(0,eA-pD);
+  if(!willKillEnemy && hasArmor && dmgP>0){ dmgP=Math.max(0,dmgP-2); lines.push({t:`🧥 가죽갑옷: 피해-2`,cls:'good'}); }
+  if(willKillEnemy) lines.push({t:`⚔️ 이번 공격으로 처치 — 적의 반격 없음`,cls:'good'});
+
+  lines.unshift({t:`⚔️ 내공격: 일반${normalAtk}-방어${e.def}+관통${pierceAtk}+독${poisonDmg}=${dmgE}피해`,cls:'good'});
+  lines.unshift({t:`🛡️ 내방어:${pD}${hasArmor&&!willKillEnemy?'(갑옷-2)':''}-적공격${eA}=${dmgP}피해`,cls:dmgP>0?'bad':'good'});
+
+  // 사망 확인: 이 라운드에 죽을 예정이면 확인 팝업
+  if(!willKillEnemy && dmgP>0 && G.hp - dmgP <= 0){
+    showConfirm(
+      '⚠️ 사망 위기',
+      `이번 라운드 해결 시 체력이 0이 됩니다.\n현재 HP ${G.hp} → 예상 피해 ${dmgP}\n계속 진행하시겠습니까?`,
+      ()=>_finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,willKillEnemy)
+    );
+    return;
+  }
+  _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,willKillEnemy);
+}
+
+function _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,willKillEnemy){
+  if(poisonApplied) CBT.poisoned=true;
   e.curHp=Math.max(0,e.curHp-dmgE);
-  const prevHp=G.hp;
   G.hp=Math.max(0,G.hp-dmgP);
   if(dmgP>0) flashDamage();
-  lines.unshift({t:`⚔️ 내공격: 일반${normalAtk}-방어${e.def}+관통${pierceAtk}+독${poisonDmg}=${dmgE}피해`,cls:'good'});
-  lines.unshift({t:`🛡️ 내방어:${pD}${hasArmor?'(갑옷-2)':''}-적공격${eA}=${dmgP}피해`,cls:dmgP>0?'bad':'good'});
   CBT.stunned=stun;
 
   const resEl=document.getElementById('cbt-res');
@@ -2230,9 +2588,23 @@ function resolveCombat(){
 
 function fleeCombat(){
   const hasCloak=allCards().some(c=>c.id==='feather_cloak');
-  const cost=hasCloak?2:8;
+  const baseCost = CBT.fightChosen ? 15 : 8;
+  const cost = hasCloak ? 2 : baseCost;
+  // 사망 확인
+  if(G.hp - cost <= 0){
+    showConfirm(
+      '⚠️ 사망 위기',
+      `도망 시 체력이 0이 됩니다.\n현재 HP ${G.hp} → 도주 비용 ${cost}\n계속 진행하시겠습니까?`,
+      ()=>_doFleeCombat(cost, hasCloak)
+    );
+    return;
+  }
+  _doFleeCombat(cost, hasCloak);
+}
+
+function _doFleeCombat(cost, hasCloak){
   G.hp=Math.max(0,G.hp-cost);
-  log(`💨 도망. HP-${cost}${hasCloak?' (🧣깃털망토 효과)':''}`, 'danger');
+  log(`💨 도망. HP-${cost}${hasCloak?' (🧣깃털망토 효과)':CBT.fightChosen?' (기습 후 도주 패널티)':''}`, 'danger');
   closeCombat();
 }
 

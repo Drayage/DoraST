@@ -7,7 +7,7 @@ function doExplore(){
   if(t.explored){log('이미 탐색한 지역이다.','');return;}
   G.ap-=2; t.explored=true;
   const evtId=t.events[Math.floor(Math.random()*t.events.length)];
-  if(ENEMIES[evtId]){ startCombat(evtId); return; }
+  if(ENEMIES[evtId]){ showEncounter(evtId); return; }
   const evt=EVENTS[evtId];
   if(!evt){log('이벤트 오류','danger');return;}
   showExploreChoice(evt);

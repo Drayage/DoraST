@@ -30,7 +30,7 @@ function showTT(c, el){
   } else useEl.style.display='none';
 
   const pEl=document.getElementById('tt-pass');
-  if(c.passiveDesc){pEl.style.display='';pEl.textContent='⭐ '+c.passiveDesc;}
+  if(c.passiveDesc){pEl.style.display='';pEl.textContent='⭐ '+c.passiveDesc+' (중복불가)';}
   else pEl.style.display='none';
 
   const cEl=document.getElementById('tt-cbt');

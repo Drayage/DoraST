@@ -3,16 +3,121 @@
 
 function drawCombatHand(){ return drawToHand(5); }
 
-function startCombat(evtId){
+// 기습: 첫 라운드 전투카드 2장 이상 보장
+function drawAmbushHand(){
+  const isCbt = c => c.atk>0 || c.tag==='combat';
+  const cbtInDeck = G.deck.filter(isCbt);
+  if(cbtInDeck.length>=2){
+    const restInDeck = G.deck.filter(c=>!isCbt(c));
+    // pop은 끝에서 → 전투카드를 끝에 배치하면 먼저 뽑힘
+    G.deck = [...restInDeck, ...cbtInDeck];
+  }
+  return drawToHand(5);
+}
+
+// 전투 전 조우 모달
+function showEncounter(evtId){
+  const enemy = ENEMIES[evtId];
+  if(!enemy){ startCombat(evtId,false,false); return; }
+  const cards = allCards();
+  const toolCnt = cards.filter(c=>c.tag==='tool').length;
+  const obsRate = Math.min(95, 40 + Math.round(toolCnt/Math.max(1,cards.length)*100));
+
+  document.getElementById('enc-title').textContent = `${enemy.icon} ${enemy.name} 발견!`;
+  document.getElementById('enc-desc').textContent = enemy.encDesc || '위험한 기운이 도사리고 있다.';
+  const el = document.getElementById('enc-choices'); el.innerHTML='';
+
+  // 1. 기습
+  const ambDiv = document.createElement('div'); ambDiv.className='ex-choice fi';
+  ambDiv.innerHTML=`
+    <div class="ex-ci">⚔️</div>
+    <div>
+      <div class="ex-cn">기습 공격</div>
+      <div class="ex-cd">선제 공격으로 유리한 위치를 점한다.</div>
+      <div style="font-size:8px;margin-top:3px;">
+        <span style="color:var(--green);">★ 첫 라운드 전투카드 2장 이상 보장</span>
+        <span style="color:var(--red);margin-left:6px;">✗ 도주 시 HP-15</span>
+      </div>
+    </div>`;
+  ambDiv.onclick=()=>{
+    document.getElementById('enc-mo').style.display='none';
+    log(`⚔️ 기습 공격! ${enemy.name}에게 선제 공격!`,'danger');
+    startCombat(evtId,true,true);
+  };
+
+  // 2. 상황탐색
+  const obsRewardTxt = (enemy.observeReward||[]).map(r=>{
+    const d=CARD_MAP[r.id];
+    return `${d?.icon||''}${d?.name||r.id}×${r.n||1}`;
+  }).join(' ');
+  const obsDiv = document.createElement('div'); obsDiv.className='ex-choice fi';
+  obsDiv.innerHTML=`
+    <div class="ex-ci">👁</div>
+    <div>
+      <div class="ex-cn">상황을 살핀다 <span style="color:var(--text3);font-size:8px;">성공률 ${obsRate}%</span></div>
+      <div class="ex-cd">도구 비율에 따라 싸우지 않고 이득을 취할 수 있다.</div>
+      <div style="font-size:8px;margin-top:3px;">
+        <span style="color:var(--green);">✓ ${obsRewardTxt||'아이템 획득'}</span>
+        <span style="color:var(--red);margin-left:6px;">✗ 실패: 전투</span>
+      </div>
+    </div>`;
+  obsDiv.onclick=()=>{
+    document.getElementById('enc-mo').style.display='none';
+    encObserve(evtId, enemy, obsRate);
+  };
+
+  // 3. 도망
+  const fleeDiv = document.createElement('div'); fleeDiv.className='ex-choice fi';
+  fleeDiv.innerHTML=`
+    <div class="ex-ci">💨</div>
+    <div>
+      <div class="ex-cn">도망친다</div>
+      <div class="ex-cd">그 자리를 피해 달아난다.</div>
+      <div style="font-size:8px;margin-top:3px;color:var(--red);">✗ 허기-5 · 정신력-10</div>
+    </div>`;
+  fleeDiv.onclick=()=>{
+    document.getElementById('enc-mo').style.display='none';
+    encFlee();
+  };
+
+  el.appendChild(ambDiv); el.appendChild(obsDiv); el.appendChild(fleeDiv);
+  document.getElementById('enc-mo').style.display='flex';
+}
+
+function encObserve(evtId, enemy, rate){
+  if(Math.random()*100 < rate){
+    log(`👁 상황탐색 성공! 싸우지 않고 이득을 취했다.`,'success');
+    if(enemy.observeReward){
+      const items=enemy.observeReward.map(r=>{
+        const d=CARD_MAP[r.id];
+        return {id:r.id,icon:d?.icon||'📦',name:d?.name||r.id,n:r.n||1};
+      });
+      showItemPopup(items, `👁 ${enemy.observeText||'탐색 성공!'}`, ()=>{checkSurvival();render();});
+    } else { checkSurvival(); render(); }
+  } else {
+    log(`👁 상황탐색 실패! ${enemy.name}이 공격해온다!`,'danger');
+    startCombat(evtId, false, false);
+  }
+}
+
+function encFlee(){
+  G.hun = Math.max(0, G.hun-5);
+  G.san = Math.max(0, G.san-10);
+  log('💨 도망쳤다. 허기-5 정신력-10','danger');
+  checkSurvival(); render();
+}
+
+function startCombat(evtId, ambush, fightChosen){
   const enemy=ENEMIES[evtId];
-  CBT={enemy:{...enemy,curHp:enemy.hp},hand:[],atkZone:[],defZone:[],resolved:false,turn:1,stunned:false,poisoned:false};
-  CBT.hand=drawCombatHand(); _cbtMode=null;
+  CBT={enemy:{...enemy,curHp:enemy.hp},hand:[],atkZone:[],defZone:[],resolved:false,turn:1,stunned:false,poisoned:false,penaltyApplied:false,fightChosen:!!fightChosen};
+  CBT.hand = ambush ? drawAmbushHand() : drawCombatHand();
+  _cbtMode=null;
   ['btn-cbt-resolve','btn-cbt-flee'].forEach(id=>document.getElementById(id).style.display='');
   document.getElementById('btn-cbt-close').style.display='none';
   document.getElementById('cbt-res').style.display='none';
   document.getElementById('cbt-mo').style.display='flex';
   renderCombat();
-  log(`⚔️ ${enemy.name} 출현! 전투 시작.`,'danger');
+  log(`⚔️ ${enemy.name} 전투 시작${ambush?' (기습! 전투카드 우선)':''}.`,'danger');
 }
 
 function setCbtMode(m){
@@ -157,20 +262,37 @@ function resolveCombat(){
 
   const poisonDmg=CBT.poisoned?3:0;
   if(CBT.poisoned) lines.push({t:`☠️ 독 지속피해: 적 -3`,cls:'good'});
-  if(poisonApplied) CBT.poisoned=true;
 
   // 일반 공격은 적 방어를 뺌, 관통 공격은 방어 무시
   const dmgE=Math.max(0,normalAtk-e.def)+pierceAtk+poisonDmg;
-  const eA=CBT.stunned?0:e.atk;
-  let dmgP=Math.max(0,eA-pD);
-  if(hasArmor&&dmgP>0){ dmgP=Math.max(0,dmgP-2); lines.push({t:`🧥 가죽갑옷: 피해-2`,cls:'good'}); }
 
+  // 처치 시 반격 없음
+  const willKillEnemy = (e.curHp - dmgE) <= 0;
+  const eA=CBT.stunned?0:e.atk;
+  let dmgP = willKillEnemy ? 0 : Math.max(0,eA-pD);
+  if(!willKillEnemy && hasArmor && dmgP>0){ dmgP=Math.max(0,dmgP-2); lines.push({t:`🧥 가죽갑옷: 피해-2`,cls:'good'}); }
+  if(willKillEnemy) lines.push({t:`⚔️ 이번 공격으로 처치 — 적의 반격 없음`,cls:'good'});
+
+  lines.unshift({t:`⚔️ 내공격: 일반${normalAtk}-방어${e.def}+관통${pierceAtk}+독${poisonDmg}=${dmgE}피해`,cls:'good'});
+  lines.unshift({t:`🛡️ 내방어:${pD}${hasArmor&&!willKillEnemy?'(갑옷-2)':''}-적공격${eA}=${dmgP}피해`,cls:dmgP>0?'bad':'good'});
+
+  // 사망 확인: 이 라운드에 죽을 예정이면 확인 팝업
+  if(!willKillEnemy && dmgP>0 && G.hp - dmgP <= 0){
+    showConfirm(
+      '⚠️ 사망 위기',
+      `이번 라운드 해결 시 체력이 0이 됩니다.\n현재 HP ${G.hp} → 예상 피해 ${dmgP}\n계속 진행하시겠습니까?`,
+      ()=>_finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,willKillEnemy)
+    );
+    return;
+  }
+  _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,willKillEnemy);
+}
+
+function _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,willKillEnemy){
+  if(poisonApplied) CBT.poisoned=true;
   e.curHp=Math.max(0,e.curHp-dmgE);
-  const prevHp=G.hp;
   G.hp=Math.max(0,G.hp-dmgP);
   if(dmgP>0) flashDamage();
-  lines.unshift({t:`⚔️ 내공격: 일반${normalAtk}-방어${e.def}+관통${pierceAtk}+독${poisonDmg}=${dmgE}피해`,cls:'good'});
-  lines.unshift({t:`🛡️ 내방어:${pD}${hasArmor?'(갑옷-2)':''}-적공격${eA}=${dmgP}피해`,cls:dmgP>0?'bad':'good'});
   CBT.stunned=stun;
 
   const resEl=document.getElementById('cbt-res');
@@ -224,9 +346,23 @@ function resolveCombat(){
 
 function fleeCombat(){
   const hasCloak=allCards().some(c=>c.id==='feather_cloak');
-  const cost=hasCloak?2:8;
+  const baseCost = CBT.fightChosen ? 15 : 8;
+  const cost = hasCloak ? 2 : baseCost;
+  // 사망 확인
+  if(G.hp - cost <= 0){
+    showConfirm(
+      '⚠️ 사망 위기',
+      `도망 시 체력이 0이 됩니다.\n현재 HP ${G.hp} → 도주 비용 ${cost}\n계속 진행하시겠습니까?`,
+      ()=>_doFleeCombat(cost, hasCloak)
+    );
+    return;
+  }
+  _doFleeCombat(cost, hasCloak);
+}
+
+function _doFleeCombat(cost, hasCloak){
   G.hp=Math.max(0,G.hp-cost);
-  log(`💨 도망. HP-${cost}${hasCloak?' (🧣깃털망토 효과)':''}`, 'danger');
+  log(`💨 도망. HP-${cost}${hasCloak?' (🧣깃털망토 효과)':CBT.fightChosen?' (기습 후 도주 패널티)':''}`, 'danger');
   closeCombat();
 }
 

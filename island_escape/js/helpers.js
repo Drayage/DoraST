@@ -118,6 +118,16 @@ function claimItem(idx){
   }
 }
 
+function showConfirm(title, msg, cb){
+  document.getElementById('conf-title').textContent=title;
+  document.getElementById('conf-msg').textContent=msg;
+  document.getElementById('conf-ok').onclick=()=>{closeConfirm();cb();};
+  document.getElementById('conf-mo').style.display='flex';
+}
+function closeConfirm(){
+  document.getElementById('conf-mo').style.display='none';
+}
+
 function skipItemPopup(){
   document.getElementById('item-mo').style.display='none';
   if(_pendingItemCards&&_pendingItemCards.length){
