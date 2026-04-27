@@ -322,6 +322,17 @@ function resolveCombat(){
     );
     return;
   }
+  // 도망 불가 경고: 피해 후 HP가 도망 비용 미만이면 확인 팝업
+  const fleeCost=CBT.fightChosen?15:8;
+  const hpAfter=G.hp-dmgP;
+  if(!willKillEnemy && dmgP>0 && hpAfter>0 && hpAfter<fleeCost){
+    showConfirm(
+      '⚠️ 도망 위험',
+      `이번 라운드 후 HP ${G.hp} → ${hpAfter}\n도망 비용(HP-${fleeCost})보다 낮아 이후 도망 시 사망합니다.\n계속 진행하시겠습니까?`,
+      ()=>_finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,willKillEnemy)
+    );
+    return;
+  }
   _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,willKillEnemy);
 }
 
