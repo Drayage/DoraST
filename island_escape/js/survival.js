@@ -71,7 +71,7 @@ function _endStats(){
   const rows=[
     ['📅 생존일수', `${G.day}일`],
     ['🛶 탈출 진행', `${G.escape}%`],
-    ['🌋 DOOM', `${Math.min(100,G.doom)}%`],
+    [`${(ISLANDS[G.islandId]||ISLANDS.mangrove).doomIcon||'🌫️'} DOOM`, `${Math.min(100,G.doom)}%`],
     ['⚔️ 처치', `${G.kills}마리`],
     ['🗺️ 탐험 타일', `${explored}칸`],
     ['🚶 이동 거리', `${G.tilesMoved||0}칸`],

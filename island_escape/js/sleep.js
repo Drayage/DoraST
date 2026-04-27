@@ -5,22 +5,22 @@ const DOOM_STORY=[
   {phase:0,
    title:'🌫️ 섬의 첫 번째 숨결',
    story:'첫 번째 밤, 낮고 짙은 안개가 섬 전체를 감쌌다.\n잠에서 깨어보니 방향 감각이 흐릿했다.\n\n맹그로브 뿌리 사이에서 무언가 속삭이는 소리가 들렸다.\n기억인지 환각인지 알 수 없는 그 소리가\n이 섬의 이름을 알려주었다 —\n\n여기는 망각의 맹그로브 섬이다.',
-   detail:'종말 진행도 +1% → 이후 매 취침마다 +2% 증가',
+   detail:'⚠️ DOOM 즉시 +1%p 상승 → 이후 매 취침마다 +2%p 자동 증가',
    doomAdd:1,rateAfter:2,nextPhase:1},
   {phase:1,minDay:6,
    title:'👁 첫 번째 환각',
    story:'탐색 중 잠시 길을 잃었다.\n방금 지나온 나무가 두 그루였는데, 돌아보니 하나였다.\n\n맹그로브 뿌리가 발목을 감는 것 같은 느낌.\n물 위에 비친 내 얼굴이 조금 낯설었다.\n\n섬이 나를 흡수하려는 건지도 모른다.',
-   detail:'종말 진행도 +15% → 이후 매 취침마다 +3% 증가',
+   detail:'⚠️ DOOM 즉시 +15%p 상승 → 이후 매 취침마다 +3%p 자동 증가',
    doomAdd:15,rateAfter:3,nextPhase:2},
   {phase:2,minDay:11,
    title:'🌊 안개가 기억을 삼킨다',
    story:'3일 전에 탐색한 구역을 다시 걷는 기분이 든다.\n하지만 발자국을 보면 처음 오는 곳이다.\n\n밤이면 누군가의 발소리가 들린다.\n뒤돌아보면 아무도 없다.\n\n이 섬은 방문자의 기억을 먹고 산다.',
-   detail:'종말 진행도 +25% → 이후 매 취침마다 +4% 증가',
+   detail:'⚠️ DOOM 즉시 +25%p 상승 → 이후 매 취침마다 +4%p 자동 증가',
    doomAdd:25,rateAfter:4,nextPhase:3},
   {phase:3,minDay:16,
    title:'🌑 망각의 심연',
    story:'오늘 아침 내 이름이 기억나지 않았다.\n\n뗏목을 짜던 손이 멈췄다.\n왜 이걸 만들고 있었는지,\n어디로 가야 하는지가\n안개처럼 흩어졌다.\n\n하지만 손은 기억한다. 계속 움직인다.\n몸보다 먼저 탈출을 원하고 있다.',
-   detail:'종말 진행도 → 80% | 망각 단계: 탐색 시 망각 카드 출현 · 정신력 가속 소모',
+   detail:'⚠️ DOOM 강제로 80%p 도달 | 망각 단계 시작: 탐색 시 망각 카드 침투 · 정신력 가속 소모',
    doomSet:80,rateAfter:0,nextPhase:4},
 ];
 
@@ -73,13 +73,15 @@ function doSleep(){
   G.deck=shuffle(G.deck.concat(G.disc)); G.disc=[];
 
   const sanNet=sanR-sanDrain;
-  const doomHint=G.doomRate>0?` | 🌋DOOM+${G.doomRate}/일(${G.doom}%)`:G.doomPhase>=4?` | 🌋DOOM ${G.doom}%`:'';
+  const _di=(ISLANDS[G.islandId]||ISLANDS.mangrove).doomIcon||'🌫️';
+  const doomHint=G.doomRate>0?` | ${_di}DOOM+${G.doomRate}/일(${G.doom}%)`:G.doomPhase>=4?` | ${_di}DOOM ${G.doom}%`:'';
   log(`🌙 ${G.day-1}일→${G.day}일. HP+${hpR} 정신력${sanNet>=0?'+':''}${sanNet}${bonAP?` 이른취침AP+${bonAP}`:''}${fatigueN?` 피로AP-${fatigueN*2}`:''}${doomHint}`,'important');
 
   _processDoom(early);
 }
 
 function _processDoom(early){
+  const _di=(ISLANDS[G.islandId]||ISLANDS.mangrove).doomIcon||'🌫️';
   // 스토리 이벤트 확인
   const storyEvt=DOOM_STORY.find(e=>e.phase===G.doomPhase&&(e.minDay===undefined||G.day>=e.minDay));
   if(storyEvt){
@@ -87,7 +89,7 @@ function _processDoom(early){
     else G.doom=Math.min(100,G.doom+(storyEvt.doomAdd||0));
     G.doomRate=storyEvt.rateAfter;
     G.doomPhase=storyEvt.nextPhase;
-    log(`🌋 종말이벤트: ${storyEvt.title} — DOOM ${G.doom}%`,'danger');
+    log(`${_di} 종말이벤트: ${storyEvt.title} — DOOM ${G.doom}%`,'danger');
     _showDoomModal(storyEvt.title,storyEvt.story,storyEvt.detail,()=>_afterDoom(early));
     return;
   }

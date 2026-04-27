@@ -18,10 +18,13 @@ function openGather(){
   avail.forEach(o=>{
     const key=`${G.pos}_${o.tool}`;
     const cnt=G.gatherCnt[key]||0;
-    const rate=Math.max(20,90-cnt*15);
+    const bonus=G.gatherBonus[key]||0;
+    const baseRate=Math.max(20,90-cnt*15);
+    const rate=Math.min(95,baseRate+bonus);
     const resDef=CARD_MAP[o.res];
     const toolDef=CARD_MAP[o.tool];
     const div=document.createElement('div'); div.className='ex-choice fi';
+    const bonusTxt=bonus>0?` <span style="color:var(--green);">(연속실패 +${bonus}%)</span>`:'';
     div.innerHTML=`
       <div class="ex-ci">${toolDef?.icon||'?'}</div>
       <div style="flex:1;">
@@ -29,8 +32,8 @@ function openGather(){
         <div class="ex-cd">${o.flavor}</div>
         <div style="font-size:8px;margin-top:3px;">
           획득: ${resDef?.icon||''}${resDef?.name||o.res} ×1~2
-          <span style="margin-left:7px;color:${rate>60?'var(--green)':rate>35?'var(--accent)':'var(--red)'};">성공률 ${rate}%</span>
-          <span style="color:var(--text3);margin-left:7px;">(이곳 ${cnt}회 수집)</span>
+          <span style="margin-left:7px;color:${rate>60?'var(--green)':rate>35?'var(--accent)':'var(--red)'};">성공률 ${rate}%</span>${bonusTxt}
+          <span style="color:var(--text3);margin-left:7px;">(이곳 ${cnt}회 성공)</span>
         </div>
       </div>`;
     div.onclick=()=>doGather(o,key,rate);
