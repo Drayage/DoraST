@@ -428,6 +428,12 @@
     </div>
     <div id="cbt-preview" style="font-size:9px;font-family:var(--font-m);text-align:center;padding:5px 8px;background:var(--bg3);border-radius:4px;margin-bottom:5px;color:var(--text3);">배정 후 예상 피해가 표시됩니다</div>
     <div style="font-size:8px;color:var(--text3);font-family:var(--font-m);margin-bottom:5px;">핸드 — 클릭하여 배정 | 배정된 카드 재클릭 시 해제</div>
+    <div style="display:flex;gap:5px;margin-bottom:6px;">
+      <button class="btn" style="font-size:8px;padding:3px 9px;" onclick="showCbtDeckView('deck')">🃏 뽑을 덱 <span id="cbt-dk-n">0</span>장</button>
+      <button class="btn" style="font-size:8px;padding:3px 9px;" onclick="showCbtDeckView('disc')">🗑 버림더미 <span id="cbt-dc-n">0</span>장</button>
+      <button class="btn" id="cbt-dv-close" onclick="hideCbtDeckView()" style="font-size:8px;padding:3px 9px;display:none;margin-left:auto;">✕ 닫기</button>
+    </div>
+    <div id="cbt-dv" style="display:none;max-height:140px;overflow-y:auto;background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:6px 8px;margin-bottom:6px;"></div>
     <div class="cbt-hd" id="cbt-hand"></div>
     <div class="res-area" id="cbt-res" style="display:none;"></div>
     <div class="cbt-btn-row">

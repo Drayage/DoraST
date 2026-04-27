@@ -3,6 +3,36 @@
 
 function drawCombatHand(){ return drawToHand(5); }
 
+function showCbtDeckView(which){
+  const panel=document.getElementById('cbt-dv');
+  const closeBtn=document.getElementById('cbt-dv-close');
+  if(!panel) return;
+  const cards=which==='deck'?G.deck:[...G.disc].reverse();
+  if(!cards.length){
+    panel.innerHTML=`<div style="font-size:9px;color:var(--text3);font-family:var(--font-m);padding:6px;">${which==='deck'?'덱이 비어있습니다.':'버림더미가 비어있습니다.'}</div>`;
+  } else {
+    panel.innerHTML=cards.map(c=>`
+      <div style="display:flex;align-items:center;gap:7px;padding:3px 0;border-bottom:1px solid var(--border);font-family:var(--font-m);">
+        <span style="font-size:14px;flex-shrink:0;">${c.icon}</span>
+        <span style="font-size:9px;color:var(--text);flex:1;">${c.name}</span>
+        <span class="card-tag tag-${c.tag}" style="font-size:6px;">${c.tag}</span>
+        <span style="font-size:8px;color:var(--text3);white-space:nowrap;">A${c.atk} D${c.def}${c.curDur?` 🔋${c.curDur}/${c.dur}`:''}</span>
+      </div>`).join('');
+  }
+  panel.style.display='block';
+  closeBtn.style.display='';
+  // 버튼 하이라이트
+  document.getElementById('cbt-dk-n').parentElement.style.borderColor=which==='deck'?'var(--accent2)':'';
+  document.getElementById('cbt-dc-n').parentElement.style.borderColor=which==='disc'?'var(--accent2)':'';
+}
+
+function hideCbtDeckView(){
+  const panel=document.getElementById('cbt-dv');
+  const closeBtn=document.getElementById('cbt-dv-close');
+  if(panel) panel.style.display='none';
+  if(closeBtn) closeBtn.style.display='none';
+}
+
 // 기습: 첫 라운드 전투카드 1장 보장
 function drawAmbushHand(){
   // 덱이 비어있으면 먼저 재셔플
@@ -180,6 +210,8 @@ function assignCard(i, zone){
 
 function renderCombat(){
   const e=CBT.enemy;
+  const dkN=document.getElementById('cbt-dk-n'); if(dkN) dkN.textContent=G.deck.length;
+  const dcN=document.getElementById('cbt-dc-n'); if(dcN) dcN.textContent=G.disc.length;
   document.getElementById('cbt-title').textContent=`⚔️ ${e.name} 출현!`;
   document.getElementById('cbt-sub').textContent=`라운드${CBT.turn} | 적 다음행동: ${CBT.stunned?'기절(피해없음)':`공격-${e.atk}HP`}`;
   const phpEl=document.getElementById('cbt-php');
