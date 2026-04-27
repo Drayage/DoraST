@@ -67,8 +67,27 @@ function drawToHand(n){
 function flashDamage(){
   const el=document.getElementById('dmg-fx');
   if(!el) return;
-  el.classList.add('hit');
-  setTimeout(()=>el.classList.remove('hit'),180);
+  const now=Date.now();
+  if(!flashDamage._st) flashDamage._st={last:0, queued:0, tm:null};
+  const st=flashDamage._st;
+  const cd=120; // 연속 틱데미지 과도 점멸 방지
+  const play=()=>{
+    st.last=Date.now();
+    el.classList.add('hit');
+    setTimeout(()=>el.classList.remove('hit'),180);
+  };
+  if(now-st.last>=cd&&!el.classList.contains('hit')){
+    play(); return;
+  }
+  st.queued=Math.min(4,st.queued+1);
+  if(st.tm) return;
+  st.tm=setTimeout(function run(){
+    st.tm=null;
+    if(st.queued<=0) return;
+    st.queued--;
+    play();
+    if(st.queued>0) st.tm=setTimeout(run,cd);
+  }, cd);
 }
 
 // items: [{id, icon, name, n}] — 팝업에서 개별 클릭으로 획득
@@ -147,7 +166,11 @@ function showIslandIntro(){
   document.getElementById('ii-story').textContent=isl.story;
   document.getElementById('ii-mech').textContent=isl.mechanic;
   const hdrTitle=document.getElementById('hdr-title');
-  if(hdrTitle) hdrTitle.textContent=`${isl.icon} ${isl.name}`;
+  if(hdrTitle){
+    const firstTag=document.querySelector('#patch-mo .pn-tag');
+    const ver=(firstTag?.textContent||'').trim().split(' ')[0]||'v0.2';
+    hdrTitle.textContent=`🏝 무인도 탈출 ${ver}`;
+  }
   const mapName=document.getElementById('map-island-name');
   if(mapName) mapName.textContent=isl.name;
   document.getElementById('island-intro-mo').style.display='flex';
