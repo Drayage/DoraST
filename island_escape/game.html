@@ -31,6 +31,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 #hdr{background:var(--bg2);border-bottom:1px solid var(--border);padding:7px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 #hdr h1{font-family:var(--font-t);font-size:17px;color:var(--accent);text-shadow:0 0 14px rgba(232,184,75,.3);}
 .hs{display:flex;align-items:center;gap:4px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:3px 8px;font-family:var(--font-m);font-size:11px;}
+.hs .hs-ic{font-size:12px;line-height:1;flex-shrink:0;}
 .hs .lbl{color:var(--text3);font-size:9px;}
 .hs .val{font-weight:600;}.hs .val.low{color:var(--red);}
 .wpill{background:var(--bg3);border:1px solid var(--border2);border-radius:16px;padding:2px 9px;font-size:11px;color:var(--text2);}
@@ -509,10 +510,10 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 <!-- HEADER -->
 <div id="hdr">
   <h1 id="hdr-title">🏝 무인도 탈출</h1>
-  <div class="hs"><span class="lbl">HP</span><span class="val" id="hv-hp">100</span></div>
-  <div class="hs"><span class="lbl">정신력</span><span class="val" id="hv-san">100</span></div>
-  <div class="hs"><span class="lbl">허기</span><span class="val" id="hv-hun">80</span></div>
-  <div class="hs"><span class="lbl">갈증</span><span class="val" id="hv-thi">80</span></div>
+  <div class="hs"><span class="hs-ic">❤️</span><span class="lbl">HP</span><span class="val" id="hv-hp">100</span></div>
+  <div class="hs"><span class="hs-ic">🧠</span><span class="lbl">정신력</span><span class="val" id="hv-san">100</span></div>
+  <div class="hs"><span class="hs-ic">🍗</span><span class="lbl">허기</span><span class="val" id="hv-hun">80</span></div>
+  <div class="hs"><span class="hs-ic">💧</span><span class="lbl">갈증</span><span class="val" id="hv-thi">80</span></div>
   <div class="wpill" id="hv-wx">☀️ 맑음</div>
   <span style="font-size:9px;color:var(--text3);">내일: <span id="hv-tmrw" style="color:var(--text2);">?</span></span>
   <div style="margin-left:auto;font-family:var(--font-m);font-size:11px;">
@@ -3330,8 +3331,10 @@ function render(){
   const p=G, d=getDOM();
 
   // 헤더
-  d.hvHp.textContent=p.hp; d.hvHp.className='val'+(p.hp<30?' low':'');
-  d.hvSan.textContent=p.san; d.hvHun.textContent=p.hun; d.hvThi.textContent=p.thi;
+  d.hvHp.textContent=p.hp;  d.hvHp.className='val'+(p.hp<30?' low':'');
+  d.hvSan.textContent=p.san; d.hvSan.className='val'+(p.san<30?' low':'');
+  d.hvHun.textContent=p.hun; d.hvHun.className='val'+(p.hun<28?' low':'');
+  d.hvThi.textContent=p.thi; d.hvThi.className='val'+(p.thi<36?' low':'');
   d.hvWx.textContent=`${p.weather.icon} ${p.weather.name}`;
   d.hvTmrw.textContent=`${p.tomorrow.icon} ${p.tomorrow.name}`;
   d.hvDay.textContent=p.day;

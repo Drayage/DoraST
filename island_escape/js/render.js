@@ -36,8 +36,10 @@ function render(){
   const p=G, d=getDOM();
 
   // 헤더
-  d.hvHp.textContent=p.hp; d.hvHp.className='val'+(p.hp<30?' low':'');
-  d.hvSan.textContent=p.san; d.hvHun.textContent=p.hun; d.hvThi.textContent=p.thi;
+  d.hvHp.textContent=p.hp;  d.hvHp.className='val'+(p.hp<30?' low':'');
+  d.hvSan.textContent=p.san; d.hvSan.className='val'+(p.san<30?' low':'');
+  d.hvHun.textContent=p.hun; d.hvHun.className='val'+(p.hun<28?' low':'');
+  d.hvThi.textContent=p.thi; d.hvThi.className='val'+(p.thi<36?' low':'');
   d.hvWx.textContent=`${p.weather.icon} ${p.weather.name}`;
   d.hvTmrw.textContent=`${p.tomorrow.icon} ${p.tomorrow.name}`;
   d.hvDay.textContent=p.day;

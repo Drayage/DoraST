@@ -23,6 +23,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 #hdr{background:var(--bg2);border-bottom:1px solid var(--border);padding:7px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 #hdr h1{font-family:var(--font-t);font-size:17px;color:var(--accent);text-shadow:0 0 14px rgba(232,184,75,.3);}
 .hs{display:flex;align-items:center;gap:4px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:3px 8px;font-family:var(--font-m);font-size:11px;}
+.hs .hs-ic{font-size:12px;line-height:1;flex-shrink:0;}
 .hs .lbl{color:var(--text3);font-size:9px;}
 .hs .val{font-weight:600;}.hs .val.low{color:var(--red);}
 .wpill{background:var(--bg3);border:1px solid var(--border2);border-radius:16px;padding:2px 9px;font-size:11px;color:var(--text2);}
