@@ -79,14 +79,17 @@ function doSleep(){
   const actionDmg=hLoss.dmg+tLoss.dmg+wHpDmg;
   G.hun=Math.max(0,preHun-needHun);
   G.thi=Math.max(0,preThi-needThi);
+  let rawHp=G.hp;
   if(actionDmg>0){
-    G.hp=Math.max(0,G.hp-actionDmg);
+    rawHp-=actionDmg;
     flashDamage();
     log(`🛌 취침 피해: ${hLoss.dmg?`허기HP-${hLoss.dmg} `:''}${tLoss.dmg?`갈증HP-${tLoss.dmg} `:''}${wHpDmg?`날씨HP-${wHpDmg}`:''}`,'danger');
   }
   const poisonN=allCards().filter(c=>c.id==='poison_status').length;
-  if(poisonN>0){ G.hp=Math.max(0,G.hp-5*poisonN); log(`☠️ 중독 피해: HP-${5*poisonN}`,'danger'); }
-  G.hp=Math.min(100,G.hp+hpR);
+  if(poisonN>0){ rawHp-=5*poisonN; log(`☠️ 중독 피해: HP-${5*poisonN}`,'danger'); }
+  rawHp+=hpR;
+  G.hp=Math.min(100,Math.max(0,rawHp));
+  if(rawHp<=0){ checkSurvival(); if(G.over) return; }
   const doomSanExtra=G.doomPhase>=4?Math.floor((G.doom-79)/6):0;
   const sanDrain=(G.camps.length?2:5)+doomSanExtra;
   G.san=Math.min(100,Math.max(0,G.san+sanR-sanDrain+wD.san));
