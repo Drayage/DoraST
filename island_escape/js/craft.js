@@ -144,7 +144,9 @@ function doCraft(id){
   const d=CARDS.find(c=>c.id===rec.result);
   log(`🔨 ${rec.name}. ${d?.icon||''}${d?.name||''}×${rec.rn} (AP-${rec.ap})`,'success');
   if(rec.result==='compass'){
+    const escBefore=G.escape;
     G.escape=Math.min(100,G.escape+20);
+    notifyEscapeChange(escBefore,G.escape,'유물나침반');
     log('🧭 유물나침반: 탈출도 즉시+20%!','success');
   }
   if(navigator.vibrate) navigator.vibrate([30,20,60]);
