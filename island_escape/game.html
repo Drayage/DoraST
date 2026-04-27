@@ -430,9 +430,21 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .cf-label{font-size:9px;color:var(--text3);font-family:var(--font-m);margin-top:4px;letter-spacing:.05em;}
 @keyframes cfPop{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
 
+/* ══ TITLE: inactive game UI ══ */
+body.game-inactive #hdr,
+body.game-inactive #layout,
+body.game-inactive #mob-tabs{
+  filter:grayscale(1) brightness(.45);
+  pointer-events:none;
+  user-select:none;
+  opacity:.55;
+  transition:filter .5s,opacity .5s;
+}
+#hdr,#layout,#mob-tabs{transition:filter .5s,opacity .5s;}
+
 </style>
 </head>
-<body>
+<body class="game-inactive">
 
 <!-- TITLE SCREEN -->
 <div id="title-scr">
@@ -1263,6 +1275,7 @@ let _pendingItems=null, _itemCb=null, _pendingItemCards=null;
 
 function startGame(){
   document.getElementById('title-scr').style.display='none';
+  document.body.classList.remove('game-inactive');
   initGame();
 }
 

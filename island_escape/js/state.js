@@ -8,6 +8,7 @@ let _pendingItems=null, _itemCb=null, _pendingItemCards=null;
 
 function startGame(){
   document.getElementById('title-scr').style.display='none';
+  document.body.classList.remove('game-inactive');
   initGame();
 }
 
