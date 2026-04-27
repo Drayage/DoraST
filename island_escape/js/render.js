@@ -26,8 +26,8 @@ function getDOM(){
 function campBonus(tileId){
   if(tileId==='beach')  return '카드사용+1드로우';
   if(tileId==='cave')   return '취침 정신력+3';
-  if(tileId==='forest') return '취침 식량생성';
-  if(tileId==='shore')  return '취침 물생성';
+  if(tileId==='forest') return '취침 작은 열매 생성';
+  if(tileId==='shore')  return '취침 맺힌이슬 생성';
   if(tileId==='ruins')  return '취침 AP+1';
   return '';
 }
@@ -231,7 +231,7 @@ function render(){
   if(sleepEarly) sleepRows.push({icon:'🌙', text:'이른취침 · AP+2 · 회복↑', cls:'early'});
   if(sEvt>0)     sleepRows.push({icon:'🎲', text:`취침 이벤트 ${sEvt}%`, cls:'info'});
   if(p.doomRate>0)      sleepRows.push({icon:'🌫️', text:`DOOM +${p.doomRate}%`, cls:'doom'});
-  else if(p.doomPhase>=4) sleepRows.push({icon:'🌫️', text:'DOOM +1~3%', cls:'doom'});
+  else if(p.doomPhase>=4) sleepRows.push({icon:'🌫️', text:'DOOM +2~3%', cls:'doom'});
   sleepRows.push(...warns);
   d.btnSleep._att={title:'🌙 취침', cost:'다음 날로', rows:sleepRows};
 }

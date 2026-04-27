@@ -165,5 +165,47 @@ function _saveRun(win){
       day:G.day, escape:G.escape, kills:G.kills, win,
       runCount:(prev.runCount||0)+1,
     }));
+    // 기록 저장
+    const rec=JSON.parse(localStorage.getItem('ie_records')||'{"runs":[],"best":{}}');
+    const entry={day:G.day,escape:G.escape,doom:Math.min(100,G.doom),win,
+      date:new Date().toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'})};
+    rec.runs.unshift(entry); rec.runs=rec.runs.slice(0,5);
+    if(!rec.best.survival||G.day>rec.best.survival.day) rec.best.survival=entry;
+    if(win&&(!rec.best.escape||G.day<rec.best.escape.day)) rec.best.escape=entry;
+    localStorage.setItem('ie_records',JSON.stringify(rec));
   }catch(e){}
+}
+
+function showRecords(){
+  try{
+    const rec=JSON.parse(localStorage.getItem('ie_records')||'{"runs":[],"best":{}}');
+    const mo=document.getElementById('records-mo');
+    const runs=rec.runs; const best=rec.best;
+    let html='';
+    if(best.survival||best.escape){
+      html+='<div class="pn-ver" style="margin-bottom:8px;">';
+      html+='<div class="pn-tag">🏆 최고 기록</div>';
+      if(best.survival) html+=`<div style="font-size:9px;color:var(--text2);font-family:var(--font-m);margin:2px 0;">🗓️ 최장 생존 <b style="color:var(--accent);">${best.survival.day}일</b> — 탈출 ${best.survival.escape}% · ${best.survival.date}</div>`;
+      if(best.escape)   html+=`<div style="font-size:9px;color:var(--text2);font-family:var(--font-m);margin:2px 0;">🚀 최단 탈출 <b style="color:var(--green);">${best.escape.day}일</b> — ${best.escape.date}</div>`;
+      html+='</div>';
+    }
+    if(runs.length){
+      html+='<div class="pn-tag" style="margin-bottom:6px;">📜 최근 기록</div>';
+      runs.forEach((r,i)=>{
+        const win=r.win?'<span style="color:var(--green);font-weight:700;">탈출 성공</span>':'<span style="color:var(--red);">실패</span>';
+        html+=`<div style="display:flex;align-items:center;gap:8px;background:var(--bg3);border-radius:6px;padding:7px 10px;margin-bottom:5px;font-family:var(--font-m);font-size:9px;">
+          <span style="color:var(--text3);min-width:14px;">${i+1}</span>
+          <span style="color:var(--text3);">${r.date}</span>
+          ${win}
+          <span style="color:var(--accent);">🗓️${r.day}일</span>
+          <span style="color:var(--green);">🛶${r.escape}%</span>
+          <span style="color:var(--red);margin-left:auto;">🌫️${r.doom}%</span>
+        </div>`;
+      });
+    } else {
+      html+='<div style="color:var(--text3);font-family:var(--font-m);font-size:9px;text-align:center;padding:20px 0;">아직 기록이 없습니다.</div>';
+    }
+    mo.querySelector('#records-body').innerHTML=html;
+    mo.style.display='flex';
+  }catch(e){ console.error(e); }
 }

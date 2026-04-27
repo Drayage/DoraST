@@ -12,6 +12,7 @@
 <!-- TITLE SCREEN -->
 <div id="title-scr">
   <button onclick="document.getElementById('patch-mo').style.display='flex'" style="position:absolute;top:14px;right:16px;font-size:9px;padding:4px 12px;" class="btn">📋 패치노트</button>
+  <button onclick="showRecords()" style="position:absolute;top:14px;right:104px;font-size:9px;padding:4px 12px;" class="btn">📊 기록</button>
   <div class="title-logo">🏝 무인도 탈출</div>
   <div class="title-sub">Island Escape · v0.2</div>
   <div class="title-story">
@@ -523,6 +524,17 @@
     <div class="ii-story" id="ii-story"></div>
     <div class="ii-mech" id="ii-mech"></div>
     <button class="btn primary" style="font-size:13px;padding:11px 32px;margin-top:4px;" onclick="document.getElementById('island-intro-mo').style.display='none'">탈출을 시작하라 →</button>
+  </div>
+</div>
+
+<!-- RECORDS -->
+<div id="records-mo" class="mo" onclick="if(event.target===this)this.style.display='none'" style="z-index:300;">
+  <div class="mb" style="width:420px;max-width:94vw;max-height:80vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="font-family:var(--font-t);font-size:17px;color:var(--accent);">📊 플레이 기록</div>
+      <button class="btn" onclick="document.getElementById('records-mo').style.display='none'">✕</button>
+    </div>
+    <div id="records-body"></div>
   </div>
 </div>
 

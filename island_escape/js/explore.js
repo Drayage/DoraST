@@ -140,7 +140,9 @@ function doJudgment(evt, ch){
       detEl.style.display=''; detEl.textContent=lines.join('\n');
       const bonEl=document.getElementById('jdg-bon');
       if(bonLines.length){bonEl.style.display='';bonEl.textContent=bonLines.join(' · ');}
-      document.getElementById('jdg-ok').style.display='';
+      const okEl=document.getElementById('jdg-ok');
+      okEl.onclick=()=>closeJdg();
+      okEl.style.display='';
       log(`[${isGreat?'대성공':success?'성공':'실패'}] ${evt.name} — ${lines.join(', ')}`,(isGreat||success)?'success':'danger');
       checkSurvival(); checkWin(); render();
     }, 500);
