@@ -163,12 +163,23 @@ function render(){
   const hasGaTool=ct.explored&&(ct.gather||[]).some(o=>cards.some(c=>c.id===o.tool));
   d.btnGa.disabled=p.ap<3||p.over||!ct.explored||!hasGaTool;
   d.btnGa.innerHTML=ct.explored&&!hasGaTool?'🎒 도구없음 <span class="apb">AP3</span>':'🎒 수집 <span class="apb">AP3</span>';
-  d.btnGa._att={title:'🎒 수집', cost:'AP 3', rows:[
-    {icon:'🍗', text:'허기 -5', cls:'loss'},
-    {icon:'💧', text:'갈증 -6', cls:'loss'},
-    {icon:'🔧', text:'탐색 완료 + 수집 도구 필요', cls:'info'},
-    ...warns,
-  ]};
+  {
+    const gaRows=[];
+    if(p.hun<=5) gaRows.push({icon:'⚠️',text:`허기(${p.hun}) → 수집 후 0 이하 — 체력 피해!`,cls:'crit'});
+    if(p.thi<=6) gaRows.push({icon:'⚠️',text:`갈증(${p.thi}) → 수집 후 0 이하 — 체력 피해!`,cls:'crit'});
+    gaRows.push({icon:'🍗',text:'허기 -5',cls:'loss'},{icon:'💧',text:'갈증 -6',cls:'loss'});
+    if(ct.explored&&(ct.gather||[]).length){
+      (ct.gather).forEach(o=>{
+        const td=CARD_MAP[o.tool]||{}; const rd=CARD_MAP[o.res]||{icon:'📦',name:o.res};
+        const has=cards.some(c=>c.id===o.tool);
+        gaRows.push({icon:td.icon||'🔧',text:`${o.label}: ${td.name||o.tool} → ${rd.icon}${rd.name} 1~2개`,cls:has?'gain':'loss'});
+      });
+    } else {
+      gaRows.push({icon:'🔧',text:'탐색 완료 + 수집 도구 필요',cls:'info'});
+    }
+    gaRows.push(...warns);
+    d.btnGa._att={title:'🎒 수집',cost:'AP 3',rows:gaRows};
+  }
 
   // 캠프
   const ctBonus=campBonus(ct.id);
@@ -208,12 +219,15 @@ function render(){
   const sSanNet=sSanR-sDrain;
   const sEvt=calcSleepEvtChance(sleepEarly);
   d.btnSleep.disabled=p.over;
-  const sleepRows=[
+  const sleepRows=[];
+  if(p.hun<=14) sleepRows.push({icon:'⚠️',text:`허기(${p.hun}) → 취침 후 0 이하 — 체력 피해!`,cls:'crit'});
+  if(p.thi<=18) sleepRows.push({icon:'⚠️',text:`갈증(${p.thi}) → 취침 후 0 이하 — 체력 피해!`,cls:'crit'});
+  sleepRows.push(
     {icon:'❤️', text:`HP +${sHpR}`, cls:'gain'},
     {icon:'🧠', text:`정신력 ${sSanNet>=0?'+':''}${sSanNet}`, cls:sSanNet>=0?'gain':'loss'},
     {icon:'🍗', text:'허기 -14', cls:'loss'},
     {icon:'💧', text:'갈증 -18', cls:'loss'},
-  ];
+  );
   if(sleepEarly) sleepRows.push({icon:'🌙', text:'이른취침 · AP+2 · 회복↑', cls:'early'});
   if(sEvt>0)     sleepRows.push({icon:'🎲', text:`취침 이벤트 ${sEvt}%`, cls:'info'});
   if(p.doomRate>0)      sleepRows.push({icon:'🌫️', text:`DOOM +${p.doomRate}%`, cls:'doom'});
