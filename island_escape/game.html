@@ -521,7 +521,7 @@ body.game-inactive #mob-tabs{
 
     <b style="color:var(--text);">🏕️ 캠프 보너스 (취침 시 발동)</b><br>
     🌲숲: 식량 자동생성 · 🌊해안: 물 자동생성<br>
-    🪨동굴: 정신력+3 · 🏖️해변: 카드사용 드로우+1(캠프당) · 🏚️폐허: AP+1(캠프당)<br>
+    🪨동굴: 정신력+3 · 🏖️해변: 카드사용 드로우+1 · 🏚️폐허: AP+1<br>
     <br>
 
     <b style="color:var(--text);">⚔️ 전투</b><br>
@@ -646,9 +646,9 @@ body.game-inactive #mob-tabs{
         <div class="help-row"><b>🗺️ 이동</b> — 안개 걷힌 타일 클릭. 거리 1칸당 AP1 소모. 한 번에 여러 칸 이동 가능.</div>
         <div class="help-row"><b>🔍 탐색 (AP2)</b> — 새 타일 첫 방문 시 이벤트 발생. 덱 맨 위 카드 태그로 성공/실패 판정. 이미 탐색한 곳은 재탐색 불가.</div>
         <div class="help-row"><b>🎒 수집 (AP3)</b> — 탐색 완료 타일 + 수집 장비 보유 시 가능. 같은 곳 반복 수집 시 성공률 감소 (최소 20%).</div>
-        <div class="help-row"><b>🏕️ 캠프 건설 (AP8)</b> — 현재 타일에 캠프 설치. 제작 가능 + 취침 이벤트 확률 대폭 감소. 지형 보너스:<br>🌲숲: 식량 자동생성 · 🌊해안: 물 자동생성 · 🪨동굴: 정신력+3 · 🏖️해변: 카드사용 드로우+1(캠프당) · 🏚️폐허: AP+1(캠프당)</div>
+        <div class="help-row"><b>🏕️ 캠프 건설 (AP8)</b> — 현재 타일에 캠프 설치. 제작 가능 + 취침 이벤트 확률 대폭 감소. 지형 보너스:<br>🌲숲: 식량 자동생성 · 🌊해안: 물 자동생성 · 🪨동굴: 정신력+3 · 🏖️해변: 카드사용 드로우+1 · 🏚️폐허: AP+1</div>
         <div class="help-row"><b>🔨 제작 (AP1~)</b> — 캠프 위치에서만 사용 가능. 재료 소모해 도구·장비 제작. 뗏목 제작(AP2+재료) → 탈출도 +15~30%.</div>
-        <div class="help-row"><b>✨ 카드 사용 (AP1)</b> — 덱에서 5장 드로우. 식량(허기+22)/물(갈증+28)/약초(HP+10) 즉시 사용. 🪢밧줄 개수당 +1장, 🏖️해변 캠프 개수당 +1장.</div>
+        <div class="help-row"><b>✨ 카드 사용 (AP1)</b> — 덱에서 5장 드로우. 식량(허기+22)/물(갈증+28)/약초(HP+10) 즉시 사용. 🪢밧줄 +N장, 🏖️캠프 +N장.</div>
         <div class="help-row"><b>🌙 취침</b> — 다음날로 이동. 허기-14·갈증-18 소모. HP 회복. 덱 전체 셔플. AP4↑ 남기고 자면 <b>이른 취침</b>: HP 추가 회복+AP+2.<br>정신력: 회복되지만 고립감으로 매일 소모(캠프 없음 -5/있음 -2). 🪨동굴 캠프(취침+3) 유지 권장.<br>취침 이벤트 확률(기본): 캠프 위 0% / 인접 3~5% / 2칸 5~10% / 원거리 10%+ (거리 비례 증가) / 캠프 없음 20%(이른취침)~50%(일반). 상태이상·저체력·저허기·저갈증일수록 추가 상승, 최대 80%.</div>
         <div class="help-row"><b>⚔️ 전투 전 조우</b> — 탐색 중 적 발견 시 선택창 등장:<br>
           ⚔️ <b>기습</b>: 즉시 전투, 첫 라운드 전투카드 1장 보장. 단 도주 비용 HP-15.<br>
@@ -1379,7 +1379,7 @@ function initGame(){
   const islandId = (G && G.islandId) ? G.islandId : 'mangrove';
   G={
     day:1, ap:10, maxAP:10,
-    hp:100, san:100, hun:80, thi:80,
+    hp:100, san:90, hun:80, thi:80,
     doom:0, escape:0,
     doomPhase:0, doomRate:0, doomSurvives:0,
     camps:[], tiles:[], pos:24,
@@ -1397,7 +1397,18 @@ function initGame(){
   document.getElementById('go-scr').style.display='none';
   initMobile();
   const isl = ISLANDS[G.islandId] || ISLANDS.mangrove;
-  log(`${isl.icon} ${isl.startLog}`,'system');
+  const wx=G.weather;
+  let wxTxt='';
+  if(wx?.eff){
+    const [s,v]=wx.eff.split('_');
+    const val=parseInt(v);
+    if(s==='san'){ G.san=Math.min(100,Math.max(0,G.san+val)); wxTxt=`${wx.icon}${wx.name}: 정신력${val>=0?'+':''}${val}`; }
+    else if(s==='thi'){ G.thi=Math.min(100,Math.max(0,G.thi+val)); wxTxt=`${wx.icon}${wx.name}: 갈증${val>=0?'+':''}${val}`; }
+    else if(s==='ap'){ G.ap=Math.max(0,G.ap+val); wxTxt=`${wx.icon}${wx.name}: AP${val>=0?'+':''}${val}`; }
+    else if(s==='hp'){ G.hp=Math.max(0,Math.min(100,G.hp+val)); wxTxt=`${wx.icon}${wx.name}: HP${val>=0?'+':''}${val}`; }
+    else { wxTxt=`${wx.icon}${wx.name}`; }
+  }
+  log(`${isl.icon} ${isl.startLog}${wxTxt?` ( ${wxTxt} )`:''}`,'system');
   log('팁: 탐색→캠프→제작소에서 도구 제작→수집으로 자원 확보','');
   render();
   showIslandIntro();
@@ -1585,7 +1596,11 @@ function showIslandIntro(){
   document.getElementById('ii-story').textContent=isl.story;
   document.getElementById('ii-mech').textContent=isl.mechanic;
   const hdrTitle=document.getElementById('hdr-title');
-  if(hdrTitle) hdrTitle.textContent=`${isl.icon} ${isl.name}`;
+  if(hdrTitle){
+    const firstTag=document.querySelector('#patch-mo .pn-tag');
+    const ver=(firstTag?.textContent||'').trim().split(' ')[0]||'v0.2';
+    hdrTitle.textContent=`🏝 무인도 탈출 ${ver}`;
+  }
   const mapName=document.getElementById('map-island-name');
   if(mapName) mapName.textContent=isl.name;
   document.getElementById('island-intro-mo').style.display='flex';
@@ -1597,8 +1612,6 @@ function showIslandIntro(){
 
 function checkSurvival(){
   G.hun=Math.max(0,G.hun); G.thi=Math.max(0,G.thi);
-  if(G.hun===0){ G.hp=Math.max(0,G.hp-5); flashDamage(); log('🍗 굶주림! HP-5','danger'); }
-  if(G.thi===0){ G.hp=Math.max(0,G.hp-8); flashDamage(); log('💧 탈수! HP-8','danger'); }
   if(G.hp<=0)  triggerGameOver('체력이 소진되었습니다.');
   if(G.san<=0) triggerGameOver('정신력이 무너졌습니다.');
 }
@@ -2436,8 +2449,17 @@ function openGather(){
 
 function doGather(opt, key, rate){
   document.getElementById('ga-mo').style.display='none';
+  const preHun=G.hun, preThi=G.thi;
   G.ap-=3;
   G.hun-=5; G.thi-=6;
+  const hDef=Math.max(0,5-preHun), tDef=Math.max(0,6-preThi);
+  const hDmg=hDef>0?10+hDef:0, tDmg=tDef>0?16+tDef:0;
+  const actDmg=hDmg+tDmg;
+  if(actDmg>0){
+    G.hp=Math.max(0,G.hp-actDmg);
+    flashDamage();
+    log(`🎒 수집 피해: ${hDmg?`허기HP-${hDmg} `:''}${tDmg?`갈증HP-${tDmg}`:''}`,'danger');
+  }
   const effectiveRate = rate;
   if(Math.random()*100 < effectiveRate){
     G.gatherCnt[key]=(G.gatherCnt[key]||0)+1; // 성공 시만 횟수 증가
@@ -2465,7 +2487,7 @@ function doCamp(){
   if(G.tiles[G.pos].hasCamp){log('이미 캠프가 있다.','');return;}
   G.tiles[G.pos].hasCamp=true; G.camps.push(G.pos); G.ap-=8;
   const t=G.tiles[G.pos];
-  const bns={beach:'카드사용+1드로우(캠프당)',forest:'취침 식량 자동생성',cave:'취침 정신력+3',ruins:'취침 AP+1(캠프당)',shore:'취침 물 자동생성'};
+  const bns={beach:'카드사용+1드로우',forest:'취침 식량 자동생성',cave:'취침 정신력+3',ruins:'취침 AP+1',shore:'취침 물 자동생성'};
   log(`🏕️ ${t.name} 캠프 건설! (AP-8) — ${bns[t.id]||''}`, 'success');
   render();
 }
@@ -2750,6 +2772,24 @@ const DOOM_ENDGAME_FL=[
   {txt:'동이 틀 때까지 맹그로브 뿌리들이 움직이는 소리를 들었다.',hpPen:3,sanPen:4},
 ];
 
+function getWeatherDelta(w){
+  const d={ap:0,san:0,thi:0,hp:0,fog:false};
+  if(!w?.eff) return d;
+  const [s,v]=w.eff.split('_');
+  const val=parseInt(v);
+  if(s==='ap') d.ap=val;
+  else if(s==='san') d.san=val;
+  else if(s==='thi') d.thi=val;
+  else if(s==='hp') d.hp=val;
+  else if(s==='fog') d.fog=true;
+  return d;
+}
+
+function calcDeficitDamage(cur, need, base){
+  const deficit=Math.max(0,need-cur);
+  return {deficit, dmg:deficit>0?base+deficit:0};
+}
+
 function doSleep(){
   if(G.over) return;
   const early=G.ap>=4;
@@ -2767,18 +2807,32 @@ function doSleep(){
     if(t.id==='ruins')  { ruinsBonusAP+=1; log('🏚️ 폐허캠프: AP+1','success'); }
   });
   const fatigueN=allCards().filter(c=>c.id==='fatigue').length;
-  G.hun=Math.max(0,G.hun-14); G.thi=Math.max(0,G.thi-18);
+  const preHun=G.hun, preThi=G.thi;
+  G.weather=G.tomorrow;
+  const wD=getWeatherDelta(G.weather);
+  const needHun=14;
+  const needThi=Math.max(0,18-wD.thi);
+  const hLoss=calcDeficitDamage(preHun,needHun,15);
+  const tLoss=calcDeficitDamage(preThi,needThi,24);
+  const wHpDmg=Math.max(0,-wD.hp);
+  const actionDmg=hLoss.dmg+tLoss.dmg+wHpDmg;
+  G.hun=Math.max(0,preHun-needHun);
+  G.thi=Math.max(0,preThi-needThi);
+  if(actionDmg>0){
+    G.hp=Math.max(0,G.hp-actionDmg);
+    flashDamage();
+    log(`🛌 취침 피해: ${hLoss.dmg?`허기HP-${hLoss.dmg} `:''}${tLoss.dmg?`갈증HP-${tLoss.dmg} `:''}${wHpDmg?`날씨HP-${wHpDmg}`:''}`,'danger');
+  }
   const poisonN=allCards().filter(c=>c.id==='poison_status').length;
   if(poisonN>0){ G.hp=Math.max(0,G.hp-5*poisonN); log(`☠️ 중독 피해: HP-${5*poisonN}`,'danger'); }
   G.hp=Math.min(100,G.hp+hpR);
   const doomSanExtra=G.doomPhase>=4?Math.floor((G.doom-79)/6):0;
   const sanDrain=(G.camps.length?2:5)+doomSanExtra;
-  G.san=Math.min(100,Math.max(0,G.san+sanR-sanDrain));
+  G.san=Math.min(100,Math.max(0,G.san+sanR-sanDrain+wD.san));
   const bonAP=early?2:0;
-  G.weather=G.tomorrow;
   G.tomorrow=WEATHER[Math.floor(Math.random()*WEATHER.length)];
-  G.ap=Math.max(1,G.maxAP+bonAP+ruinsBonusAP-fatigueN*2);
-  applyWeather();
+  G.ap=Math.max(1,G.maxAP+bonAP+ruinsBonusAP-fatigueN*2+wD.ap);
+  if(wD.fog) log(`${G.weather.icon} ${G.weather.name}: 안개가 짙어졌다.`,'danger');
   if(G.day>5){
     const fog=G.tiles.filter((t,i)=>{
       if(!t.revealed||t.hasCamp||i===G.pos) return false;
@@ -2791,7 +2845,7 @@ function doSleep(){
   }
   G.deck=shuffle(G.deck.concat(G.disc)); G.disc=[];
 
-  const sanNet=sanR-sanDrain;
+  const sanNet=sanR-sanDrain+wD.san;
   const _di=(ISLANDS[G.islandId]||ISLANDS.mangrove).doomIcon||'🌫️';
   const doomHint=G.doomRate>0?` | ${_di}DOOM+${G.doomRate}/일(${G.doom}%)`:G.doomPhase>=4?` | ${_di}DOOM ${G.doom}%`:'';
   log(`🌙 ${G.day-1}일→${G.day}일. HP+${hpR} 정신력${sanNet>=0?'+':''}${sanNet}${bonAP?` 이른취침AP+${bonAP}`:''}${ruinsBonusAP?` 폐허캠프AP+${ruinsBonusAP}`:''}${fatigueN?` 피로AP-${fatigueN*2}`:''}${doomHint}`,'important');
@@ -3722,9 +3776,9 @@ function render(){
   const passives=[...new Set(cards.filter(c=>c.passiveDesc).map(c=>c.passiveDesc))];
   const ropeCnt=cards.filter(c=>c.id==='rope').length;
   const beachCampCnt=p.camps.filter(cp=>p.tiles[cp].id==='beach').length;
+  const ruinsCampCnt=p.camps.filter(cp=>p.tiles[cp].id==='ruins').length;
   const extraPassives=[];
   if(ropeCnt>0) extraPassives.push(`🪢 밧줄 드로우 +${ropeCnt}`);
-  if(beachCampCnt>0) extraPassives.push(`🏖️ 해변캠프 드로우 +${beachCampCnt}`);
   const passiveAll=[...passives, ...extraPassives];
   d.passiveInfo.textContent=passiveAll.length?passiveAll.join(' / '):'없음';
 
@@ -3794,9 +3848,10 @@ function render(){
   d.btnGa.innerHTML=ct.explored&&!hasGaTool?'🎒 도구없음 <span class="apb">AP3</span>':'🎒 수집 <span class="apb">AP3</span>';
   {
     const gaRows=[];
-    if(p.hun<=5) gaRows.push({icon:'⚠️',text:`허기(${p.hun}) → 수집 후 0 이하 — 체력 피해!`,cls:'crit'});
-    if(p.thi<=6) gaRows.push({icon:'⚠️',text:`갈증(${p.thi}) → 수집 후 0 이하 — 체력 피해!`,cls:'crit'});
-    gaRows.push({icon:'🍗',text:'허기 -5',cls:'loss'},{icon:'💧',text:'갈증 -6',cls:'loss'});
+    const ghDef=Math.max(0,5-p.hun), gtDef=Math.max(0,6-p.thi);
+    const ghDmg=ghDef>0?10+ghDef:0, gtDmg=gtDef>0?16+gtDef:0;
+    gaRows.push({icon:'🍗',text:`허기 -5${ghDef>0?` (허기-${ghDef} → HP-${ghDmg})`:''}`,cls:ghDef>0?'crit':'loss'});
+    gaRows.push({icon:'💧',text:`갈증 -6${gtDef>0?` (갈증-${gtDef} → HP-${gtDmg})`:''}`,cls:gtDef>0?'crit':'loss'});
     if(ct.explored&&(ct.gather||[]).length){
       (ct.gather).forEach(o=>{
         const td=CARD_MAP[o.tool]||{}; const rd=CARD_MAP[o.res]||{icon:'📦',name:o.res};
@@ -3834,8 +3889,8 @@ function render(){
   d.btnUse.disabled=p.ap<1||p.over;
   d.btnUse.innerHTML=`✨ 카드 사용 — ${drawN}장 드로우 <span class="apb">AP1</span>`;
   const useRows=[{icon:'🎴', text:`${drawN}장 드로우`, cls:'gain'}];
-  if(ropeCnt)      useRows.push({icon:'🪢', text:`밧줄 ${ropeCnt}개 → +${ropeCnt}장`, cls:'info'});
-  if(beachCampCnt) useRows.push({icon:'🏖️', text:`해변 캠프 ${beachCampCnt}개 → +${beachCampCnt}장`, cls:'info'});
+  if(ropeCnt)      useRows.push({icon:'🪢', text:`밧줄 : +${ropeCnt}장`, cls:'info'});
+  if(beachCampCnt) useRows.push({icon:'🏖️', text:`캠프 : +${beachCampCnt}장`, cls:'info'});
   useRows.push({icon:'🍗', text:'식량·물·약초 즉시 사용 가능', cls:'info'});
   d.btnUse._att={title:'✨ 카드 사용', cost:'AP 1', rows:useRows};
 
@@ -3851,14 +3906,20 @@ function render(){
   const sEvt=calcSleepEvtChance(sleepEarly);
   d.btnSleep.disabled=p.over;
   const sleepRows=[];
-  if(p.hun<=14) sleepRows.push({icon:'⚠️',text:`허기(${p.hun}) → 취침 후 0 이하 — 체력 피해!`,cls:'crit'});
-  if(p.thi<=18) sleepRows.push({icon:'⚠️',text:`갈증(${p.thi}) → 취침 후 0 이하 — 체력 피해!`,cls:'crit'});
+  const tW=getWeatherDelta(p.tomorrow);
+  const sNeedHun=14;
+  const sNeedThi=Math.max(0,18-tW.thi);
+  const shDef=Math.max(0,sNeedHun-p.hun), stDef=Math.max(0,sNeedThi-p.thi);
+  const shDmg=shDef>0?15+shDef:0, stDmg=stDef>0?24+stDef:0;
+  const wHpDmg=Math.max(0,-tW.hp);
   sleepRows.push(
     {icon:'❤️', text:`HP +${sHpR}`, cls:'gain'},
     {icon:'🧠', text:`정신력 ${sSanNet>=0?'+':''}${sSanNet}${caveBonus?` (동굴보너스 +${caveBonus})`:''}`, cls:sSanNet>=0?'gain':'loss'},
-    {icon:'🍗', text:'허기 -14', cls:'loss'},
-    {icon:'💧', text:'갈증 -18', cls:'loss'},
+    {icon:'🍗', text:`허기 -14${shDef>0?` (허기-${shDef} → HP-${shDmg})`:''}`, cls:shDef>0?'crit':'loss'},
+    {icon:'💧', text:`갈증 -18${tW.thi!==0?` ${tW.thi>0?`+날씨${tW.thi}`:`-날씨${-tW.thi}`}`:''}${stDef>0?` (갈증-${stDef} → HP-${stDmg})`:''}`, cls:stDef>0?'crit':'loss'},
   );
+  if(wHpDmg>0) sleepRows.push({icon:'⛈️',text:`날씨 피해 HP-${wHpDmg}`,cls:'crit'});
+  if(ruinsCampCnt>0) sleepRows.push({icon:'🏚️',text:`캠프 : AP+${ruinsCampCnt}`,cls:'info'});
   if(sleepEarly) sleepRows.push({icon:'🌙', text:'이른취침 · AP+2 · 회복↑', cls:'early'});
   if(sEvt>0)     sleepRows.push({icon:'🎲', text:`취침 이벤트 ${sEvt}%`, cls:'info'});
   if(p.doomRate>0)      sleepRows.push({icon:'🌫️', text:`DOOM +${p.doomRate}%`, cls:'doom'});

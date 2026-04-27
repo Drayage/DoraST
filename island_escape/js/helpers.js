@@ -166,7 +166,11 @@ function showIslandIntro(){
   document.getElementById('ii-story').textContent=isl.story;
   document.getElementById('ii-mech').textContent=isl.mechanic;
   const hdrTitle=document.getElementById('hdr-title');
-  if(hdrTitle) hdrTitle.textContent=`${isl.icon} ${isl.name}`;
+  if(hdrTitle){
+    const firstTag=document.querySelector('#patch-mo .pn-tag');
+    const ver=(firstTag?.textContent||'').trim().split(' ')[0]||'v0.2';
+    hdrTitle.textContent=`🏝 무인도 탈출 ${ver}`;
+  }
   const mapName=document.getElementById('map-island-name');
   if(mapName) mapName.textContent=isl.name;
   document.getElementById('island-intro-mo').style.display='flex';

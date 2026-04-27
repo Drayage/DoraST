@@ -45,8 +45,17 @@ function openGather(){
 
 function doGather(opt, key, rate){
   document.getElementById('ga-mo').style.display='none';
+  const preHun=G.hun, preThi=G.thi;
   G.ap-=3;
   G.hun-=5; G.thi-=6;
+  const hDef=Math.max(0,5-preHun), tDef=Math.max(0,6-preThi);
+  const hDmg=hDef>0?10+hDef:0, tDmg=tDef>0?16+tDef:0;
+  const actDmg=hDmg+tDmg;
+  if(actDmg>0){
+    G.hp=Math.max(0,G.hp-actDmg);
+    flashDamage();
+    log(`🎒 수집 피해: ${hDmg?`허기HP-${hDmg} `:''}${tDmg?`갈증HP-${tDmg}`:''}`,'danger');
+  }
   const effectiveRate = rate;
   if(Math.random()*100 < effectiveRate){
     G.gatherCnt[key]=(G.gatherCnt[key]||0)+1; // 성공 시만 횟수 증가

@@ -16,7 +16,7 @@ function initGame(){
   const islandId = (G && G.islandId) ? G.islandId : 'mangrove';
   G={
     day:1, ap:10, maxAP:10,
-    hp:100, san:100, hun:80, thi:80,
+    hp:100, san:90, hun:80, thi:80,
     doom:0, escape:0,
     doomPhase:0, doomRate:0, doomSurvives:0,
     camps:[], tiles:[], pos:24,
@@ -34,7 +34,18 @@ function initGame(){
   document.getElementById('go-scr').style.display='none';
   initMobile();
   const isl = ISLANDS[G.islandId] || ISLANDS.mangrove;
-  log(`${isl.icon} ${isl.startLog}`,'system');
+  const wx=G.weather;
+  let wxTxt='';
+  if(wx?.eff){
+    const [s,v]=wx.eff.split('_');
+    const val=parseInt(v);
+    if(s==='san'){ G.san=Math.min(100,Math.max(0,G.san+val)); wxTxt=`${wx.icon}${wx.name}: 정신력${val>=0?'+':''}${val}`; }
+    else if(s==='thi'){ G.thi=Math.min(100,Math.max(0,G.thi+val)); wxTxt=`${wx.icon}${wx.name}: 갈증${val>=0?'+':''}${val}`; }
+    else if(s==='ap'){ G.ap=Math.max(0,G.ap+val); wxTxt=`${wx.icon}${wx.name}: AP${val>=0?'+':''}${val}`; }
+    else if(s==='hp'){ G.hp=Math.max(0,Math.min(100,G.hp+val)); wxTxt=`${wx.icon}${wx.name}: HP${val>=0?'+':''}${val}`; }
+    else { wxTxt=`${wx.icon}${wx.name}`; }
+  }
+  log(`${isl.icon} ${isl.startLog}${wxTxt?` ( ${wxTxt} )`:''}`,'system');
   log('팁: 탐색→캠프→제작소에서 도구 제작→수집으로 자원 확보','');
   render();
   showIslandIntro();

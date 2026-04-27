@@ -99,9 +99,9 @@ function render(){
   const passives=[...new Set(cards.filter(c=>c.passiveDesc).map(c=>c.passiveDesc))];
   const ropeCnt=cards.filter(c=>c.id==='rope').length;
   const beachCampCnt=p.camps.filter(cp=>p.tiles[cp].id==='beach').length;
+  const ruinsCampCnt=p.camps.filter(cp=>p.tiles[cp].id==='ruins').length;
   const extraPassives=[];
   if(ropeCnt>0) extraPassives.push(`🪢 밧줄 드로우 +${ropeCnt}`);
-  if(beachCampCnt>0) extraPassives.push(`🏖️ 해변캠프 드로우 +${beachCampCnt}`);
   const passiveAll=[...passives, ...extraPassives];
   d.passiveInfo.textContent=passiveAll.length?passiveAll.join(' / '):'없음';
 
@@ -171,9 +171,10 @@ function render(){
   d.btnGa.innerHTML=ct.explored&&!hasGaTool?'🎒 도구없음 <span class="apb">AP3</span>':'🎒 수집 <span class="apb">AP3</span>';
   {
     const gaRows=[];
-    if(p.hun<=5) gaRows.push({icon:'⚠️',text:`허기(${p.hun}) → 수집 후 0 이하 — 체력 피해!`,cls:'crit'});
-    if(p.thi<=6) gaRows.push({icon:'⚠️',text:`갈증(${p.thi}) → 수집 후 0 이하 — 체력 피해!`,cls:'crit'});
-    gaRows.push({icon:'🍗',text:'허기 -5',cls:'loss'},{icon:'💧',text:'갈증 -6',cls:'loss'});
+    const ghDef=Math.max(0,5-p.hun), gtDef=Math.max(0,6-p.thi);
+    const ghDmg=ghDef>0?10+ghDef:0, gtDmg=gtDef>0?16+gtDef:0;
+    gaRows.push({icon:'🍗',text:`허기 -5${ghDef>0?` (허기-${ghDef} → HP-${ghDmg})`:''}`,cls:ghDef>0?'crit':'loss'});
+    gaRows.push({icon:'💧',text:`갈증 -6${gtDef>0?` (갈증-${gtDef} → HP-${gtDmg})`:''}`,cls:gtDef>0?'crit':'loss'});
     if(ct.explored&&(ct.gather||[]).length){
       (ct.gather).forEach(o=>{
         const td=CARD_MAP[o.tool]||{}; const rd=CARD_MAP[o.res]||{icon:'📦',name:o.res};
@@ -211,8 +212,8 @@ function render(){
   d.btnUse.disabled=p.ap<1||p.over;
   d.btnUse.innerHTML=`✨ 카드 사용 — ${drawN}장 드로우 <span class="apb">AP1</span>`;
   const useRows=[{icon:'🎴', text:`${drawN}장 드로우`, cls:'gain'}];
-  if(ropeCnt)      useRows.push({icon:'🪢', text:`밧줄 ${ropeCnt}개 → +${ropeCnt}장`, cls:'info'});
-  if(beachCampCnt) useRows.push({icon:'🏖️', text:`해변 캠프 ${beachCampCnt}개 → +${beachCampCnt}장`, cls:'info'});
+  if(ropeCnt)      useRows.push({icon:'🪢', text:`밧줄 : +${ropeCnt}장`, cls:'info'});
+  if(beachCampCnt) useRows.push({icon:'🏖️', text:`캠프 : +${beachCampCnt}장`, cls:'info'});
   useRows.push({icon:'🍗', text:'식량·물·약초 즉시 사용 가능', cls:'info'});
   d.btnUse._att={title:'✨ 카드 사용', cost:'AP 1', rows:useRows};
 
@@ -228,14 +229,20 @@ function render(){
   const sEvt=calcSleepEvtChance(sleepEarly);
   d.btnSleep.disabled=p.over;
   const sleepRows=[];
-  if(p.hun<=14) sleepRows.push({icon:'⚠️',text:`허기(${p.hun}) → 취침 후 0 이하 — 체력 피해!`,cls:'crit'});
-  if(p.thi<=18) sleepRows.push({icon:'⚠️',text:`갈증(${p.thi}) → 취침 후 0 이하 — 체력 피해!`,cls:'crit'});
+  const tW=getWeatherDelta(p.tomorrow);
+  const sNeedHun=14;
+  const sNeedThi=Math.max(0,18-tW.thi);
+  const shDef=Math.max(0,sNeedHun-p.hun), stDef=Math.max(0,sNeedThi-p.thi);
+  const shDmg=shDef>0?15+shDef:0, stDmg=stDef>0?24+stDef:0;
+  const wHpDmg=Math.max(0,-tW.hp);
   sleepRows.push(
     {icon:'❤️', text:`HP +${sHpR}`, cls:'gain'},
     {icon:'🧠', text:`정신력 ${sSanNet>=0?'+':''}${sSanNet}${caveBonus?` (동굴보너스 +${caveBonus})`:''}`, cls:sSanNet>=0?'gain':'loss'},
-    {icon:'🍗', text:'허기 -14', cls:'loss'},
-    {icon:'💧', text:'갈증 -18', cls:'loss'},
+    {icon:'🍗', text:`허기 -14${shDef>0?` (허기-${shDef} → HP-${shDmg})`:''}`, cls:shDef>0?'crit':'loss'},
+    {icon:'💧', text:`갈증 -18${tW.thi!==0?` ${tW.thi>0?`+날씨${tW.thi}`:`-날씨${-tW.thi}`}`:''}${stDef>0?` (갈증-${stDef} → HP-${stDmg})`:''}`, cls:stDef>0?'crit':'loss'},
   );
+  if(wHpDmg>0) sleepRows.push({icon:'⛈️',text:`날씨 피해 HP-${wHpDmg}`,cls:'crit'});
+  if(ruinsCampCnt>0) sleepRows.push({icon:'🏚️',text:`캠프 : AP+${ruinsCampCnt}`,cls:'info'});
   if(sleepEarly) sleepRows.push({icon:'🌙', text:'이른취침 · AP+2 · 회복↑', cls:'early'});
   if(sEvt>0)     sleepRows.push({icon:'🎲', text:`취침 이벤트 ${sEvt}%`, cls:'info'});
   if(p.doomRate>0)      sleepRows.push({icon:'🌫️', text:`DOOM +${p.doomRate}%`, cls:'doom'});

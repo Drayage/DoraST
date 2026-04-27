@@ -33,6 +33,24 @@ const DOOM_ENDGAME_FL=[
   {txt:'동이 틀 때까지 맹그로브 뿌리들이 움직이는 소리를 들었다.',hpPen:3,sanPen:4},
 ];
 
+function getWeatherDelta(w){
+  const d={ap:0,san:0,thi:0,hp:0,fog:false};
+  if(!w?.eff) return d;
+  const [s,v]=w.eff.split('_');
+  const val=parseInt(v);
+  if(s==='ap') d.ap=val;
+  else if(s==='san') d.san=val;
+  else if(s==='thi') d.thi=val;
+  else if(s==='hp') d.hp=val;
+  else if(s==='fog') d.fog=true;
+  return d;
+}
+
+function calcDeficitDamage(cur, need, base){
+  const deficit=Math.max(0,need-cur);
+  return {deficit, dmg:deficit>0?base+deficit:0};
+}
+
 function doSleep(){
   if(G.over) return;
   const early=G.ap>=4;
@@ -50,18 +68,32 @@ function doSleep(){
     if(t.id==='ruins')  { ruinsBonusAP+=1; log('🏚️ 폐허캠프: AP+1','success'); }
   });
   const fatigueN=allCards().filter(c=>c.id==='fatigue').length;
-  G.hun=Math.max(0,G.hun-14); G.thi=Math.max(0,G.thi-18);
+  const preHun=G.hun, preThi=G.thi;
+  G.weather=G.tomorrow;
+  const wD=getWeatherDelta(G.weather);
+  const needHun=14;
+  const needThi=Math.max(0,18-wD.thi);
+  const hLoss=calcDeficitDamage(preHun,needHun,15);
+  const tLoss=calcDeficitDamage(preThi,needThi,24);
+  const wHpDmg=Math.max(0,-wD.hp);
+  const actionDmg=hLoss.dmg+tLoss.dmg+wHpDmg;
+  G.hun=Math.max(0,preHun-needHun);
+  G.thi=Math.max(0,preThi-needThi);
+  if(actionDmg>0){
+    G.hp=Math.max(0,G.hp-actionDmg);
+    flashDamage();
+    log(`🛌 취침 피해: ${hLoss.dmg?`허기HP-${hLoss.dmg} `:''}${tLoss.dmg?`갈증HP-${tLoss.dmg} `:''}${wHpDmg?`날씨HP-${wHpDmg}`:''}`,'danger');
+  }
   const poisonN=allCards().filter(c=>c.id==='poison_status').length;
   if(poisonN>0){ G.hp=Math.max(0,G.hp-5*poisonN); log(`☠️ 중독 피해: HP-${5*poisonN}`,'danger'); }
   G.hp=Math.min(100,G.hp+hpR);
   const doomSanExtra=G.doomPhase>=4?Math.floor((G.doom-79)/6):0;
   const sanDrain=(G.camps.length?2:5)+doomSanExtra;
-  G.san=Math.min(100,Math.max(0,G.san+sanR-sanDrain));
+  G.san=Math.min(100,Math.max(0,G.san+sanR-sanDrain+wD.san));
   const bonAP=early?2:0;
-  G.weather=G.tomorrow;
   G.tomorrow=WEATHER[Math.floor(Math.random()*WEATHER.length)];
-  G.ap=Math.max(1,G.maxAP+bonAP+ruinsBonusAP-fatigueN*2);
-  applyWeather();
+  G.ap=Math.max(1,G.maxAP+bonAP+ruinsBonusAP-fatigueN*2+wD.ap);
+  if(wD.fog) log(`${G.weather.icon} ${G.weather.name}: 안개가 짙어졌다.`,'danger');
   if(G.day>5){
     const fog=G.tiles.filter((t,i)=>{
       if(!t.revealed||t.hasCamp||i===G.pos) return false;
@@ -74,7 +106,7 @@ function doSleep(){
   }
   G.deck=shuffle(G.deck.concat(G.disc)); G.disc=[];
 
-  const sanNet=sanR-sanDrain;
+  const sanNet=sanR-sanDrain+wD.san;
   const _di=(ISLANDS[G.islandId]||ISLANDS.mangrove).doomIcon||'🌫️';
   const doomHint=G.doomRate>0?` | ${_di}DOOM+${G.doomRate}/일(${G.doom}%)`:G.doomPhase>=4?` | ${_di}DOOM ${G.doom}%`:'';
   log(`🌙 ${G.day-1}일→${G.day}일. HP+${hpR} 정신력${sanNet>=0?'+':''}${sanNet}${bonAP?` 이른취침AP+${bonAP}`:''}${ruinsBonusAP?` 폐허캠프AP+${ruinsBonusAP}`:''}${fatigueN?` 피로AP-${fatigueN*2}`:''}${doomHint}`,'important');
