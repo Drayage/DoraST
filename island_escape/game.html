@@ -3500,7 +3500,7 @@ function render(){
       (ct.gather).forEach(o=>{
         const td=CARD_MAP[o.tool]||{}; const rd=CARD_MAP[o.res]||{icon:'📦',name:o.res};
         const has=cards.some(c=>c.id===o.tool);
-        gaRows.push({icon:td.icon||'🔧',text:`${o.label}: ${td.name||o.tool} → ${rd.icon}${rd.name} 1~2개`,cls:has?'gain':'loss'});
+        gaRows.push({icon:td.icon||'🔧',text:`${o.label}: ${td.name||o.tool} → ${rd.icon}${rd.name} 1~2개`,cls:has?'gain':'info'});
       });
     } else {
       gaRows.push({icon:'🔧',text:'탐색 완료 + 수집 도구 필요',cls:'info'});
