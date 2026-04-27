@@ -103,6 +103,8 @@ const CARDS=[
   {id:'compass',name:'유물나침반',icon:'🧭',tag:'tool',atk:0,def:0,n:0,
    passiveDesc:'탈출도 +20% 즉시. 탐색 판정 2장 중 유리한 것 선택',
    desc:'고대 유물. 탈출도 즉시 +20%. 탐색 판정 어드밴티지.'},
+  {id:'ambush_fist',name:'맨손 기습',icon:'👊',tag:'combat',atk:3,def:0,n:0,cbtFx:'raw',
+   desc:'공격카드 없이 맨손 기습. ATK 3(방어무시). 전투 후 소멸.'},
   // 상태이상
   {id:'injury',      name:'부상',icon:'🩹',tag:'status',atk:-1,def:-1,n:0,desc:'ATK·DEF -1.'},
   {id:'fear',        name:'공포',icon:'😱',tag:'status',atk:-1,def:-1,n:0,desc:'ATK·DEF -1.'},

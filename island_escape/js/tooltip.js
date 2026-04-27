@@ -40,7 +40,7 @@ function showTT(c, el){
   const cEl=document.getElementById('tt-cbt');
   if(c.cbtFx){
     cEl.style.display='';
-    const m2={pierce:'★ 관통: 적방어무시+4',block:'★ 완전방어: +5',stun:'★ 기절: 적피해0+ATK3',poison:'★ 독: 매라운드+3',armor:'★ 갑옷: 피해-2',cloak:'★ 망토: 도망HP-2'};
+    const m2={pierce:'★ 관통: 적방어무시+4',block:'★ 완전방어: +5',stun:'★ 기절: 적피해0+ATK3',poison:'★ 독: 매라운드+3',armor:'★ 갑옷: 피해-2',cloak:'★ 망토: 도망HP-2',raw:'★ 방어무시: ATK 수치로 적 방어 무시'};
     cEl.textContent=m2[c.cbtFx]||'';
   } else cEl.style.display='none';
 
@@ -94,8 +94,15 @@ function showTileTT(mx, my, t, i){
       rows.push({cls:'ap', html:`🚶 이동 <b>AP ${ap}</b>`});
     }
     if(t.hasCamp) rows.push({cls:'camp', html:'🏕️ 캠프 설치됨'});
-    if(t.explored) rows.push({cls:'done', html:'✓ 탐색 완료'});
-    else if(t.revealed) rows.push({cls:'todo', html:'🔍 미탐색 (AP2 필요)'});
+    if(t.explored){
+      rows.push({cls:'done', html:'✓ 탐색 완료'});
+      (t.gather||[]).forEach(o=>{
+        const key=`${i}_${o.tool}`;
+        const cnt=G.gatherCnt[key]||0;
+        const td=CARD_MAP[o.tool]||{}; const rd=CARD_MAP[o.res]||{icon:'📦',name:o.res};
+        rows.push({cls:'ap', html:`${td.icon||'🔧'}${o.label} → ${rd.icon}${rd.name} <b>성공 ${cnt}회</b>`});
+      });
+    } else if(t.revealed) rows.push({cls:'todo', html:'🔍 미탐색 (AP2 필요)'});
   }
 
   document.getElementById('ttt-icon').textContent=icon;

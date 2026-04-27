@@ -35,19 +35,25 @@ function hideCbtDeckView(){
 
 // 기습: 첫 라운드 전투카드 1장 보장
 function drawAmbushHand(){
-  // 덱이 비어있으면 먼저 재셔플
-  if(!G.deck.length && G.disc.length){ G.deck=shuffle([...G.disc]); G.disc=[]; }
   const isCbt = c => c.atk>0 || c.tag==='combat';
+  // 1. 덱에 공격카드 있으면 맨 끝(첫 드로우)으로 이동
   let idx = G.deck.findIndex(isCbt);
-  if(idx===-1){
-    // 덱에 없으면 버림더미에서 꺼내 덱 맨 끝(=pop 우선)에 삽입
-    const di = G.disc.findIndex(isCbt);
-    if(di!==-1){ const [pick]=G.disc.splice(di,1); G.deck.push(pick); }
-  } else {
-    // 덱에 있으면 맨 끝으로 이동
+  if(idx !== -1){
     const [pick]=G.deck.splice(idx,1); G.deck.push(pick);
+    return drawToHand(5);
   }
-  return drawToHand(5);
+  // 2. 버림더미에 있으면 셔플 후 보장
+  if(G.disc.some(isCbt)){
+    G.deck=shuffle([...G.deck,...G.disc]); G.disc=[];
+    idx=G.deck.findIndex(isCbt);
+    const [pick]=G.deck.splice(idx,1); G.deck.push(pick);
+    log('🔀 버림더미 셔플 후 공격카드 보장','');
+    return drawToHand(5);
+  }
+  // 3. 어디에도 공격카드 없음 → 맨손 기습 임시카드
+  const fist={...CARD_MAP['ambush_fist'], uid:Date.now()+Math.random(), _temp:true};
+  log('👊 덱에 공격카드 없음 — 맨손 기습 (방어무시 ATK3) 임시 지급','danger');
+  return [fist, ...drawToHand(4)];
 }
 
 // 전투 전 조우 모달
@@ -324,7 +330,10 @@ function resolveCombat(){
   const hasArmor=allCards().some(c=>c.id==='leather_armor');
 
   [...CBT.atkZone,...CBT.defZone].forEach(c=>{
-    if(c.cbtFx==='pierce'&&CBT.atkZone.some(x=>x.uid===c.uid)){
+    if(c.cbtFx==='raw'&&CBT.atkZone.some(x=>x.uid===c.uid)){
+      pierceAtk+=c.atk;
+      lines.push({t:`★ 방어무시: ATK${c.atk}(방어무시)`,cls:'good'});
+    } else if(c.cbtFx==='pierce'&&CBT.atkZone.some(x=>x.uid===c.uid)){
       // 관통: 적 방어 완전무시 (별도 집계)
       pierceAtk+=c.atk+4;
       lines.push({t:`★ 창 관통: 방어무시 ATK${c.atk+4}`,cls:'good'});
@@ -429,7 +438,7 @@ function _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,will
     }
     CBT.turn++;
     CBT.atkZone=[]; CBT.defZone=[];
-    G.disc.push(...CBT.hand); CBT.hand=[];
+    G.disc.push(...CBT.hand.filter(c=>!c._temp)); CBT.hand=[];
     CBT.hand=drawCombatHand();
     resEl.innerHTML+=`<div class="rl neutral">— 라운드${CBT.turn}: ${CBT.hand.length}장 드로우 —</div>`;
     log(`⚔️ 라운드${CBT.turn} (내HP:${G.hp} 적HP:${e.curHp})`,'combat');
@@ -465,7 +474,7 @@ function _doFleeCombat(cost, hasCloak){
 function closeCombat(){
   document.getElementById('cbt-mo').style.display='none';
   const p=document.getElementById('cbt-popup'); if(p) p.remove();
-  if(CBT.hand?.length){ G.disc.push(...CBT.hand); CBT.hand=[]; }
+  if(CBT.hand?.length){ G.disc.push(...CBT.hand.filter(c=>!c._temp)); CBT.hand=[]; }
   if(G.hp<=0) triggerGameOver('전투 중 사망했습니다.');
   checkSurvival(); checkWin(); render();
 }
