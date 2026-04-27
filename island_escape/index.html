@@ -104,7 +104,7 @@
     &nbsp;&nbsp;<span style="color:var(--text3);">AP </span><span id="hv-ap" style="font-weight:600;">10</span>
   </div>
   <div id="doom-wrap">
-    <div class="doom-lbl">DOOM <span id="doom-pct">0</span>% <span id="doom-rate-hdr" style="font-size:7px;color:var(--accent);"></span></div>
+    <div class="doom-lbl"><span id="doom-icon-hdr">🌫️</span> DOOM <span id="doom-pct">0</span>% <span id="doom-rate-hdr" style="font-size:7px;color:var(--accent);"></span></div>
     <div class="doom-trk"><div class="doom-fill" id="doom-fill" style="width:0%"></div></div>
   </div>
   <span style="font-size:9px;color:var(--text3);">탈출 <span id="hv-esc" style="color:var(--green);">0</span>%</span>
@@ -270,6 +270,10 @@
 
 <!-- ACTION BUTTON TOOLTIP -->
 <div id="att" style="display:none;position:fixed;z-index:650;pointer-events:none;width:210px;">
+  <div class="att-inner"></div>
+</div>
+<!-- WEATHER TOOLTIP -->
+<div id="wx-tt" style="display:none;position:fixed;z-index:650;pointer-events:none;width:210px;">
   <div class="att-inner"></div>
 </div>
 
@@ -537,6 +541,7 @@
 <script src="js/render.js"></script>
 <script>/* 게임은 타이틀 화면의 startGame()으로 시작 */
 initActionTT();
+initWeatherTT();
 </script>
 
 </body>

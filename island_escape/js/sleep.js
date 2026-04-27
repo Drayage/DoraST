@@ -53,7 +53,8 @@ function doSleep(){
   const poisonN=allCards().filter(c=>c.id==='poison_status').length;
   if(poisonN>0){ G.hp=Math.max(0,G.hp-5*poisonN); log(`☠️ 중독 피해: HP-${5*poisonN}`,'danger'); }
   G.hp=Math.min(100,G.hp+hpR);
-  const sanDrain=G.camps.length?2:5;
+  const doomSanExtra=G.doomPhase>=4?Math.floor((G.doom-79)/6):0;
+  const sanDrain=(G.camps.length?2:5)+doomSanExtra;
   G.san=Math.min(100,Math.max(0,G.san+sanR-sanDrain));
   const bonAP=early?2:0;
   G.weather=G.tomorrow;
@@ -98,18 +99,18 @@ function _processDoom(early){
 
   // 망각 단계 (80%+)
   if(G.doomPhase===4){
-    const add=1+Math.floor(Math.random()*3);
+    const add=2+Math.floor(Math.random()*2);
     G.doom=Math.min(100,G.doom+add);
     const fl=DOOM_ENDGAME_FL[Math.floor(Math.random()*DOOM_ENDGAME_FL.length)];
     G.hp=Math.max(0,G.hp-fl.hpPen); G.san=Math.max(0,G.san-fl.sanPen);
     if(fl.hpPen>0) flashDamage();
-    // 수면 중 망각 카드 스며들기 (정신력이 낮을수록 확률 증가)
     if(G.san<50&&Math.random()*100<(40-G.san*0.5)){
       addCard('amnesia',1);
       log('🌀 잠결에 환각이 스며들었다. 망각 카드가 덱에 추가됐다.','danger');
     }
-    log(`🌫️ ${fl.txt} 정신력-${fl.sanPen}${fl.hpPen>0?` HP-${fl.hpPen}`:''}  DOOM+${add}(${G.doom}%)`,'danger');
+    log(`${_di} ${fl.txt} 정신력-${fl.sanPen}${fl.hpPen>0?` HP-${fl.hpPen}`:''}  DOOM+${add}(${G.doom}%)`,'danger');
     if(G.doom>=100){
+      G.doomPhase=5; // 반복 모달 방지
       checkSurvival(); if(G.over) return;
       _showDoomModal('🌫️ 완전한 망각',fl.txt+'\n\n안개가 100%에 도달했다.\n이제 탈출 의지 자체가 흐릿해진다.\n다음 취침부터 생사의 복권이 시작된다.',`DOOM ${G.doom}%`,()=>_afterDoom(early));
       return;
@@ -138,7 +139,7 @@ function _showDoomModal(title,story,detail,cb){
   document.getElementById('doom-pbar').style.width=Math.min(100,G.doom)+'%';
   document.getElementById('doom-pct2').textContent=G.doom;
   document.getElementById('doom-rate2').textContent=
-    G.doomPhase>=4?'(매 취침 +1~3%)':G.doomRate>0?`(매 취침 +${G.doomRate}%)`:'';
+    G.doomPhase>=5?'(매 취침 생사 복권)':G.doomPhase>=4?'(매 취침 +2~3%)':G.doomRate>0?`(매 취침 +${G.doomRate}%)`:'';
   document.getElementById('doom-ok').onclick=()=>{
     document.getElementById('doom-ev-mo').style.display='none';
     if(cb) cb();
@@ -193,32 +194,38 @@ function showRaftLottery(){
 }
 
 function revealRaft(el, type){
-  if(el.classList.contains('revealed')) return;
+  if(el.classList.contains('revealed')||el.classList.contains('sc-flipping')) return;
   document.querySelectorAll('.sc:not(.revealed)').forEach(c=>c.onclick=null);
-  el.classList.add('revealed');
-  const resEl=document.getElementById('se-result');
-  if(type==='great'){
-    el.classList.add('sc-ok'); el.textContent='🌟';
-    G.escape=Math.min(100,G.escape+30);
-    resEl.style.color='var(--accent)';
-    resEl.textContent='★ 대성공! 뛰어난 부품 완성. 탈출도 +30%';
-    log('🛶 뗏목 제작 대성공! 탈출도+30%','success');
-  } else if(type==='ok'){
-    el.classList.add('sc-ok'); el.textContent='✅';
-    G.escape=Math.min(100,G.escape+15);
-    resEl.style.color='var(--green)';
-    resEl.textContent='✓ 성공. 괜찮은 부품 완성. 탈출도 +15%';
-    log('🛶 뗏목 제작 성공. 탈출도+15%','success');
-  } else {
-    el.classList.add('sc-fail'); el.textContent='💥';
-    G.escape=Math.max(0,G.escape-10);
-    resEl.style.color='var(--red)';
-    resEl.textContent='✗ 실패. 부품이 망가졌다. 탈출도 -10%';
-    log('🛶 뗏목 제작 실패. 탈출도-10%','danger');
-  }
-  document.getElementById('se-ok').style.display='';
-  document.getElementById('se-ok').onclick=()=>closeSleepEvt();
-  checkWin(); render();
+  const suspense=G.escape>=70;
+  const fullMs=suspense?1800:350, halfMs=Math.floor(fullMs/2);
+  el.classList.add('sc-flipping');
+  if(suspense) el.classList.add('sc-slow');
+  setTimeout(()=>{
+    el.classList.add('revealed');
+    if(type==='great'){ el.classList.add('sc-ok'); el.textContent='🌟'; }
+    else if(type==='ok'){ el.classList.add('sc-ok'); el.textContent='✅'; }
+    else { el.classList.add('sc-fail'); el.textContent='💥'; }
+  }, halfMs);
+  setTimeout(()=>{
+    el.classList.remove('sc-flipping','sc-slow');
+    const resEl=document.getElementById('se-result');
+    if(type==='great'){
+      G.escape=Math.min(100,G.escape+30);
+      resEl.style.color='var(--accent)'; resEl.textContent='★ 대성공! 뛰어난 부품 완성. 탈출도 +30%';
+      log('🛶 뗏목 제작 대성공! 탈출도+30%','success');
+    } else if(type==='ok'){
+      G.escape=Math.min(100,G.escape+15);
+      resEl.style.color='var(--green)'; resEl.textContent='✓ 성공. 괜찮은 부품 완성. 탈출도 +15%';
+      log('🛶 뗏목 제작 성공. 탈출도+15%','success');
+    } else {
+      G.escape=Math.max(0,G.escape-10);
+      resEl.style.color='var(--red)'; resEl.textContent='✗ 실패. 부품이 망가졌다. 탈출도 -10%';
+      log('🛶 뗏목 제작 실패. 탈출도-10%','danger');
+    }
+    document.getElementById('se-ok').style.display='';
+    document.getElementById('se-ok').onclick=()=>closeSleepEvt();
+    checkWin(); render();
+  }, fullMs);
 }
 
 function showDoomLottery(){
@@ -245,32 +252,38 @@ function showDoomLottery(){
 }
 
 function revealDoomLottery(el,type){
-  if(el.classList.contains('revealed')) return;
+  if(el.classList.contains('revealed')||el.classList.contains('sc-flipping')) return;
   document.querySelectorAll('.sc:not(.revealed)').forEach(c=>c.onclick=null);
-  el.classList.add('revealed');
-  const resEl=document.getElementById('se-result');
-  if(type==='survive'){
-    el.classList.add('sc-ok'); el.textContent='🌟';
-    G.doomSurvives++;
-    const left=Math.max(0,4-G.doomSurvives);
-    resEl.style.color='var(--green)';
-    resEl.textContent=`✓ 기적적으로 살아남았다! 하지만 다음엔 더 어렵다. (생존카드 ${left}장 남음)`;
-    log(`🌟 종말 복권: 생존! (생존카드 ${left}장 남음)`,'success');
-    document.getElementById('se-ok').style.display='';
-    document.getElementById('se-ok').onclick=()=>closeSleepEvt();
-  } else {
-    el.classList.add('sc-bad'); el.textContent='🌀';
-    resEl.style.color='var(--red)';
-    resEl.textContent='🌫️ 안개 속으로 사라졌다. 돌아오지 않았다.';
-    log('🌀 망각 복권: 사망 — 섬의 안개에 흡수되어 사라졌다.','danger');
-    document.getElementById('se-ok').textContent='사라지다...';
-    document.getElementById('se-ok').onclick=()=>{
-      document.getElementById('se-mo').style.display='none';
-      triggerGameOver('🌫️ 망각의 안개에 흡수되었습니다.');
-    };
-    document.getElementById('se-ok').style.display='';
-  }
-  render();
+  el.classList.add('sc-flipping','sc-slow','sc-doom-pulse');
+  setTimeout(()=>{
+    el.classList.add('revealed');
+    if(type==='survive'){ el.classList.add('sc-ok'); el.textContent='🌟'; }
+    else { el.classList.add('sc-bad'); el.textContent='🌀'; }
+  }, 900);
+  setTimeout(()=>{
+    el.classList.remove('sc-flipping','sc-slow','sc-doom-pulse');
+    const resEl=document.getElementById('se-result');
+    if(type==='survive'){
+      G.doomSurvives++;
+      const left=Math.max(0,4-G.doomSurvives);
+      resEl.style.color='var(--green)';
+      resEl.textContent=`✓ 기적적으로 살아남았다! 하지만 다음엔 더 어렵다. (생존카드 ${left}장 남음)`;
+      log(`🌟 종말 복권: 생존! (생존카드 ${left}장 남음)`,'success');
+      document.getElementById('se-ok').style.display='';
+      document.getElementById('se-ok').onclick=()=>closeSleepEvt();
+    } else {
+      resEl.style.color='var(--red)';
+      resEl.textContent='🌫️ 안개 속으로 사라졌다. 돌아오지 않았다.';
+      log('🌀 망각 복권: 사망 — 섬의 안개에 흡수되어 사라졌다.','danger');
+      document.getElementById('se-ok').textContent='사라지다...';
+      document.getElementById('se-ok').onclick=()=>{
+        document.getElementById('se-mo').style.display='none';
+        triggerGameOver('🌫️ 망각의 안개에 흡수되었습니다.');
+      };
+      document.getElementById('se-ok').style.display='';
+    }
+    render();
+  }, 1800);
 }
 
 function showSleepEvt(){

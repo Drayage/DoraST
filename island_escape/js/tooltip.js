@@ -165,3 +165,49 @@ function hideActionTT(){
   const tt=document.getElementById('att');
   if(tt) tt.style.display='none';
 }
+
+// ── 날씨 툴팁 ──
+function _wxEffDesc(w){
+  if(!w||!w.eff) return {icon:'✓',text:'효과 없음',cls:'info'};
+  const [s,v]=w.eff.split('_');
+  if(s==='ap')  return {icon:'⚡',text:`AP ${v} (이동·행동 제한)`,cls:'warn'};
+  if(s==='thi') return {icon:'🌡️',text:`갈증 ${v} (취침 시 적용)`,cls:'loss'};
+  if(s==='hp')  return {icon:'💥',text:`HP ${v} (취침 시 적용)`,cls:'loss'};
+  if(s==='fog') return {icon:'🌫️',text:'시야 제한 (일부 타일 재안개)',cls:'warn'};
+  return {icon:'?',text:w.eff,cls:'info'};
+}
+
+function showWeatherTT(e, weather, label){
+  const tt=document.getElementById('wx-tt');
+  if(!tt||!weather||window.innerWidth<=700) return;
+  const ef=_wxEffDesc(weather);
+  tt.querySelector('.att-inner').innerHTML=
+    `<div class="att-title">${weather.icon} ${weather.name}</div>
+     <div class="att-cost">${label}</div>
+     <div class="att-rows"><div class="att-row ${ef.cls}"><span class="att-ri">${ef.icon}</span><span>${ef.text}</span></div></div>`;
+  tt.style.display='block';
+  const r=e.currentTarget.getBoundingClientRect();
+  let left=r.left, top=r.bottom+6;
+  if(left+210>window.innerWidth-4) left=window.innerWidth-214;
+  tt.style.left=left+'px'; tt.style.top=top+'px';
+}
+
+function hideWeatherTT(){
+  const tt=document.getElementById('wx-tt');
+  if(tt) tt.style.display='none';
+}
+
+function initWeatherTT(){
+  const wxEl=document.getElementById('hv-wx');
+  if(wxEl){
+    wxEl.addEventListener('mouseenter',e=>showWeatherTT(e,G.weather,'오늘 날씨'));
+    wxEl.addEventListener('mouseleave',hideWeatherTT);
+  }
+  // 내일 날씨: hv-tmrw의 부모 span
+  const tmrEl=document.getElementById('hv-tmrw');
+  if(tmrEl&&tmrEl.parentElement){
+    tmrEl.parentElement.style.cursor='default';
+    tmrEl.parentElement.addEventListener('mouseenter',e=>showWeatherTT(e,G.tomorrow,'내일 날씨'));
+    tmrEl.parentElement.addEventListener('mouseleave',hideWeatherTT);
+  }
+}

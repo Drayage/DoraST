@@ -44,6 +44,8 @@ function render(){
   d.hvAp.textContent=p.ap;
   const doom=Math.min(100,p.doom);
   d.doomPct.textContent=doom; d.doomFill.style.width=doom+'%';
+  const doomIconEl=document.getElementById('doom-icon-hdr');
+  if(doomIconEl) doomIconEl.textContent=(ISLANDS[p.islandId]||ISLANDS.mangrove).doomIcon||'🌫️';
   const doomRateEl=document.getElementById('doom-rate-hdr');
   if(doomRateEl) doomRateEl.textContent=p.doomRate>0?`+${p.doomRate}%/일`:p.doomPhase>=4?'+1~3%/일':'';
   d.hvEsc.textContent=p.escape;

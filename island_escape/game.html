@@ -245,6 +245,27 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .sc.sc-bad{border-color:var(--red);background:rgba(224,80,80,.1);}
 .sc::before{content:'?';font-family:var(--font-t);font-size:30px;color:var(--border);position:absolute;}
 .sc.revealed::before{display:none;}
+@keyframes scFlip{0%{transform:scaleX(1);}50%{transform:scaleX(0);}100%{transform:scaleX(1);}}
+@keyframes doomPulse{0%,100%{box-shadow:0 0 4px rgba(224,80,80,.3);}50%{box-shadow:0 0 18px 6px rgba(224,80,80,.55);}}
+.sc.sc-flipping{animation:scFlip .35s linear;}
+.sc.sc-flipping.sc-slow{animation:scFlip 1.8s cubic-bezier(.15,0,.85,1);}
+.sc.sc-doom-pulse{animation:scFlip 1.8s cubic-bezier(.15,0,.85,1),doomPulse 1.8s ease;}
+
+@keyframes milestoneAnim{0%{opacity:0;transform:translateX(-50%) translateY(-16px) scale(.9);}15%{opacity:1;transform:translateX(-50%) translateY(0) scale(1);}80%{opacity:1;transform:translateX(-50%) translateY(0);}100%{opacity:0;transform:translateX(-50%) translateY(-8px);}}
+.esc-milestone{position:fixed;top:62px;left:50%;transform:translateX(-50%);z-index:900;background:rgba(8,18,12,.95);border:1px solid var(--green);border-radius:13px;padding:10px 26px;text-align:center;pointer-events:none;animation:milestoneAnim 3.8s ease forwards;box-shadow:0 4px 24px rgba(74,224,160,.25);}
+.em-pct{font-family:var(--font-t);font-size:20px;color:var(--green);text-shadow:0 0 14px rgba(74,224,160,.6);}
+.em-msg{font-size:9px;color:var(--text2);margin-top:3px;font-family:var(--font-m);}
+
+@keyframes vfFade{0%{background:rgba(0,0,0,0);}40%{background:rgba(0,0,0,.88);}100%{background:rgba(0,0,0,.88);}}
+@keyframes vfIcon{0%{transform:scale(.2) rotate(-20deg);opacity:0;}55%{transform:scale(1.18) rotate(6deg);opacity:1;}100%{transform:scale(1) rotate(0);opacity:1;}}
+@keyframes vfTitle{0%,30%{opacity:0;transform:translateY(18px);}65%,100%{opacity:1;transform:translateY(0);}}
+@keyframes vfP{0%{opacity:1;transform:translate(0,0) scale(1);}100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0);}}
+#victory-overlay{position:fixed;inset:0;z-index:2000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;animation:vfFade .7s ease forwards;}
+.vf-particles{position:absolute;inset:0;pointer-events:none;}
+.vf-p{position:absolute;left:50%;top:50%;font-size:22px;animation:vfP 2.2s ease forwards;}
+.vf-icon{font-size:72px;animation:vfIcon .9s ease forwards;filter:drop-shadow(0 0 20px rgba(74,224,160,.6));}
+.vf-title{font-family:var(--font-t);font-size:32px;color:var(--green);text-shadow:0 0 30px rgba(74,224,160,.7);animation:vfTitle .8s .35s ease both;}
+.vf-sub{font-size:13px;color:var(--text2);animation:vfTitle .8s .6s ease both;}
 
 /* COMBAT */
 #cbt-mo{z-index:100;}
@@ -499,7 +520,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
     &nbsp;&nbsp;<span style="color:var(--text3);">AP </span><span id="hv-ap" style="font-weight:600;">10</span>
   </div>
   <div id="doom-wrap">
-    <div class="doom-lbl">DOOM <span id="doom-pct">0</span>% <span id="doom-rate-hdr" style="font-size:7px;color:var(--accent);"></span></div>
+    <div class="doom-lbl"><span id="doom-icon-hdr">🌫️</span> DOOM <span id="doom-pct">0</span>% <span id="doom-rate-hdr" style="font-size:7px;color:var(--accent);"></span></div>
     <div class="doom-trk"><div class="doom-fill" id="doom-fill" style="width:0%"></div></div>
   </div>
   <span style="font-size:9px;color:var(--text3);">탈출 <span id="hv-esc" style="color:var(--green);">0</span>%</span>
@@ -665,6 +686,10 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 
 <!-- ACTION BUTTON TOOLTIP -->
 <div id="att" style="display:none;position:fixed;z-index:650;pointer-events:none;width:210px;">
+  <div class="att-inner"></div>
+</div>
+<!-- WEATHER TOOLTIP -->
+<div id="wx-tt" style="display:none;position:fixed;z-index:650;pointer-events:none;width:210px;">
   <div class="att-inner"></div>
 </div>
 
@@ -1241,7 +1266,9 @@ function initGame(){
     islandId,
   };
   _pendingItems=null; _itemCb=null; _pendingItemCards=null; _ucHand=[];
+  G.escMile={};
   buildDeck(); buildMap();
+  document.querySelectorAll('.mo').forEach(el=>el.style.display='none');
   document.getElementById('go-scr').style.display='none';
   initMobile();
   const isl = ISLANDS[G.islandId] || ISLANDS.mangrove;
@@ -1433,7 +1460,38 @@ function checkSurvival(){
 }
 
 function checkWin(){
-  if(G.escape>=100&&!G.over) showEnding(true, null);
+  if(!G.escMile) G.escMile={};
+  if(G.escape>=70&&!G.escMile[70]){ G.escMile[70]=true; showEscapeMilestone(30); }
+  if(G.escape>=85&&!G.escMile[85]){ G.escMile[85]=true; showEscapeMilestone(15); }
+  if(G.escape>=100&&!G.over){
+    G.over=true;
+    showVictoryFanfare(()=>showEnding(true,null));
+  }
+}
+
+function showEscapeMilestone(left){
+  const el=document.createElement('div');
+  el.className='esc-milestone';
+  el.innerHTML=`<div class="em-pct">🛶 탈출까지 ${left}%!</div>
+  <div class="em-msg">${left===15?'거의 다 왔다. 마지막 한 걸음...':'이제 절반을 넘었다. 포기하지 마라!'}</div>`;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),3800);
+}
+
+function showVictoryFanfare(cb){
+  const isl=ISLANDS[G.islandId]||ISLANDS.mangrove;
+  const ov=document.createElement('div');
+  ov.id='victory-overlay';
+  const particles=['✨','🌟','💫','⭐','🎊','🎉'].map(e=>{
+    const ang=Math.random()*Math.PI*2, dist=120+Math.random()*180;
+    return `<span class="vf-p" style="--tx:${Math.cos(ang)*dist}px;--ty:${Math.sin(ang)*dist}px;animation-delay:${Math.random()*.6}s">${e}</span>`;
+  }).join('');
+  ov.innerHTML=`<div class="vf-particles">${particles}</div>
+    <div class="vf-icon">🛶</div>
+    <div class="vf-title">탈출 성공!</div>
+    <div class="vf-sub">${G.day}일 만에 ${isl.name}을 탈출했다</div>`;
+  document.body.appendChild(ov);
+  setTimeout(()=>{ ov.remove(); cb(); }, 2800);
 }
 
 function triggerGameOver(reason){
@@ -1495,7 +1553,7 @@ function _endStats(){
   const rows=[
     ['📅 생존일수', `${G.day}일`],
     ['🛶 탈출 진행', `${G.escape}%`],
-    [`${(ISLANDS[G.islandId]||ISLANDS.mangrove).doomIcon||'🌫️'} DOOM`, `${Math.min(100,G.doom)}%`],
+    [`${(ISLANDS[G.islandId]||ISLANDS.mangrove).doomIcon||'🌫️'} ${(ISLANDS[G.islandId]||ISLANDS.mangrove).doomName||'DOOM'}`, `${Math.min(100,G.doom)}%`],
     ['⚔️ 처치', `${G.kills}마리`],
     ['🗺️ 탐험 타일', `${explored}칸`],
     ['🚶 이동 거리', `${G.tilesMoved||0}칸`],
@@ -1720,6 +1778,52 @@ function _reposATT(mx, my){
 function hideActionTT(){
   const tt=document.getElementById('att');
   if(tt) tt.style.display='none';
+}
+
+// ── 날씨 툴팁 ──
+function _wxEffDesc(w){
+  if(!w||!w.eff) return {icon:'✓',text:'효과 없음',cls:'info'};
+  const [s,v]=w.eff.split('_');
+  if(s==='ap')  return {icon:'⚡',text:`AP ${v} (이동·행동 제한)`,cls:'warn'};
+  if(s==='thi') return {icon:'🌡️',text:`갈증 ${v} (취침 시 적용)`,cls:'loss'};
+  if(s==='hp')  return {icon:'💥',text:`HP ${v} (취침 시 적용)`,cls:'loss'};
+  if(s==='fog') return {icon:'🌫️',text:'시야 제한 (일부 타일 재안개)',cls:'warn'};
+  return {icon:'?',text:w.eff,cls:'info'};
+}
+
+function showWeatherTT(e, weather, label){
+  const tt=document.getElementById('wx-tt');
+  if(!tt||!weather||window.innerWidth<=700) return;
+  const ef=_wxEffDesc(weather);
+  tt.querySelector('.att-inner').innerHTML=
+    `<div class="att-title">${weather.icon} ${weather.name}</div>
+     <div class="att-cost">${label}</div>
+     <div class="att-rows"><div class="att-row ${ef.cls}"><span class="att-ri">${ef.icon}</span><span>${ef.text}</span></div></div>`;
+  tt.style.display='block';
+  const r=e.currentTarget.getBoundingClientRect();
+  let left=r.left, top=r.bottom+6;
+  if(left+210>window.innerWidth-4) left=window.innerWidth-214;
+  tt.style.left=left+'px'; tt.style.top=top+'px';
+}
+
+function hideWeatherTT(){
+  const tt=document.getElementById('wx-tt');
+  if(tt) tt.style.display='none';
+}
+
+function initWeatherTT(){
+  const wxEl=document.getElementById('hv-wx');
+  if(wxEl){
+    wxEl.addEventListener('mouseenter',e=>showWeatherTT(e,G.weather,'오늘 날씨'));
+    wxEl.addEventListener('mouseleave',hideWeatherTT);
+  }
+  // 내일 날씨: hv-tmrw의 부모 span
+  const tmrEl=document.getElementById('hv-tmrw');
+  if(tmrEl&&tmrEl.parentElement){
+    tmrEl.parentElement.style.cursor='default';
+    tmrEl.parentElement.addEventListener('mouseenter',e=>showWeatherTT(e,G.tomorrow,'내일 날씨'));
+    tmrEl.parentElement.addEventListener('mouseleave',hideWeatherTT);
+  }
 }
 
 </script></script>
@@ -2385,7 +2489,8 @@ function doSleep(){
   const poisonN=allCards().filter(c=>c.id==='poison_status').length;
   if(poisonN>0){ G.hp=Math.max(0,G.hp-5*poisonN); log(`☠️ 중독 피해: HP-${5*poisonN}`,'danger'); }
   G.hp=Math.min(100,G.hp+hpR);
-  const sanDrain=G.camps.length?2:5;
+  const doomSanExtra=G.doomPhase>=4?Math.floor((G.doom-79)/6):0;
+  const sanDrain=(G.camps.length?2:5)+doomSanExtra;
   G.san=Math.min(100,Math.max(0,G.san+sanR-sanDrain));
   const bonAP=early?2:0;
   G.weather=G.tomorrow;
@@ -2430,18 +2535,18 @@ function _processDoom(early){
 
   // 망각 단계 (80%+)
   if(G.doomPhase===4){
-    const add=1+Math.floor(Math.random()*3);
+    const add=2+Math.floor(Math.random()*2);
     G.doom=Math.min(100,G.doom+add);
     const fl=DOOM_ENDGAME_FL[Math.floor(Math.random()*DOOM_ENDGAME_FL.length)];
     G.hp=Math.max(0,G.hp-fl.hpPen); G.san=Math.max(0,G.san-fl.sanPen);
     if(fl.hpPen>0) flashDamage();
-    // 수면 중 망각 카드 스며들기 (정신력이 낮을수록 확률 증가)
     if(G.san<50&&Math.random()*100<(40-G.san*0.5)){
       addCard('amnesia',1);
       log('🌀 잠결에 환각이 스며들었다. 망각 카드가 덱에 추가됐다.','danger');
     }
-    log(`🌫️ ${fl.txt} 정신력-${fl.sanPen}${fl.hpPen>0?` HP-${fl.hpPen}`:''}  DOOM+${add}(${G.doom}%)`,'danger');
+    log(`${_di} ${fl.txt} 정신력-${fl.sanPen}${fl.hpPen>0?` HP-${fl.hpPen}`:''}  DOOM+${add}(${G.doom}%)`,'danger');
     if(G.doom>=100){
+      G.doomPhase=5; // 반복 모달 방지
       checkSurvival(); if(G.over) return;
       _showDoomModal('🌫️ 완전한 망각',fl.txt+'\n\n안개가 100%에 도달했다.\n이제 탈출 의지 자체가 흐릿해진다.\n다음 취침부터 생사의 복권이 시작된다.',`DOOM ${G.doom}%`,()=>_afterDoom(early));
       return;
@@ -2470,7 +2575,7 @@ function _showDoomModal(title,story,detail,cb){
   document.getElementById('doom-pbar').style.width=Math.min(100,G.doom)+'%';
   document.getElementById('doom-pct2').textContent=G.doom;
   document.getElementById('doom-rate2').textContent=
-    G.doomPhase>=4?'(매 취침 +1~3%)':G.doomRate>0?`(매 취침 +${G.doomRate}%)`:'';
+    G.doomPhase>=5?'(매 취침 생사 복권)':G.doomPhase>=4?'(매 취침 +2~3%)':G.doomRate>0?`(매 취침 +${G.doomRate}%)`:'';
   document.getElementById('doom-ok').onclick=()=>{
     document.getElementById('doom-ev-mo').style.display='none';
     if(cb) cb();
@@ -2525,32 +2630,38 @@ function showRaftLottery(){
 }
 
 function revealRaft(el, type){
-  if(el.classList.contains('revealed')) return;
+  if(el.classList.contains('revealed')||el.classList.contains('sc-flipping')) return;
   document.querySelectorAll('.sc:not(.revealed)').forEach(c=>c.onclick=null);
-  el.classList.add('revealed');
-  const resEl=document.getElementById('se-result');
-  if(type==='great'){
-    el.classList.add('sc-ok'); el.textContent='🌟';
-    G.escape=Math.min(100,G.escape+30);
-    resEl.style.color='var(--accent)';
-    resEl.textContent='★ 대성공! 뛰어난 부품 완성. 탈출도 +30%';
-    log('🛶 뗏목 제작 대성공! 탈출도+30%','success');
-  } else if(type==='ok'){
-    el.classList.add('sc-ok'); el.textContent='✅';
-    G.escape=Math.min(100,G.escape+15);
-    resEl.style.color='var(--green)';
-    resEl.textContent='✓ 성공. 괜찮은 부품 완성. 탈출도 +15%';
-    log('🛶 뗏목 제작 성공. 탈출도+15%','success');
-  } else {
-    el.classList.add('sc-fail'); el.textContent='💥';
-    G.escape=Math.max(0,G.escape-10);
-    resEl.style.color='var(--red)';
-    resEl.textContent='✗ 실패. 부품이 망가졌다. 탈출도 -10%';
-    log('🛶 뗏목 제작 실패. 탈출도-10%','danger');
-  }
-  document.getElementById('se-ok').style.display='';
-  document.getElementById('se-ok').onclick=()=>closeSleepEvt();
-  checkWin(); render();
+  const suspense=G.escape>=70;
+  const fullMs=suspense?1800:350, halfMs=Math.floor(fullMs/2);
+  el.classList.add('sc-flipping');
+  if(suspense) el.classList.add('sc-slow');
+  setTimeout(()=>{
+    el.classList.add('revealed');
+    if(type==='great'){ el.classList.add('sc-ok'); el.textContent='🌟'; }
+    else if(type==='ok'){ el.classList.add('sc-ok'); el.textContent='✅'; }
+    else { el.classList.add('sc-fail'); el.textContent='💥'; }
+  }, halfMs);
+  setTimeout(()=>{
+    el.classList.remove('sc-flipping','sc-slow');
+    const resEl=document.getElementById('se-result');
+    if(type==='great'){
+      G.escape=Math.min(100,G.escape+30);
+      resEl.style.color='var(--accent)'; resEl.textContent='★ 대성공! 뛰어난 부품 완성. 탈출도 +30%';
+      log('🛶 뗏목 제작 대성공! 탈출도+30%','success');
+    } else if(type==='ok'){
+      G.escape=Math.min(100,G.escape+15);
+      resEl.style.color='var(--green)'; resEl.textContent='✓ 성공. 괜찮은 부품 완성. 탈출도 +15%';
+      log('🛶 뗏목 제작 성공. 탈출도+15%','success');
+    } else {
+      G.escape=Math.max(0,G.escape-10);
+      resEl.style.color='var(--red)'; resEl.textContent='✗ 실패. 부품이 망가졌다. 탈출도 -10%';
+      log('🛶 뗏목 제작 실패. 탈출도-10%','danger');
+    }
+    document.getElementById('se-ok').style.display='';
+    document.getElementById('se-ok').onclick=()=>closeSleepEvt();
+    checkWin(); render();
+  }, fullMs);
 }
 
 function showDoomLottery(){
@@ -2577,32 +2688,38 @@ function showDoomLottery(){
 }
 
 function revealDoomLottery(el,type){
-  if(el.classList.contains('revealed')) return;
+  if(el.classList.contains('revealed')||el.classList.contains('sc-flipping')) return;
   document.querySelectorAll('.sc:not(.revealed)').forEach(c=>c.onclick=null);
-  el.classList.add('revealed');
-  const resEl=document.getElementById('se-result');
-  if(type==='survive'){
-    el.classList.add('sc-ok'); el.textContent='🌟';
-    G.doomSurvives++;
-    const left=Math.max(0,4-G.doomSurvives);
-    resEl.style.color='var(--green)';
-    resEl.textContent=`✓ 기적적으로 살아남았다! 하지만 다음엔 더 어렵다. (생존카드 ${left}장 남음)`;
-    log(`🌟 종말 복권: 생존! (생존카드 ${left}장 남음)`,'success');
-    document.getElementById('se-ok').style.display='';
-    document.getElementById('se-ok').onclick=()=>closeSleepEvt();
-  } else {
-    el.classList.add('sc-bad'); el.textContent='🌀';
-    resEl.style.color='var(--red)';
-    resEl.textContent='🌫️ 안개 속으로 사라졌다. 돌아오지 않았다.';
-    log('🌀 망각 복권: 사망 — 섬의 안개에 흡수되어 사라졌다.','danger');
-    document.getElementById('se-ok').textContent='사라지다...';
-    document.getElementById('se-ok').onclick=()=>{
-      document.getElementById('se-mo').style.display='none';
-      triggerGameOver('🌫️ 망각의 안개에 흡수되었습니다.');
-    };
-    document.getElementById('se-ok').style.display='';
-  }
-  render();
+  el.classList.add('sc-flipping','sc-slow','sc-doom-pulse');
+  setTimeout(()=>{
+    el.classList.add('revealed');
+    if(type==='survive'){ el.classList.add('sc-ok'); el.textContent='🌟'; }
+    else { el.classList.add('sc-bad'); el.textContent='🌀'; }
+  }, 900);
+  setTimeout(()=>{
+    el.classList.remove('sc-flipping','sc-slow','sc-doom-pulse');
+    const resEl=document.getElementById('se-result');
+    if(type==='survive'){
+      G.doomSurvives++;
+      const left=Math.max(0,4-G.doomSurvives);
+      resEl.style.color='var(--green)';
+      resEl.textContent=`✓ 기적적으로 살아남았다! 하지만 다음엔 더 어렵다. (생존카드 ${left}장 남음)`;
+      log(`🌟 종말 복권: 생존! (생존카드 ${left}장 남음)`,'success');
+      document.getElementById('se-ok').style.display='';
+      document.getElementById('se-ok').onclick=()=>closeSleepEvt();
+    } else {
+      resEl.style.color='var(--red)';
+      resEl.textContent='🌫️ 안개 속으로 사라졌다. 돌아오지 않았다.';
+      log('🌀 망각 복권: 사망 — 섬의 안개에 흡수되어 사라졌다.','danger');
+      document.getElementById('se-ok').textContent='사라지다...';
+      document.getElementById('se-ok').onclick=()=>{
+        document.getElementById('se-mo').style.display='none';
+        triggerGameOver('🌫️ 망각의 안개에 흡수되었습니다.');
+      };
+      document.getElementById('se-ok').style.display='';
+    }
+    render();
+  }, 1800);
 }
 
 function showSleepEvt(){
@@ -3155,6 +3272,8 @@ function render(){
   d.hvAp.textContent=p.ap;
   const doom=Math.min(100,p.doom);
   d.doomPct.textContent=doom; d.doomFill.style.width=doom+'%';
+  const doomIconEl=document.getElementById('doom-icon-hdr');
+  if(doomIconEl) doomIconEl.textContent=(ISLANDS[p.islandId]||ISLANDS.mangrove).doomIcon||'🌫️';
   const doomRateEl=document.getElementById('doom-rate-hdr');
   if(doomRateEl) doomRateEl.textContent=p.doomRate>0?`+${p.doomRate}%/일`:p.doomPhase>=4?'+1~3%/일':'';
   d.hvEsc.textContent=p.escape;
@@ -3332,6 +3451,7 @@ function render(){
 </script></script>
 <script>/* 게임은 타이틀 화면의 startGame()으로 시작 */
 initActionTT();
+initWeatherTT();
 </script>
 
 </body>

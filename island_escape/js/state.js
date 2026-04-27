@@ -26,7 +26,9 @@ function initGame(){
     islandId,
   };
   _pendingItems=null; _itemCb=null; _pendingItemCards=null; _ucHand=[];
+  G.escMile={};
   buildDeck(); buildMap();
+  document.querySelectorAll('.mo').forEach(el=>el.style.display='none');
   document.getElementById('go-scr').style.display='none';
   initMobile();
   const isl = ISLANDS[G.islandId] || ISLANDS.mangrove;

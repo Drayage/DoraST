@@ -9,7 +9,38 @@ function checkSurvival(){
 }
 
 function checkWin(){
-  if(G.escape>=100&&!G.over) showEnding(true, null);
+  if(!G.escMile) G.escMile={};
+  if(G.escape>=70&&!G.escMile[70]){ G.escMile[70]=true; showEscapeMilestone(30); }
+  if(G.escape>=85&&!G.escMile[85]){ G.escMile[85]=true; showEscapeMilestone(15); }
+  if(G.escape>=100&&!G.over){
+    G.over=true;
+    showVictoryFanfare(()=>showEnding(true,null));
+  }
+}
+
+function showEscapeMilestone(left){
+  const el=document.createElement('div');
+  el.className='esc-milestone';
+  el.innerHTML=`<div class="em-pct">🛶 탈출까지 ${left}%!</div>
+  <div class="em-msg">${left===15?'거의 다 왔다. 마지막 한 걸음...':'이제 절반을 넘었다. 포기하지 마라!'}</div>`;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),3800);
+}
+
+function showVictoryFanfare(cb){
+  const isl=ISLANDS[G.islandId]||ISLANDS.mangrove;
+  const ov=document.createElement('div');
+  ov.id='victory-overlay';
+  const particles=['✨','🌟','💫','⭐','🎊','🎉'].map(e=>{
+    const ang=Math.random()*Math.PI*2, dist=120+Math.random()*180;
+    return `<span class="vf-p" style="--tx:${Math.cos(ang)*dist}px;--ty:${Math.sin(ang)*dist}px;animation-delay:${Math.random()*.6}s">${e}</span>`;
+  }).join('');
+  ov.innerHTML=`<div class="vf-particles">${particles}</div>
+    <div class="vf-icon">🛶</div>
+    <div class="vf-title">탈출 성공!</div>
+    <div class="vf-sub">${G.day}일 만에 ${isl.name}을 탈출했다</div>`;
+  document.body.appendChild(ov);
+  setTimeout(()=>{ ov.remove(); cb(); }, 2800);
 }
 
 function triggerGameOver(reason){
@@ -71,7 +102,7 @@ function _endStats(){
   const rows=[
     ['📅 생존일수', `${G.day}일`],
     ['🛶 탈출 진행', `${G.escape}%`],
-    [`${(ISLANDS[G.islandId]||ISLANDS.mangrove).doomIcon||'🌫️'} DOOM`, `${Math.min(100,G.doom)}%`],
+    [`${(ISLANDS[G.islandId]||ISLANDS.mangrove).doomIcon||'🌫️'} ${(ISLANDS[G.islandId]||ISLANDS.mangrove).doomName||'DOOM'}`, `${Math.min(100,G.doom)}%`],
     ['⚔️ 처치', `${G.kills}마리`],
     ['🗺️ 탐험 타일', `${explored}칸`],
     ['🚶 이동 거리', `${G.tilesMoved||0}칸`],
