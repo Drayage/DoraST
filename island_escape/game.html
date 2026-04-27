@@ -422,6 +422,14 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .help-row{background:var(--bg3);border-radius:6px;padding:7px 10px;margin-bottom:5px;font-size:9px;color:var(--text2);line-height:1.8;font-family:var(--font-m);}
 .help-row b{color:var(--text);}
 
+/* ══ CRAFT FLASH ══ */
+#craft-flash{display:none;position:fixed;inset:0;z-index:400;align-items:center;justify-content:center;pointer-events:none;}
+.cf-inner{background:var(--bg3);border:2px solid var(--purple);border-radius:14px;padding:20px 34px;text-align:center;box-shadow:0 0 40px rgba(154,112,212,.35);animation:cfPop .22s cubic-bezier(.34,1.56,.64,1);}
+.cf-icon{font-size:44px;line-height:1;}
+.cf-name{font-family:var(--font-t);font-size:17px;color:var(--purple);margin-top:6px;}
+.cf-label{font-size:9px;color:var(--text3);font-family:var(--font-m);margin-top:4px;letter-spacing:.05em;}
+@keyframes cfPop{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+
 </style>
 </head>
 <body>
@@ -2292,6 +2300,19 @@ function renderCraft(){
   });
 }
 
+function _showCraftFlash(icon, name, n, recName){
+  let el=document.getElementById('craft-flash');
+  if(!el){
+    el=document.createElement('div');
+    el.id='craft-flash';
+    document.body.appendChild(el);
+  }
+  el.innerHTML=`<div class="cf-inner"><div class="cf-icon">${icon}</div><div class="cf-name">${name}${n>1?` ×${n}`:''}</div><div class="cf-label">🔨 ${recName} 완료!</div></div>`;
+  el.style.display='flex';
+  clearTimeout(el._tm);
+  el._tm=setTimeout(()=>{el.style.display='none';},1500);
+}
+
 function openRecipes(){
   const mEl=document.getElementById('recipe-mats');
   mEl.innerHTML='<span style="color:var(--text3);margin-right:3px;">현재 보유:</span>';
@@ -2341,17 +2362,15 @@ function doCraft(id){
     return;
   }
 
-  const msgEl=document.getElementById('cr-msg');
-  msgEl.style.display='block';
   addCard(rec.result, rec.rn);
   const d=CARDS.find(c=>c.id===rec.result);
-  msgEl.style.color='var(--purple)';
-  msgEl.textContent=`✓ ${rec.name} 완료! ${d?.icon||''}${d?.name||rec.result}×${rec.rn} 획득`;
   log(`🔨 ${rec.name}. ${d?.icon||''}${d?.name||''}×${rec.rn} (AP-${rec.ap})`,'success');
   if(rec.result==='compass'){
     G.escape=Math.min(100,G.escape+20);
     log('🧭 유물나침반: 탈출도 즉시+20%!','success');
   }
+  if(navigator.vibrate) navigator.vibrate([30,20,60]);
+  _showCraftFlash(d?.icon||'📦', d?.name||rec.result, rec.rn, rec.name);
   renderCraft(); checkWin(); render();
 }
 

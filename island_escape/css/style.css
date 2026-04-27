@@ -413,3 +413,11 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .help-h{font-family:var(--font-t);font-size:13px;color:var(--accent);margin-bottom:8px;}
 .help-row{background:var(--bg3);border-radius:6px;padding:7px 10px;margin-bottom:5px;font-size:9px;color:var(--text2);line-height:1.8;font-family:var(--font-m);}
 .help-row b{color:var(--text);}
+
+/* ══ CRAFT FLASH ══ */
+#craft-flash{display:none;position:fixed;inset:0;z-index:400;align-items:center;justify-content:center;pointer-events:none;}
+.cf-inner{background:var(--bg3);border:2px solid var(--purple);border-radius:14px;padding:20px 34px;text-align:center;box-shadow:0 0 40px rgba(154,112,212,.35);animation:cfPop .22s cubic-bezier(.34,1.56,.64,1);}
+.cf-icon{font-size:44px;line-height:1;}
+.cf-name{font-family:var(--font-t);font-size:17px;color:var(--purple);margin-top:6px;}
+.cf-label{font-size:9px;color:var(--text3);font-family:var(--font-m);margin-top:4px;letter-spacing:.05em;}
+@keyframes cfPop{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
