@@ -1626,13 +1626,21 @@ function showEnding(win, reason){
   const statsHtml=_endStats();
   const hlItems=_endHighlights(win);
   const prevLines=_prevRunComp();
-  _saveRun(win);
+  const streak=_saveRun(win);
+
+  let streakHtml='';
+  if(streak.count>=2){
+    streakHtml=win
+      ?`<div style="font-family:var(--font-t);font-size:20px;color:var(--accent);margin:6px 0;text-shadow:0 0 16px rgba(232,184,75,.5);">🔥 ${streak.count}연승!</div>`
+      :`<div style="font-family:var(--font-t);font-size:20px;color:var(--red);margin:6px 0;">💀 ${streak.count}연패</div>`;
+  }
 
   const goEl=document.getElementById('go-scr');
   goEl.innerHTML=`
     <div class="go-card">
       <div class="go-headline ${win?'win':'dead'}">${headline.main}</div>
       <div class="go-reason">${headline.sub}</div>
+      ${streakHtml}
       <div class="go-sg">${statsHtml}</div>
       ${hlItems.length?`<div class="go-hls">${hlItems.map(h=>`<div class="go-hl">${h}</div>`).join('')}</div>`:''}
       ${prevLines.length?`<div class="go-prev">${prevLines.map(p=>`<span class="go-pi">${p}</span>`).join('')}</div>`:''}
@@ -1729,15 +1737,23 @@ function _saveRun(win){
       day:G.day, escape:G.escape, kills:G.kills, win,
       runCount:(prev.runCount||0)+1,
     }));
-    // 기록 저장
-    const rec=JSON.parse(localStorage.getItem('ie_records')||'{"runs":[],"best":{}}');
+    const rec=JSON.parse(localStorage.getItem('ie_records')||'{"runs":[],"best":{},"streak":{"type":null,"count":0}}');
     const entry={day:G.day,escape:G.escape,doom:Math.min(100,G.doom),win,
       date:new Date().toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'})};
     rec.runs.unshift(entry); rec.runs=rec.runs.slice(0,5);
     if(!rec.best.survival||G.day>rec.best.survival.day) rec.best.survival=entry;
     if(win&&(!rec.best.escape||G.day<rec.best.escape.day)) rec.best.escape=entry;
+    // 연속 승/패
+    if(!rec.streak) rec.streak={type:null,count:0};
+    const curType=win?'win':'loss';
+    rec.streak = rec.streak.type===curType
+      ? {type:curType, count:rec.streak.count+1}
+      : {type:curType, count:1};
+    if(win)  { if(!rec.best.winStreak ||rec.streak.count>rec.best.winStreak)  rec.best.winStreak =rec.streak.count; }
+    else     { if(!rec.best.lossStreak||rec.streak.count>rec.best.lossStreak) rec.best.lossStreak=rec.streak.count; }
     localStorage.setItem('ie_records',JSON.stringify(rec));
-  }catch(e){}
+    return {count:rec.streak.count, type:curType};
+  }catch(e){ return {count:1, type:win?'win':'loss'}; }
 }
 
 function showRecords(){
@@ -1746,11 +1762,13 @@ function showRecords(){
     const mo=document.getElementById('records-mo');
     const runs=rec.runs; const best=rec.best;
     let html='';
-    if(best.survival||best.escape){
+    if(best.survival||best.escape||best.winStreak||best.lossStreak){
       html+='<div class="pn-ver" style="margin-bottom:8px;">';
       html+='<div class="pn-tag">🏆 최고 기록</div>';
-      if(best.survival) html+=`<div style="font-size:9px;color:var(--text2);font-family:var(--font-m);margin:2px 0;">🗓️ 최장 생존 <b style="color:var(--accent);">${best.survival.day}일</b> — 탈출 ${best.survival.escape}% · ${best.survival.date}</div>`;
-      if(best.escape)   html+=`<div style="font-size:9px;color:var(--text2);font-family:var(--font-m);margin:2px 0;">🚀 최단 탈출 <b style="color:var(--green);">${best.escape.day}일</b> — ${best.escape.date}</div>`;
+      if(best.survival)   html+=`<div style="font-size:9px;color:var(--text2);font-family:var(--font-m);margin:2px 0;">🗓️ 최장 생존 <b style="color:var(--accent);">${best.survival.day}일</b> — 탈출 ${best.survival.escape}% · ${best.survival.date}</div>`;
+      if(best.escape)     html+=`<div style="font-size:9px;color:var(--text2);font-family:var(--font-m);margin:2px 0;">🚀 최단 탈출 <b style="color:var(--green);">${best.escape.day}일</b> — ${best.escape.date}</div>`;
+      if(best.winStreak)  html+=`<div style="font-size:9px;color:var(--text2);font-family:var(--font-m);margin:2px 0;">🔥 최대 연승 <b style="color:var(--accent);">${best.winStreak}연승</b></div>`;
+      if(best.lossStreak) html+=`<div style="font-size:9px;color:var(--text2);font-family:var(--font-m);margin:2px 0;">💀 최대 연패 <b style="color:var(--red);">${best.lossStreak}연패</b></div>`;
       html+='</div>';
     }
     if(runs.length){
