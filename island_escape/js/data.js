@@ -25,8 +25,8 @@ const TILE_TYPES=[
 ];
 
 const WEATHER=[
-  {id:'sunny', name:'맑음',    icon:'☀️', eff:null},
-  {id:'cloudy',name:'흐림',    icon:'☁️', eff:null},
+  {id:'sunny', name:'맑음',    icon:'☀️', eff:'san_+2'},
+  {id:'cloudy',name:'흐림',    icon:'☁️', eff:'thi_+5'},
   {id:'rain',  name:'폭우',    icon:'🌧️',eff:'ap_-1'},
   {id:'heat',  name:'폭염',    icon:'🔥', eff:'thi_-14'},
   {id:'fog',   name:'짙은안개',icon:'🌫️',eff:'fog'},
@@ -39,10 +39,14 @@ const CARDS=[
    desc:'뗏목·도구 제작 핵심. 방어 판정에 유리.'},
   {id:'metal', name:'고철', icon:'⚙️', tag:'resource',atk:1,def:0,n:3,
    desc:'도구 제작·공격 판정. 해안에서 많이 발견.'},
-  {id:'food',  name:'식량', icon:'🍗',tag:'resource',atk:0,def:0,n:4,use:'eat',dur:2,
-   desc:'허기 +22 (칼 보유 시 +30). 내구도 2회 사용 후 소진.'},
-  {id:'water', name:'물',   icon:'💧',tag:'resource',atk:0,def:0,n:3,use:'drink',dur:2,
-   desc:'갈증 +28. 내구도 2회 사용 후 소진.'},
+  {id:'food',  name:'식량', icon:'🍗',tag:'resource',atk:0,def:0,n:4,use:'eat',dur:3,
+   desc:'허기 +22 (칼 보유 시 +30). 내구도 3회 사용 후 소진.'},
+  {id:'water', name:'물',   icon:'💧',tag:'resource',atk:0,def:0,n:3,use:'drink',dur:3,
+   desc:'갈증 +28. 내구도 3회 사용 후 소진.'},
+  {id:'berry', name:'작은 열매',icon:'🍒',tag:'resource',atk:0,def:0,n:0,use:'eat',dur:1,
+   desc:'캠프 주변 열매. 허기 +22. 1회용.'},
+  {id:'dew',   name:'맺힌이슬', icon:'💦',tag:'resource',atk:0,def:0,n:0,use:'drink',dur:1,
+   desc:'이슬을 모아 마신다. 갈증 +28. 1회용.'},
   {id:'herb',  name:'약초', icon:'🌿',tag:'resource',atk:0,def:0,n:2,use:'heal',dur:2,
    desc:'HP +10. 내구도 2회 사용 후 소진.'},
   // 도구 — 패시브 + 수집장비
@@ -97,8 +101,8 @@ const CARDS=[
    passiveDesc:'도망 비용 HP-8 → HP-2',cbtFx:'cloak',
    desc:'패시브: 도망 비용 대폭 감소. DEF2.'},
   {id:'compass',name:'유물나침반',icon:'🧭',tag:'tool',atk:0,def:0,n:0,
-   passiveDesc:'탈출도 +20% 즉시. 이벤트 선택지 +1',
-   desc:'고대 유물. 탈출도 즉시 +20%.'},
+   passiveDesc:'탈출도 +20% 즉시. 탐색 판정 2장 중 유리한 것 선택',
+   desc:'고대 유물. 탈출도 즉시 +20%. 탐색 판정 어드밴티지.'},
   // 상태이상
   {id:'injury',      name:'부상',icon:'🩹',tag:'status',atk:-1,def:-1,n:0,desc:'ATK·DEF -1.'},
   {id:'fear',        name:'공포',icon:'😱',tag:'status',atk:-1,def:-1,n:0,desc:'ATK·DEF -1.'},

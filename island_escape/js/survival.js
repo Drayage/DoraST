@@ -43,6 +43,12 @@ function showVictoryFanfare(cb){
   setTimeout(()=>{ ov.remove(); cb(); }, 2800);
 }
 
+function goToTitle(){
+  document.getElementById('go-scr').style.display='none';
+  document.getElementById('title-scr').style.display='flex';
+  document.body.classList.add('game-inactive');
+}
+
 function triggerGameOver(reason){
   if(G.over) return;
   showEnding(false, reason);
@@ -66,7 +72,10 @@ function showEnding(win, reason){
       <div class="go-sg">${statsHtml}</div>
       ${hlItems.length?`<div class="go-hls">${hlItems.map(h=>`<div class="go-hl">${h}</div>`).join('')}</div>`:''}
       ${prevLines.length?`<div class="go-prev">${prevLines.map(p=>`<span class="go-pi">${p}</span>`).join('')}</div>`:''}
-      <button class="btn primary" onclick="initGame()" style="font-size:13px;padding:11px 28px;margin-top:16px;">🔄 다시 도전</button>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px;">
+        <button class="btn primary" onclick="initGame()" style="font-size:13px;padding:11px 28px;">🔄 다시 도전</button>
+        <button class="btn" onclick="goToTitle()" style="font-size:12px;padding:10px 20px;">🏠 타이틀로</button>
+      </div>
     </div>`;
   goEl.style.display='flex';
   render();

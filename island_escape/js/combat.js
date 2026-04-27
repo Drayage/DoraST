@@ -120,19 +120,52 @@ function showEncounter(evtId){
 }
 
 function encObserve(evtId, enemy, rate){
-  if(Math.random()*100 < rate){
-    log(`👁 상황탐색 성공! 싸우지 않고 이득을 취했다.`,'success');
-    if(enemy.observeReward){
-      const items=enemy.observeReward.map(r=>{
-        const d=CARD_MAP[r.id];
-        return {id:r.id,icon:d?.icon||'📦',name:d?.name||r.id,n:r.n||1};
-      });
-      showItemPopup(items, `👁 ${enemy.observeText||'탐색 성공!'}`, ()=>{checkSurvival();render();});
-    } else { checkSurvival(); render(); }
-  } else {
-    log(`👁 상황탐색 실패! ${enemy.name}이 공격해온다!`,'danger');
-    startCombat(evtId, false, false);
-  }
+  const success=Math.random()*100<rate;
+  // card flip animation via jdg-mo
+  const cardEl=document.getElementById('jdg-card'), backEl=document.getElementById('jdg-back');
+  cardEl.classList.remove('flipped'); backEl.className='jdg-back';
+  ['jdg-res','jdg-det','jdg-bon','jdg-ok'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('jdg-title').textContent=`👁 ${enemy.name} — 상황을 살핀다...`;
+  document.getElementById('jdg-req').textContent=`도구 비율 판정 (성공률 ${rate}%)`;
+  document.getElementById('jdg-cicon').textContent=success?'👁':'💥';
+  document.getElementById('jdg-cname').textContent=success?'상황 파악':'들켰다!';
+  document.getElementById('jdg-ctag').innerHTML='';
+  document.getElementById('jdg-mo').style.display='flex';
+  setTimeout(()=>{
+    cardEl.classList.add('flipped');
+    backEl.classList.add(success?'ok':'fail');
+    setTimeout(()=>{
+      const resEl=document.getElementById('jdg-res'); resEl.style.display='';
+      const detEl=document.getElementById('jdg-det'); detEl.style.display='';
+      const okBtn=document.getElementById('jdg-ok'); okBtn.style.display='';
+      if(success){
+        resEl.className='jdg-res ok'; resEl.textContent='✓ 성공! 상황을 파악했다.';
+        detEl.textContent=enemy.observeText||'싸우지 않고 이득을 취했다.';
+        log(`👁 상황탐색 성공! 싸우지 않고 이득을 취했다.`,'success');
+        okBtn.onclick=()=>{
+          document.getElementById('jdg-mo').style.display='none';
+          if(enemy.observeReward){
+            const items=enemy.observeReward.map(r=>{
+              const d=CARD_MAP[r.id];
+              return {id:r.id,icon:d?.icon||'📦',name:d?.name||r.id,n:r.n||1};
+            });
+            showItemPopup(items,`👁 ${enemy.observeText||'탐색 성공!'}`,()=>{checkSurvival();render();});
+          } else { checkSurvival(); render(); }
+        };
+      } else {
+        const hitDmg=Math.ceil(enemy.atk/2);
+        G.hp=Math.max(0,G.hp-hitDmg);
+        flashDamage();
+        resEl.className='jdg-res fail'; resEl.textContent=`✗ 실패! ${enemy.icon} ${enemy.name}에게 들켰다!`;
+        detEl.textContent=`선제 공격을 받았다! HP -${hitDmg}`;
+        log(`👁 상황탐색 실패! ${enemy.name}의 선제 공격 HP-${hitDmg}. 전투 시작.`,'danger');
+        okBtn.onclick=()=>{
+          document.getElementById('jdg-mo').style.display='none';
+          startCombat(evtId,false,false);
+        };
+      }
+    }, 500);
+  }, 400);
 }
 
 function encFlee(){
@@ -216,11 +249,10 @@ function renderCombat(){
   if(fleeBtn&&fleeBtn.style.display!=='none'){
     const {cost,hasCloak}=getFleeHpCost();
     fleeBtn.innerHTML=`💨 도망 (HP-${cost}${hasCloak?' 🧣':''})`;
-    const baseCost=CBT.fightChosen?15:8;
     const rows=[
-      {icon:'💨',text:`기본 도망 비용: HP -${baseCost}`,cls:hasCloak?'info':'loss'},
+      {icon:'💨',text:'기본 도망 비용: HP -15',cls:hasCloak?'info':'loss'},
     ];
-    if(CBT.fightChosen) rows.push({icon:'⚔️',text:'기습 공격 선택 → 도주 패널티 적용',cls:'warn'});
+    rows.push({icon:'⚔️',text:'전투 중 도주는 항상 HP-15',cls:'warn'});
     if(hasCloak) rows.push({icon:'🧣',text:`깃털망토 패시브 → HP -${cost} (감소)`,cls:'gain'});
     rows.push({icon:'❤️',text:`현재 HP ${G.hp} → 도망 후 ${G.hp-cost}`,cls:G.hp-cost<=0?'loss':G.hp-cost<15?'warn':'info'});
     fleeBtn._att={title:'💨 도망',cost:`HP -${cost}`,rows};
@@ -407,8 +439,7 @@ function _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,will
 
 function getFleeHpCost(){
   const hasCloak=allCards().some(c=>c.id==='feather_cloak');
-  const baseCost=CBT.fightChosen?15:8;
-  return {cost:hasCloak?2:baseCost, hasCloak};
+  return {cost:hasCloak?2:15, hasCloak};
 }
 
 function fleeCombat(){
@@ -427,7 +458,7 @@ function fleeCombat(){
 
 function _doFleeCombat(cost, hasCloak){
   G.hp=Math.max(0,G.hp-cost);
-  log(`💨 도망. HP-${cost}${hasCloak?' (🧣깃털망토 효과)':CBT.fightChosen?' (기습 후 도주 패널티)':''}`, 'danger');
+  log(`💨 도망. HP-${cost}${hasCloak?' (🧣깃털망토 효과)':''}`, 'danger');
   closeCombat();
 }
 

@@ -43,9 +43,9 @@ function doSleep(){
 
   G.camps.forEach(cp=>{
     const t=G.tiles[cp];
-    if(t.id==='cave')   { sanR+=5; }
-    if(t.id==='forest') { addCard('food',1); log('🌲 숲캠프: 식량 자동생성','success'); }
-    if(t.id==='shore')  { addCard('water',1); log('🌊 해안캠프: 물 자동생성','success'); }
+    if(t.id==='cave')   { sanR+=3; }
+    if(t.id==='forest') { addCard('berry',1); log('🌲 숲캠프: 작은 열매 자동생성 🍒','success'); }
+    if(t.id==='shore')  { addCard('dew',1);   log('🌊 해안캠프: 맺힌이슬 자동생성 💦','success'); }
     if(t.id==='ruins')  { G.ap=Math.min(G.maxAP+4,G.ap+1); log('🏚️ 폐허캠프: AP+1','success'); }
   });
   const fatigueN=allCards().filter(c=>c.id==='fatigue').length;
@@ -169,9 +169,11 @@ function applyWeather(){
   const w=G.weather;
   if(!w.eff){log(`${w.icon} 날씨: ${w.name}`,'');return;}
   const [s,v]=w.eff.split('_'); const val=parseInt(v);
-  if(s==='ap') { G.ap=Math.max(0,G.ap+val);  log(`${w.icon} ${w.name}: AP${val}`,'danger'); }
-  else if(s==='thi'){ G.thi=Math.max(0,G.thi+val); log(`${w.icon} ${w.name}: 갈증${val}`,'danger'); }
-  else if(s==='hp') { G.hp=Math.max(0,G.hp+val);   log(`${w.icon} ${w.name}: HP${val}`,'danger'); }
+  const pos=val>0; const sign=pos?'+':'';
+  if(s==='ap') { G.ap=Math.max(0,G.ap+val); log(`${w.icon} ${w.name}: AP${sign}${val}`,pos?'':'danger'); }
+  else if(s==='thi'){ G.thi=Math.min(100,Math.max(0,G.thi+val)); log(`${w.icon} ${w.name}: 갈증${sign}${val}`,pos?'success':'danger'); }
+  else if(s==='san'){ G.san=Math.min(100,Math.max(0,G.san+val)); log(`${w.icon} ${w.name}: 정신력${sign}${val}`,pos?'success':'danger'); }
+  else if(s==='hp') { G.hp=Math.max(0,G.hp+val); log(`${w.icon} ${w.name}: HP${sign}${val}`,'danger'); }
   else               log(`${w.icon} ${w.name}: 안개`,'danger');
 }
 
@@ -313,31 +315,37 @@ function showSleepEvt(){
 }
 
 function revealSC(el, type){
-  if(el.classList.contains('revealed')) return;
+  if(el.classList.contains('revealed')||el.classList.contains('sc-flipping')) return;
   document.querySelectorAll('.sc:not(.revealed)').forEach(c=>c.onclick=null);
-  el.classList.add('revealed');
-  const resEl=document.getElementById('se-result');
-  if(type==='ok'){
-    el.classList.add('sc-ok'); el.textContent='😴';
-    resEl.style.color='var(--green)';
-    resEl.textContent='✓ 푹 잤다! 덱의 상태이상 카드 1장이 사라졌다.';
-    rmStatusCard();
-    log('😴 취침이벤트: 숙면 — 상태이상 1장 제거','success');
-  } else if(type==='fail'){
-    el.classList.add('sc-fail'); el.textContent='😓';
-    resEl.style.color='var(--red)';
-    resEl.textContent='✗ 잠을 설쳤다. AP -2.';
-    G.ap=Math.max(1,G.ap-2);
-    log('😓 취침이벤트: 잠설침 — AP-2','danger');
-  } else {
-    el.classList.add('sc-bad'); el.textContent='💀';
-    resEl.style.color='var(--red)';
-    resEl.textContent='💀 악몽에 시달렸다! 피로 카드가 덱에 추가됐다.';
-    addCard('fatigue',1);
-    log('💀 취침이벤트: 악몽 — 피로카드 추가','danger');
-  }
-  document.getElementById('se-ok').style.display='';
-  document.getElementById('se-ok').onclick=()=>closeSleepEvt();
+  el.classList.add('sc-flipping');
+  setTimeout(()=>{
+    el.classList.add('revealed');
+    if(type==='ok'){ el.classList.add('sc-ok'); el.textContent='😴'; }
+    else if(type==='fail'){ el.classList.add('sc-fail'); el.textContent='😓'; }
+    else { el.classList.add('sc-bad'); el.textContent='💀'; }
+  }, 175);
+  setTimeout(()=>{
+    el.classList.remove('sc-flipping');
+    const resEl=document.getElementById('se-result');
+    if(type==='ok'){
+      resEl.style.color='var(--green)';
+      resEl.textContent='✓ 푹 잤다! 덱의 상태이상 카드 1장이 사라졌다.';
+      rmStatusCard();
+      log('😴 취침이벤트: 숙면 — 상태이상 1장 제거','success');
+    } else if(type==='fail'){
+      resEl.style.color='var(--red)';
+      resEl.textContent='✗ 잠을 설쳤다. AP -2.';
+      G.ap=Math.max(1,G.ap-2);
+      log('😓 취침이벤트: 잠설침 — AP-2','danger');
+    } else {
+      resEl.style.color='var(--red)';
+      resEl.textContent='💀 악몽에 시달렸다! 피로 카드가 덱에 추가됐다.';
+      addCard('fatigue',1);
+      log('💀 취침이벤트: 악몽 — 피로카드 추가','danger');
+    }
+    document.getElementById('se-ok').style.display='';
+    document.getElementById('se-ok').onclick=()=>closeSleepEvt();
+  }, 350);
 }
 
 function rmStatusCard(){

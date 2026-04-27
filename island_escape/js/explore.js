@@ -70,10 +70,20 @@ function fmtP(p){
 function doJudgment(evt, ch){
   _pendingItems=[];
   if(!G.deck.length&&G.disc.length){G.deck=shuffle(G.disc);G.disc=[];}
-  const top=G.deck.length?G.deck[G.deck.length-1]:null;
+  let top, compassExtra=null;
+  const hasCompass=hasTool('compass');
+  if(hasCompass&&G.deck.length>=2){
+    const c1=G.deck[G.deck.length-1], c2=G.deck[G.deck.length-2];
+    const score=c=>(ch.greatCard&&c&&c.id===ch.greatCard)?2:(!ch.req||(c&&c.tag===ch.req))?1:0;
+    const useSecond=score(c2)>score(c1);
+    top=useSecond?c2:c1; compassExtra=useSecond?c1:c2;
+    G.disc.push(G.deck.pop()); G.disc.push(G.deck.pop());
+  } else {
+    top=G.deck.length?G.deck[G.deck.length-1]:null;
+    if(top) G.disc.push(G.deck.pop());
+  }
   const success=!ch.req||(top&&top.tag===ch.req);
   const isGreat=!!(ch.greatCard&&top&&top.id===ch.greatCard);
-  if(top) G.disc.push(G.deck.pop());
 
   const cardEl=document.getElementById('jdg-card'), backEl=document.getElementById('jdg-back');
   cardEl.classList.remove('flipped'); backEl.className='jdg-back';
@@ -110,6 +120,7 @@ function doJudgment(evt, ch){
           log('🌀 환각 발동! 망각 카드가 덱에 추가됐다.','danger');
         }
       }
+      if(compassExtra) bonLines.push(`🧭 나침반: ${compassExtra.icon}${compassExtra.name} 제외 → 유리한 카드 선택`);
       if(isGreat){
         resEl.className='jdg-res great'; resEl.textContent='★ 대성공!';
         applyR(ch.reward,lines); applyR(ch.greatBonus,lines);

@@ -169,10 +169,15 @@ function hideActionTT(){
 // ── 날씨 툴팁 ──
 function _wxEffDesc(w){
   if(!w||!w.eff) return {icon:'✓',text:'효과 없음',cls:'info'};
-  const [s,v]=w.eff.split('_');
+  const [s,v]=w.eff.split('_'); const val=parseInt(v); const pos=val>0;
   if(s==='ap')  return {icon:'⚡',text:`AP ${v} (이동·행동 제한)`,cls:'warn'};
-  if(s==='thi') return {icon:'🌡️',text:`갈증 ${v} (취침 시 적용)`,cls:'loss'};
-  if(s==='hp')  return {icon:'💥',text:`HP ${v} (취침 시 적용)`,cls:'loss'};
+  if(s==='thi') return pos
+    ? {icon:'💧',text:`갈증 +${val} (취침 시 적용)`,cls:'gain'}
+    : {icon:'🌡️',text:`갈증 ${val} (취침 시 적용)`,cls:'loss'};
+  if(s==='san') return pos
+    ? {icon:'🧠',text:`정신력 +${val} (취침 시 적용)`,cls:'gain'}
+    : {icon:'🧠',text:`정신력 ${val} (취침 시 적용)`,cls:'loss'};
+  if(s==='hp')  return {icon:'💥',text:`HP ${val} (취침 시 적용)`,cls:'loss'};
   if(s==='fog') return {icon:'🌫️',text:'시야 제한 (일부 타일 재안개)',cls:'warn'};
   return {icon:'?',text:w.eff,cls:'info'};
 }

@@ -1061,8 +1061,8 @@ const TILE_TYPES=[
 ];
 
 const WEATHER=[
-  {id:'sunny', name:'맑음',    icon:'☀️', eff:null},
-  {id:'cloudy',name:'흐림',    icon:'☁️', eff:null},
+  {id:'sunny', name:'맑음',    icon:'☀️', eff:'san_+2'},
+  {id:'cloudy',name:'흐림',    icon:'☁️', eff:'thi_+5'},
   {id:'rain',  name:'폭우',    icon:'🌧️',eff:'ap_-1'},
   {id:'heat',  name:'폭염',    icon:'🔥', eff:'thi_-14'},
   {id:'fog',   name:'짙은안개',icon:'🌫️',eff:'fog'},
@@ -1075,10 +1075,14 @@ const CARDS=[
    desc:'뗏목·도구 제작 핵심. 방어 판정에 유리.'},
   {id:'metal', name:'고철', icon:'⚙️', tag:'resource',atk:1,def:0,n:3,
    desc:'도구 제작·공격 판정. 해안에서 많이 발견.'},
-  {id:'food',  name:'식량', icon:'🍗',tag:'resource',atk:0,def:0,n:4,use:'eat',dur:2,
-   desc:'허기 +22 (칼 보유 시 +30). 내구도 2회 사용 후 소진.'},
-  {id:'water', name:'물',   icon:'💧',tag:'resource',atk:0,def:0,n:3,use:'drink',dur:2,
-   desc:'갈증 +28. 내구도 2회 사용 후 소진.'},
+  {id:'food',  name:'식량', icon:'🍗',tag:'resource',atk:0,def:0,n:4,use:'eat',dur:3,
+   desc:'허기 +22 (칼 보유 시 +30). 내구도 3회 사용 후 소진.'},
+  {id:'water', name:'물',   icon:'💧',tag:'resource',atk:0,def:0,n:3,use:'drink',dur:3,
+   desc:'갈증 +28. 내구도 3회 사용 후 소진.'},
+  {id:'berry', name:'작은 열매',icon:'🍒',tag:'resource',atk:0,def:0,n:0,use:'eat',dur:1,
+   desc:'캠프 주변 열매. 허기 +22. 1회용.'},
+  {id:'dew',   name:'맺힌이슬', icon:'💦',tag:'resource',atk:0,def:0,n:0,use:'drink',dur:1,
+   desc:'이슬을 모아 마신다. 갈증 +28. 1회용.'},
   {id:'herb',  name:'약초', icon:'🌿',tag:'resource',atk:0,def:0,n:2,use:'heal',dur:2,
    desc:'HP +10. 내구도 2회 사용 후 소진.'},
   // 도구 — 패시브 + 수집장비
@@ -1133,8 +1137,8 @@ const CARDS=[
    passiveDesc:'도망 비용 HP-8 → HP-2',cbtFx:'cloak',
    desc:'패시브: 도망 비용 대폭 감소. DEF2.'},
   {id:'compass',name:'유물나침반',icon:'🧭',tag:'tool',atk:0,def:0,n:0,
-   passiveDesc:'탈출도 +20% 즉시. 이벤트 선택지 +1',
-   desc:'고대 유물. 탈출도 즉시 +20%.'},
+   passiveDesc:'탈출도 +20% 즉시. 탐색 판정 2장 중 유리한 것 선택',
+   desc:'고대 유물. 탈출도 즉시 +20%. 탐색 판정 어드밴티지.'},
   // 상태이상
   {id:'injury',      name:'부상',icon:'🩹',tag:'status',atk:-1,def:-1,n:0,desc:'ATK·DEF -1.'},
   {id:'fear',        name:'공포',icon:'😱',tag:'status',atk:-1,def:-1,n:0,desc:'ATK·DEF -1.'},
@@ -1589,6 +1593,12 @@ function showVictoryFanfare(cb){
   setTimeout(()=>{ ov.remove(); cb(); }, 2800);
 }
 
+function goToTitle(){
+  document.getElementById('go-scr').style.display='none';
+  document.getElementById('title-scr').style.display='flex';
+  document.body.classList.add('game-inactive');
+}
+
 function triggerGameOver(reason){
   if(G.over) return;
   showEnding(false, reason);
@@ -1612,7 +1622,10 @@ function showEnding(win, reason){
       <div class="go-sg">${statsHtml}</div>
       ${hlItems.length?`<div class="go-hls">${hlItems.map(h=>`<div class="go-hl">${h}</div>`).join('')}</div>`:''}
       ${prevLines.length?`<div class="go-prev">${prevLines.map(p=>`<span class="go-pi">${p}</span>`).join('')}</div>`:''}
-      <button class="btn primary" onclick="initGame()" style="font-size:13px;padding:11px 28px;margin-top:16px;">🔄 다시 도전</button>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px;">
+        <button class="btn primary" onclick="initGame()" style="font-size:13px;padding:11px 28px;">🔄 다시 도전</button>
+        <button class="btn" onclick="goToTitle()" style="font-size:12px;padding:10px 20px;">🏠 타이틀로</button>
+      </div>
     </div>`;
   goEl.style.display='flex';
   render();
@@ -1878,10 +1891,15 @@ function hideActionTT(){
 // ── 날씨 툴팁 ──
 function _wxEffDesc(w){
   if(!w||!w.eff) return {icon:'✓',text:'효과 없음',cls:'info'};
-  const [s,v]=w.eff.split('_');
+  const [s,v]=w.eff.split('_'); const val=parseInt(v); const pos=val>0;
   if(s==='ap')  return {icon:'⚡',text:`AP ${v} (이동·행동 제한)`,cls:'warn'};
-  if(s==='thi') return {icon:'🌡️',text:`갈증 ${v} (취침 시 적용)`,cls:'loss'};
-  if(s==='hp')  return {icon:'💥',text:`HP ${v} (취침 시 적용)`,cls:'loss'};
+  if(s==='thi') return pos
+    ? {icon:'💧',text:`갈증 +${val} (취침 시 적용)`,cls:'gain'}
+    : {icon:'🌡️',text:`갈증 ${val} (취침 시 적용)`,cls:'loss'};
+  if(s==='san') return pos
+    ? {icon:'🧠',text:`정신력 +${val} (취침 시 적용)`,cls:'gain'}
+    : {icon:'🧠',text:`정신력 ${val} (취침 시 적용)`,cls:'loss'};
+  if(s==='hp')  return {icon:'💥',text:`HP ${val} (취침 시 적용)`,cls:'loss'};
   if(s==='fog') return {icon:'🌫️',text:'시야 제한 (일부 타일 재안개)',cls:'warn'};
   return {icon:'?',text:w.eff,cls:'info'};
 }
@@ -2111,10 +2129,20 @@ function fmtP(p){
 function doJudgment(evt, ch){
   _pendingItems=[];
   if(!G.deck.length&&G.disc.length){G.deck=shuffle(G.disc);G.disc=[];}
-  const top=G.deck.length?G.deck[G.deck.length-1]:null;
+  let top, compassExtra=null;
+  const hasCompass=hasTool('compass');
+  if(hasCompass&&G.deck.length>=2){
+    const c1=G.deck[G.deck.length-1], c2=G.deck[G.deck.length-2];
+    const score=c=>(ch.greatCard&&c&&c.id===ch.greatCard)?2:(!ch.req||(c&&c.tag===ch.req))?1:0;
+    const useSecond=score(c2)>score(c1);
+    top=useSecond?c2:c1; compassExtra=useSecond?c1:c2;
+    G.disc.push(G.deck.pop()); G.disc.push(G.deck.pop());
+  } else {
+    top=G.deck.length?G.deck[G.deck.length-1]:null;
+    if(top) G.disc.push(G.deck.pop());
+  }
   const success=!ch.req||(top&&top.tag===ch.req);
   const isGreat=!!(ch.greatCard&&top&&top.id===ch.greatCard);
-  if(top) G.disc.push(G.deck.pop());
 
   const cardEl=document.getElementById('jdg-card'), backEl=document.getElementById('jdg-back');
   cardEl.classList.remove('flipped'); backEl.className='jdg-back';
@@ -2151,6 +2179,7 @@ function doJudgment(evt, ch){
           log('🌀 환각 발동! 망각 카드가 덱에 추가됐다.','danger');
         }
       }
+      if(compassExtra) bonLines.push(`🧭 나침반: ${compassExtra.icon}${compassExtra.name} 제외 → 유리한 카드 선택`);
       if(isGreat){
         resEl.className='jdg-res great'; resEl.textContent='★ 대성공!';
         applyR(ch.reward,lines); applyR(ch.greatBonus,lines);
@@ -2585,9 +2614,9 @@ function doSleep(){
 
   G.camps.forEach(cp=>{
     const t=G.tiles[cp];
-    if(t.id==='cave')   { sanR+=5; }
-    if(t.id==='forest') { addCard('food',1); log('🌲 숲캠프: 식량 자동생성','success'); }
-    if(t.id==='shore')  { addCard('water',1); log('🌊 해안캠프: 물 자동생성','success'); }
+    if(t.id==='cave')   { sanR+=3; }
+    if(t.id==='forest') { addCard('berry',1); log('🌲 숲캠프: 작은 열매 자동생성 🍒','success'); }
+    if(t.id==='shore')  { addCard('dew',1);   log('🌊 해안캠프: 맺힌이슬 자동생성 💦','success'); }
     if(t.id==='ruins')  { G.ap=Math.min(G.maxAP+4,G.ap+1); log('🏚️ 폐허캠프: AP+1','success'); }
   });
   const fatigueN=allCards().filter(c=>c.id==='fatigue').length;
@@ -2711,9 +2740,11 @@ function applyWeather(){
   const w=G.weather;
   if(!w.eff){log(`${w.icon} 날씨: ${w.name}`,'');return;}
   const [s,v]=w.eff.split('_'); const val=parseInt(v);
-  if(s==='ap') { G.ap=Math.max(0,G.ap+val);  log(`${w.icon} ${w.name}: AP${val}`,'danger'); }
-  else if(s==='thi'){ G.thi=Math.max(0,G.thi+val); log(`${w.icon} ${w.name}: 갈증${val}`,'danger'); }
-  else if(s==='hp') { G.hp=Math.max(0,G.hp+val);   log(`${w.icon} ${w.name}: HP${val}`,'danger'); }
+  const pos=val>0; const sign=pos?'+':'';
+  if(s==='ap') { G.ap=Math.max(0,G.ap+val); log(`${w.icon} ${w.name}: AP${sign}${val}`,pos?'':'danger'); }
+  else if(s==='thi'){ G.thi=Math.min(100,Math.max(0,G.thi+val)); log(`${w.icon} ${w.name}: 갈증${sign}${val}`,pos?'success':'danger'); }
+  else if(s==='san'){ G.san=Math.min(100,Math.max(0,G.san+val)); log(`${w.icon} ${w.name}: 정신력${sign}${val}`,pos?'success':'danger'); }
+  else if(s==='hp') { G.hp=Math.max(0,G.hp+val); log(`${w.icon} ${w.name}: HP${sign}${val}`,'danger'); }
   else               log(`${w.icon} ${w.name}: 안개`,'danger');
 }
 
@@ -2855,31 +2886,37 @@ function showSleepEvt(){
 }
 
 function revealSC(el, type){
-  if(el.classList.contains('revealed')) return;
+  if(el.classList.contains('revealed')||el.classList.contains('sc-flipping')) return;
   document.querySelectorAll('.sc:not(.revealed)').forEach(c=>c.onclick=null);
-  el.classList.add('revealed');
-  const resEl=document.getElementById('se-result');
-  if(type==='ok'){
-    el.classList.add('sc-ok'); el.textContent='😴';
-    resEl.style.color='var(--green)';
-    resEl.textContent='✓ 푹 잤다! 덱의 상태이상 카드 1장이 사라졌다.';
-    rmStatusCard();
-    log('😴 취침이벤트: 숙면 — 상태이상 1장 제거','success');
-  } else if(type==='fail'){
-    el.classList.add('sc-fail'); el.textContent='😓';
-    resEl.style.color='var(--red)';
-    resEl.textContent='✗ 잠을 설쳤다. AP -2.';
-    G.ap=Math.max(1,G.ap-2);
-    log('😓 취침이벤트: 잠설침 — AP-2','danger');
-  } else {
-    el.classList.add('sc-bad'); el.textContent='💀';
-    resEl.style.color='var(--red)';
-    resEl.textContent='💀 악몽에 시달렸다! 피로 카드가 덱에 추가됐다.';
-    addCard('fatigue',1);
-    log('💀 취침이벤트: 악몽 — 피로카드 추가','danger');
-  }
-  document.getElementById('se-ok').style.display='';
-  document.getElementById('se-ok').onclick=()=>closeSleepEvt();
+  el.classList.add('sc-flipping');
+  setTimeout(()=>{
+    el.classList.add('revealed');
+    if(type==='ok'){ el.classList.add('sc-ok'); el.textContent='😴'; }
+    else if(type==='fail'){ el.classList.add('sc-fail'); el.textContent='😓'; }
+    else { el.classList.add('sc-bad'); el.textContent='💀'; }
+  }, 175);
+  setTimeout(()=>{
+    el.classList.remove('sc-flipping');
+    const resEl=document.getElementById('se-result');
+    if(type==='ok'){
+      resEl.style.color='var(--green)';
+      resEl.textContent='✓ 푹 잤다! 덱의 상태이상 카드 1장이 사라졌다.';
+      rmStatusCard();
+      log('😴 취침이벤트: 숙면 — 상태이상 1장 제거','success');
+    } else if(type==='fail'){
+      resEl.style.color='var(--red)';
+      resEl.textContent='✗ 잠을 설쳤다. AP -2.';
+      G.ap=Math.max(1,G.ap-2);
+      log('😓 취침이벤트: 잠설침 — AP-2','danger');
+    } else {
+      resEl.style.color='var(--red)';
+      resEl.textContent='💀 악몽에 시달렸다! 피로 카드가 덱에 추가됐다.';
+      addCard('fatigue',1);
+      log('💀 취침이벤트: 악몽 — 피로카드 추가','danger');
+    }
+    document.getElementById('se-ok').style.display='';
+    document.getElementById('se-ok').onclick=()=>closeSleepEvt();
+  }, 350);
 }
 
 function rmStatusCard(){
@@ -3018,19 +3055,52 @@ function showEncounter(evtId){
 }
 
 function encObserve(evtId, enemy, rate){
-  if(Math.random()*100 < rate){
-    log(`👁 상황탐색 성공! 싸우지 않고 이득을 취했다.`,'success');
-    if(enemy.observeReward){
-      const items=enemy.observeReward.map(r=>{
-        const d=CARD_MAP[r.id];
-        return {id:r.id,icon:d?.icon||'📦',name:d?.name||r.id,n:r.n||1};
-      });
-      showItemPopup(items, `👁 ${enemy.observeText||'탐색 성공!'}`, ()=>{checkSurvival();render();});
-    } else { checkSurvival(); render(); }
-  } else {
-    log(`👁 상황탐색 실패! ${enemy.name}이 공격해온다!`,'danger');
-    startCombat(evtId, false, false);
-  }
+  const success=Math.random()*100<rate;
+  // card flip animation via jdg-mo
+  const cardEl=document.getElementById('jdg-card'), backEl=document.getElementById('jdg-back');
+  cardEl.classList.remove('flipped'); backEl.className='jdg-back';
+  ['jdg-res','jdg-det','jdg-bon','jdg-ok'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('jdg-title').textContent=`👁 ${enemy.name} — 상황을 살핀다...`;
+  document.getElementById('jdg-req').textContent=`도구 비율 판정 (성공률 ${rate}%)`;
+  document.getElementById('jdg-cicon').textContent=success?'👁':'💥';
+  document.getElementById('jdg-cname').textContent=success?'상황 파악':'들켰다!';
+  document.getElementById('jdg-ctag').innerHTML='';
+  document.getElementById('jdg-mo').style.display='flex';
+  setTimeout(()=>{
+    cardEl.classList.add('flipped');
+    backEl.classList.add(success?'ok':'fail');
+    setTimeout(()=>{
+      const resEl=document.getElementById('jdg-res'); resEl.style.display='';
+      const detEl=document.getElementById('jdg-det'); detEl.style.display='';
+      const okBtn=document.getElementById('jdg-ok'); okBtn.style.display='';
+      if(success){
+        resEl.className='jdg-res ok'; resEl.textContent='✓ 성공! 상황을 파악했다.';
+        detEl.textContent=enemy.observeText||'싸우지 않고 이득을 취했다.';
+        log(`👁 상황탐색 성공! 싸우지 않고 이득을 취했다.`,'success');
+        okBtn.onclick=()=>{
+          document.getElementById('jdg-mo').style.display='none';
+          if(enemy.observeReward){
+            const items=enemy.observeReward.map(r=>{
+              const d=CARD_MAP[r.id];
+              return {id:r.id,icon:d?.icon||'📦',name:d?.name||r.id,n:r.n||1};
+            });
+            showItemPopup(items,`👁 ${enemy.observeText||'탐색 성공!'}`,()=>{checkSurvival();render();});
+          } else { checkSurvival(); render(); }
+        };
+      } else {
+        const hitDmg=Math.ceil(enemy.atk/2);
+        G.hp=Math.max(0,G.hp-hitDmg);
+        flashDamage();
+        resEl.className='jdg-res fail'; resEl.textContent=`✗ 실패! ${enemy.icon} ${enemy.name}에게 들켰다!`;
+        detEl.textContent=`선제 공격을 받았다! HP -${hitDmg}`;
+        log(`👁 상황탐색 실패! ${enemy.name}의 선제 공격 HP-${hitDmg}. 전투 시작.`,'danger');
+        okBtn.onclick=()=>{
+          document.getElementById('jdg-mo').style.display='none';
+          startCombat(evtId,false,false);
+        };
+      }
+    }, 500);
+  }, 400);
 }
 
 function encFlee(){
@@ -3114,11 +3184,10 @@ function renderCombat(){
   if(fleeBtn&&fleeBtn.style.display!=='none'){
     const {cost,hasCloak}=getFleeHpCost();
     fleeBtn.innerHTML=`💨 도망 (HP-${cost}${hasCloak?' 🧣':''})`;
-    const baseCost=CBT.fightChosen?15:8;
     const rows=[
-      {icon:'💨',text:`기본 도망 비용: HP -${baseCost}`,cls:hasCloak?'info':'loss'},
+      {icon:'💨',text:'기본 도망 비용: HP -15',cls:hasCloak?'info':'loss'},
     ];
-    if(CBT.fightChosen) rows.push({icon:'⚔️',text:'기습 공격 선택 → 도주 패널티 적용',cls:'warn'});
+    rows.push({icon:'⚔️',text:'전투 중 도주는 항상 HP-15',cls:'warn'});
     if(hasCloak) rows.push({icon:'🧣',text:`깃털망토 패시브 → HP -${cost} (감소)`,cls:'gain'});
     rows.push({icon:'❤️',text:`현재 HP ${G.hp} → 도망 후 ${G.hp-cost}`,cls:G.hp-cost<=0?'loss':G.hp-cost<15?'warn':'info'});
     fleeBtn._att={title:'💨 도망',cost:`HP -${cost}`,rows};
@@ -3305,8 +3374,7 @@ function _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,will
 
 function getFleeHpCost(){
   const hasCloak=allCards().some(c=>c.id==='feather_cloak');
-  const baseCost=CBT.fightChosen?15:8;
-  return {cost:hasCloak?2:baseCost, hasCloak};
+  return {cost:hasCloak?2:15, hasCloak};
 }
 
 function fleeCombat(){
@@ -3325,7 +3393,7 @@ function fleeCombat(){
 
 function _doFleeCombat(cost, hasCloak){
   G.hp=Math.max(0,G.hp-cost);
-  log(`💨 도망. HP-${cost}${hasCloak?' (🧣깃털망토 효과)':CBT.fightChosen?' (기습 후 도주 패널티)':''}`, 'danger');
+  log(`💨 도망. HP-${cost}${hasCloak?' (🧣깃털망토 효과)':''}`, 'danger');
   closeCombat();
 }
 
@@ -3419,7 +3487,7 @@ function getDOM(){
 
 function campBonus(tileId){
   if(tileId==='beach')  return '카드사용+1드로우';
-  if(tileId==='cave')   return '취침 정신력+5';
+  if(tileId==='cave')   return '취침 정신력+3';
   if(tileId==='forest') return '취침 식량생성';
   if(tileId==='shore')  return '취침 물생성';
   if(tileId==='ruins')  return '취침 AP+1';
