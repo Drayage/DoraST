@@ -24,11 +24,11 @@ function getDOM(){
 }
 
 function campBonus(tileId){
-  if(tileId==='beach')  return '카드사용+1드로우';
+  if(tileId==='beach')  return '카드사용+1드로우(캠프당)';
   if(tileId==='cave')   return '취침 정신력+3';
   if(tileId==='forest') return '취침 작은 열매 생성';
   if(tileId==='shore')  return '취침 맺힌이슬 생성';
-  if(tileId==='ruins')  return '취침 AP+1';
+  if(tileId==='ruins')  return '취침 AP+1(캠프당)';
   return '';
 }
 
