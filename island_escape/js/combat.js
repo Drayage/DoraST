@@ -212,6 +212,11 @@ function renderCombat(){
   const e=CBT.enemy;
   const dkN=document.getElementById('cbt-dk-n'); if(dkN) dkN.textContent=G.deck.length;
   const dcN=document.getElementById('cbt-dc-n'); if(dcN) dcN.textContent=G.disc.length;
+  const fleeBtn=document.getElementById('btn-cbt-flee');
+  if(fleeBtn&&fleeBtn.style.display!=='none'){
+    const {cost,hasCloak}=getFleeHpCost();
+    fleeBtn.innerHTML=`💨 도망 (HP-${cost}${hasCloak?' 🧣':''})`;
+  }
   document.getElementById('cbt-title').textContent=`⚔️ ${e.name} 출현!`;
   document.getElementById('cbt-sub').textContent=`라운드${CBT.turn} | 적 다음행동: ${CBT.stunned?'기절(피해없음)':`공격-${e.atk}HP`}`;
   const phpEl=document.getElementById('cbt-php');
@@ -323,12 +328,12 @@ function resolveCombat(){
     return;
   }
   // 도망 불가 경고: 피해 후 HP가 도망 비용 미만이면 확인 팝업
-  const fleeCost=CBT.fightChosen?15:8;
+  const {cost:fleeCost,hasCloak:fleeCloak}=getFleeHpCost();
   const hpAfter=G.hp-dmgP;
   if(!willKillEnemy && dmgP>0 && hpAfter>0 && hpAfter<fleeCost){
     showConfirm(
       '⚠️ 도망 위험',
-      `이번 라운드 후 HP ${G.hp} → ${hpAfter}\n도망 비용(HP-${fleeCost})보다 낮아 이후 도망 시 사망합니다.\n계속 진행하시겠습니까?`,
+      `이번 라운드 후 HP ${G.hp} → ${hpAfter}\n도망 비용 HP-${fleeCost}${fleeCloak?' (🧣망토)':''}보다 낮아\n이후 도망 시 사망합니다. 계속하시겠습니까?`,
       ()=>_finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,willKillEnemy)
     );
     return;
@@ -392,10 +397,14 @@ function _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,will
   renderCombat(); render();
 }
 
-function fleeCombat(){
+function getFleeHpCost(){
   const hasCloak=allCards().some(c=>c.id==='feather_cloak');
-  const baseCost = CBT.fightChosen ? 15 : 8;
-  const cost = hasCloak ? 2 : baseCost;
+  const baseCost=CBT.fightChosen?15:8;
+  return {cost:hasCloak?2:baseCost, hasCloak};
+}
+
+function fleeCombat(){
+  const {cost,hasCloak}=getFleeHpCost();
   // 사망 확인
   if(G.hp - cost <= 0){
     showConfirm(
