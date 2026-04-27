@@ -2790,6 +2790,38 @@ function calcDeficitDamage(cur, need, base){
   return {deficit, dmg:deficit>0?base+deficit:0};
 }
 
+function checkSleepDanger(){
+  const tW=getWeatherDelta(G.tomorrow);
+  const sNeedHun=14, sNeedThi=Math.max(0,18-tW.thi);
+  const shDmg=Math.max(0,sNeedHun-G.hun)>0?15+Math.max(0,sNeedHun-G.hun):0;
+  const stDmg=Math.max(0,sNeedThi-G.thi)>0?24+Math.max(0,sNeedThi-G.thi):0;
+  const wHpDmg=Math.max(0,-tW.hp);
+  const poisonN=allCards().filter(c=>c.id==='poison_status').length;
+  const sHpR=(G.ap>=4?15:9)-(G.doomPhase===4?4:0);
+  const totalDmg=shDmg+stDmg+wHpDmg+5*poisonN;
+  const rawHpAfter=G.hp-totalDmg+sHpR;
+  if(rawHpAfter<=0){
+    showConfirm('⚠️ 사망 위기',
+      `취침 후 체력이 0이 됩니다.\n현재 HP ${G.hp} → 피해 ${totalDmg} / 회복 ${sHpR}\n계속 진행하시겠습니까?`,
+      ()=>doSleep());
+    return;
+  }
+  doSleep();
+}
+
+function checkGatherDanger(){
+  const ghDmg=Math.max(0,5-G.hun)>0?10+Math.max(0,5-G.hun):0;
+  const gtDmg=Math.max(0,6-G.thi)>0?16+Math.max(0,6-G.thi):0;
+  const totalDmg=ghDmg+gtDmg;
+  if(totalDmg>0 && G.hp-totalDmg<=0){
+    showConfirm('⚠️ 사망 위기',
+      `수집 후 체력이 0이 됩니다.\n현재 HP ${G.hp} → 예상 피해 ${totalDmg}\n계속 진행하시겠습니까?`,
+      ()=>openGather());
+    return;
+  }
+  openGather();
+}
+  
 function doSleep(){
   if(G.over) return;
   const early=G.ap>=4;
