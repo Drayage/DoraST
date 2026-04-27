@@ -41,12 +41,13 @@ function doSleep(){
   let hpR=early?15:9, sanR=early?4:2;
   if(G.doomPhase===4){ hpR=Math.max(0,hpR-4); sanR=Math.max(0,sanR-2); }
 
+  let ruinsBonusAP=0;
   G.camps.forEach(cp=>{
     const t=G.tiles[cp];
     if(t.id==='cave')   { sanR+=3; }
     if(t.id==='forest') { addCard('berry',1); log('🌲 숲캠프: 작은 열매 자동생성 🍒','success'); }
     if(t.id==='shore')  { addCard('dew',1);   log('🌊 해안캠프: 맺힌이슬 자동생성 💦','success'); }
-    if(t.id==='ruins')  { G.ap=Math.min(G.maxAP+4,G.ap+1); log('🏚️ 폐허캠프: AP+1','success'); }
+    if(t.id==='ruins')  { ruinsBonusAP+=1; log('🏚️ 폐허캠프: AP+1','success'); }
   });
   const fatigueN=allCards().filter(c=>c.id==='fatigue').length;
   G.hun=Math.max(0,G.hun-14); G.thi=Math.max(0,G.thi-18);
@@ -59,7 +60,7 @@ function doSleep(){
   const bonAP=early?2:0;
   G.weather=G.tomorrow;
   G.tomorrow=WEATHER[Math.floor(Math.random()*WEATHER.length)];
-  G.ap=Math.max(1,G.maxAP+bonAP-fatigueN*2);
+  G.ap=Math.max(1,G.maxAP+bonAP+ruinsBonusAP-fatigueN*2);
   applyWeather();
   if(G.day>5){
     const fog=G.tiles.filter((t,i)=>{
@@ -76,7 +77,7 @@ function doSleep(){
   const sanNet=sanR-sanDrain;
   const _di=(ISLANDS[G.islandId]||ISLANDS.mangrove).doomIcon||'🌫️';
   const doomHint=G.doomRate>0?` | ${_di}DOOM+${G.doomRate}/일(${G.doom}%)`:G.doomPhase>=4?` | ${_di}DOOM ${G.doom}%`:'';
-  log(`🌙 ${G.day-1}일→${G.day}일. HP+${hpR} 정신력${sanNet>=0?'+':''}${sanNet}${bonAP?` 이른취침AP+${bonAP}`:''}${fatigueN?` 피로AP-${fatigueN*2}`:''}${doomHint}`,'important');
+  log(`🌙 ${G.day-1}일→${G.day}일. HP+${hpR} 정신력${sanNet>=0?'+':''}${sanNet}${bonAP?` 이른취침AP+${bonAP}`:''}${ruinsBonusAP?` 폐허캠프AP+${ruinsBonusAP}`:''}${fatigueN?` 피로AP-${fatigueN*2}`:''}${doomHint}`,'important');
 
   _processDoom(early);
 }
@@ -211,8 +212,11 @@ function revealRaft(el, type){
   setTimeout(()=>{
     el.classList.remove('sc-flipping','sc-slow');
     const resEl=document.getElementById('se-result');
+    const escBefore=G.escape;
+    G.raftTry=(G.raftTry||0)+1;
     if(type==='great'){
       G.escape=Math.min(100,G.escape+30);
+      G.raftGreat=(G.raftGreat||0)+1;
       resEl.style.color='var(--accent)'; resEl.textContent='★ 대성공! 뛰어난 부품 완성. 탈출도 +30%';
       log('🛶 뗏목 제작 대성공! 탈출도+30%','success');
     } else if(type==='ok'){
@@ -221,9 +225,11 @@ function revealRaft(el, type){
       log('🛶 뗏목 제작 성공. 탈출도+15%','success');
     } else {
       G.escape=Math.max(0,G.escape-10);
+      G.raftFail=(G.raftFail||0)+1;
       resEl.style.color='var(--red)'; resEl.textContent='✗ 실패. 부품이 망가졌다. 탈출도 -10%';
       log('🛶 뗏목 제작 실패. 탈출도-10%','danger');
     }
+    if(G.escape!==escBefore) notifyEscapeChange(escBefore,G.escape,'뗏목 제작');
     document.getElementById('se-ok').style.display='';
     document.getElementById('se-ok').onclick=()=>closeSleepEvt();
     checkWin(); render();

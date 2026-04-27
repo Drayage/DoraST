@@ -24,11 +24,11 @@ function getDOM(){
 }
 
 function campBonus(tileId){
-  if(tileId==='beach')  return '카드사용+1드로우';
+  if(tileId==='beach')  return '카드사용+1드로우(캠프당)';
   if(tileId==='cave')   return '취침 정신력+3';
   if(tileId==='forest') return '취침 작은 열매 생성';
   if(tileId==='shore')  return '취침 맺힌이슬 생성';
-  if(tileId==='ruins')  return '취침 AP+1';
+  if(tileId==='ruins')  return '취침 AP+1(캠프당)';
   return '';
 }
 
@@ -49,7 +49,7 @@ function render(){
   const doomIconEl=document.getElementById('doom-icon-hdr');
   if(doomIconEl) doomIconEl.textContent=(ISLANDS[p.islandId]||ISLANDS.mangrove).doomIcon||'🌫️';
   const doomRateEl=document.getElementById('doom-rate-hdr');
-  if(doomRateEl) doomRateEl.textContent=p.doomRate>0?`+${p.doomRate}%/일`:p.doomPhase>=4?'+1~3%/일':'';
+  if(doomRateEl) doomRateEl.textContent=p.doomRate>0?`+${p.doomRate}%/일`:p.doomPhase>=4?'+2~3%/일':'';
   d.hvEsc.textContent=p.escape;
 
   // 스탯 바
@@ -97,7 +97,13 @@ function render(){
   // 패시브 목록
   const cards=allCards();
   const passives=[...new Set(cards.filter(c=>c.passiveDesc).map(c=>c.passiveDesc))];
-  d.passiveInfo.textContent=passives.length?passives.join(' / '):'없음';
+  const ropeCnt=cards.filter(c=>c.id==='rope').length;
+  const beachCampCnt=p.camps.filter(cp=>p.tiles[cp].id==='beach').length;
+  const extraPassives=[];
+  if(ropeCnt>0) extraPassives.push(`🪢 밧줄 드로우 +${ropeCnt}`);
+  if(beachCampCnt>0) extraPassives.push(`🏖️ 해변캠프 드로우 +${beachCampCnt}`);
+  const passiveAll=[...passives, ...extraPassives];
+  d.passiveInfo.textContent=passiveAll.length?passiveAll.join(' / '):'없음';
 
   // 맵
   const mapFrag=document.createDocumentFragment();
@@ -201,22 +207,24 @@ function render(){
   ]};
 
   // 카드 사용
-  const beachCamp=p.camps.some(cp=>p.tiles[cp].id==='beach');
-  const drawN=5+(hasTool('rope')?1:0)+(beachCamp?1:0);
+  const drawN=5+ropeCnt+beachCampCnt;
   d.btnUse.disabled=p.ap<1||p.over;
   d.btnUse.innerHTML=`✨ 카드 사용 — ${drawN}장 드로우 <span class="apb">AP1</span>`;
   const useRows=[{icon:'🎴', text:`${drawN}장 드로우`, cls:'gain'}];
-  if(hasTool('rope')) useRows.push({icon:'🪢', text:'밧줄 패시브 +1장', cls:'info'});
-  if(beachCamp)       useRows.push({icon:'🏖️', text:'해변 캠프 +1장', cls:'info'});
+  if(ropeCnt)      useRows.push({icon:'🪢', text:`밧줄 ${ropeCnt}개 → +${ropeCnt}장`, cls:'info'});
+  if(beachCampCnt) useRows.push({icon:'🏖️', text:`해변 캠프 ${beachCampCnt}개 → +${beachCampCnt}장`, cls:'info'});
   useRows.push({icon:'🍗', text:'식량·물·약초 즉시 사용 가능', cls:'info'});
   d.btnUse._att={title:'✨ 카드 사용', cost:'AP 1', rows:useRows};
 
   // 취침
   const sleepEarly=p.ap>=4;
-  const sHpR=sleepEarly?15:9;
-  const sSanR=sleepEarly?4:2;
-  const sDrain=p.camps.length?2:5;
-  const sSanNet=sSanR-sDrain;
+  let sHpR=sleepEarly?15:9;
+  let sSanR=sleepEarly?4:2;
+  if(p.doomPhase===4){ sHpR=Math.max(0,sHpR-4); sSanR=Math.max(0,sSanR-2); }
+  const caveBonus=p.camps.reduce((n,cp)=>n+(p.tiles[cp]?.id==='cave'?3:0),0);
+  const doomSanExtra=p.doomPhase>=4?Math.floor((p.doom-79)/6):0;
+  const sDrain=(p.camps.length?2:5)+doomSanExtra;
+  const sSanNet=(sSanR+caveBonus)-sDrain;
   const sEvt=calcSleepEvtChance(sleepEarly);
   d.btnSleep.disabled=p.over;
   const sleepRows=[];
@@ -224,7 +232,7 @@ function render(){
   if(p.thi<=18) sleepRows.push({icon:'⚠️',text:`갈증(${p.thi}) → 취침 후 0 이하 — 체력 피해!`,cls:'crit'});
   sleepRows.push(
     {icon:'❤️', text:`HP +${sHpR}`, cls:'gain'},
-    {icon:'🧠', text:`정신력 ${sSanNet>=0?'+':''}${sSanNet}`, cls:sSanNet>=0?'gain':'loss'},
+    {icon:'🧠', text:`정신력 ${sSanNet>=0?'+':''}${sSanNet}${caveBonus?` (동굴보너스 +${caveBonus})`:''}`, cls:sSanNet>=0?'gain':'loss'},
     {icon:'🍗', text:'허기 -14', cls:'loss'},
     {icon:'💧', text:'갈증 -18', cls:'loss'},
   );

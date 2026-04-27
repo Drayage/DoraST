@@ -47,8 +47,7 @@ function doGather(opt, key, rate){
   document.getElementById('ga-mo').style.display='none';
   G.ap-=3;
   G.hun-=5; G.thi-=6;
-  const bonus = G.gatherBonus[key]||0;
-  const effectiveRate = Math.min(95, rate + bonus);
+  const effectiveRate = rate;
   if(Math.random()*100 < effectiveRate){
     G.gatherCnt[key]=(G.gatherCnt[key]||0)+1; // 성공 시만 횟수 증가
     G.gatherBonus[key]=0;                       // 숨겨진 보너스 초기화

@@ -4,11 +4,12 @@ function openUseCard(){
   if(G.over) return;
   if(G.ap<1){log('AP부족 (카드사용:AP1)','danger');render();return;}
   G.ap-=1;
-  const beachCamp=G.camps.some(cp=>G.tiles[cp].id==='beach');
-  const drawN=5+(hasTool('rope')?1:0)+(beachCamp?1:0);
+  const ropeCnt=allCards().filter(c=>c.id==='rope').length;
+  const beachCampCnt=G.camps.filter(cp=>G.tiles[cp].id==='beach').length;
+  const drawN=5+ropeCnt+beachCampCnt;
   _ucHand=drawToHand(drawN);
   if(!_ucHand.length){log('덱이 비어있다.','danger');G.ap+=1;render();return;}
-  const bonusDesc=(hasTool('rope')?' (🪢밧줄+1)':'')+(beachCamp?' (🏖️해변캠프+1)':'');
+  const bonusDesc=(ropeCnt?` (🪢밧줄+${ropeCnt})`:'')+(beachCampCnt?` (🏖️해변캠프+${beachCampCnt})`:'');
   document.getElementById('uc-sub').textContent=`${_ucHand.length}장 드로우${bonusDesc} — 사용할 카드 선택`;
   document.getElementById('uc-result').textContent='';
   document.getElementById('uc-mo').style.display='flex';

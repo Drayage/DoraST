@@ -84,6 +84,14 @@ function doJudgment(evt, ch){
   }
   const success=!ch.req||(top&&top.tag===ch.req);
   const isGreat=!!(ch.greatCard&&top&&top.id===ch.greatCard);
+  const escGain=Math.max(ch.reward?.escape||0, ch.greatBonus?.escape||0);
+  const escLoss=Math.max(ch.failPen?.escape||0, 0);
+  const escRelevant=escGain>0||escLoss>0;
+  const canReach100=escGain>0&&(G.escape+escGain>=100);
+  const slow=escRelevant&&G.escape>=70;
+  const preFlipDelay=slow?(canReach100?950:650):400;
+  const postFlipDelay=slow?(canReach100?950:650):500;
+  const escBefore=G.escape;
 
   const cardEl=document.getElementById('jdg-card'), backEl=document.getElementById('jdg-back');
   cardEl.classList.remove('flipped'); backEl.className='jdg-back';
@@ -143,10 +151,11 @@ function doJudgment(evt, ch){
       const okEl=document.getElementById('jdg-ok');
       okEl.onclick=()=>closeJdg();
       okEl.style.display='';
+      if(G.escape!==escBefore) notifyEscapeChange(escBefore,G.escape,evt.name);
       log(`[${isGreat?'대성공':success?'성공':'실패'}] ${evt.name} — ${lines.join(', ')}`,(isGreat||success)?'success':'danger');
       checkSurvival(); checkWin(); render();
-    }, 500);
-  }, 400);
+    }, postFlipDelay);
+  }, preFlipDelay);
 }
 
 function applyR(r, lines){

@@ -2,8 +2,8 @@
 
 function checkSurvival(){
   G.hun=Math.max(0,G.hun); G.thi=Math.max(0,G.thi);
-  if(G.hun===0){ G.hp=Math.max(0,G.hp-5); log('🍗 굶주림! HP-5','danger'); }
-  if(G.thi===0){ G.hp=Math.max(0,G.hp-8); log('💧 탈수! HP-8','danger'); }
+  if(G.hun===0){ G.hp=Math.max(0,G.hp-5); flashDamage(); log('🍗 굶주림! HP-5','danger'); }
+  if(G.thi===0){ G.hp=Math.max(0,G.hp-8); flashDamage(); log('💧 탈수! HP-8','danger'); }
   if(G.hp<=0)  triggerGameOver('체력이 소진되었습니다.');
   if(G.san<=0) triggerGameOver('정신력이 무너졌습니다.');
 }
@@ -25,6 +25,20 @@ function showEscapeMilestone(left){
   <div class="em-msg">${left===15?'거의 다 왔다. 마지막 한 걸음...':'이제 절반을 넘었다. 포기하지 마라!'}</div>`;
   document.body.appendChild(el);
   setTimeout(()=>el.remove(),3800);
+}
+
+function notifyEscapeChange(prevEsc, nextEsc, reason){
+  const delta=nextEsc-prevEsc;
+  if(!delta) return;
+  if(prevEsc<70&&nextEsc<70) return; // 70% 이상 구간부터 알림
+  const el=document.createElement('div');
+  const up=delta>0;
+  const col=up?'var(--green)':'var(--red)';
+  el.style.cssText=`position:fixed;top:94px;left:50%;transform:translateX(-50%);z-index:910;padding:8px 16px;border-radius:11px;border:1px solid ${col};background:rgba(8,16,24,.94);font-family:var(--font-m);font-size:10px;color:${col};box-shadow:0 4px 18px rgba(0,0,0,.35);opacity:0;transition:opacity .14s;pointer-events:none;`;
+  el.textContent=`🛶 탈출도 ${up?'+':''}${delta}% → ${nextEsc}%${reason?` · ${reason}`:''}`;
+  document.body.appendChild(el);
+  requestAnimationFrame(()=>{el.style.opacity='1';});
+  setTimeout(()=>{el.style.opacity='0'; setTimeout(()=>el.remove(),180);},1900);
 }
 
 function showVictoryFanfare(cb){
@@ -144,6 +158,8 @@ function _endHighlights(win){
   if(explored>=20)              h.push(`🗺️ 섬 ${explored}곳을 샅샅이 뒤졌다`);
   if(G.day>=20)                 h.push(`📅 ${G.day}일이라는 긴 시간을 버텼다`);
   if(G.tilesMoved>=60)          h.push(`🚶 총 ${G.tilesMoved}칸을 부지런히 이동했다`);
+  if((G.raftGreat||0)>=2)       h.push(`🛶 뗏목 제작 대성공 ${G.raftGreat}회`);
+  if((G.raftFail||0)>=2)        h.push(`🛶 뗏목 제작 실패 ${G.raftFail}회 끝에 버텼다`);
 
   return shuffle([...h]).slice(0,3);
 }
@@ -156,8 +172,13 @@ function _prevRunComp(){
     const rc=(prev.runCount||1)+1;
     lines.push(`${rc}번째 도전`);
     const dd=G.day-prev.day;
-    if(dd>0)       lines.push(`지난 시도보다 +${dd}일 생존`);
-    else if(dd<0)  lines.push(`지난 시도보다 ${-dd}일 일찍 탈락`);
+    if(prev.win===true&&G.win===true){
+      if(dd<0)      lines.push(`지난 시도보다 ${-dd}일 빠르게 탈출`);
+      else if(dd>0) lines.push(`지난 시도보다 ${dd}일 더 걸려 탈출`);
+    } else if(prev.win===false&&G.win===false){
+      if(dd>0)      lines.push(`지난 시도보다 +${dd}일 생존`);
+      else if(dd<0) lines.push(`지난 시도보다 ${-dd}일 일찍 실패`);
+    }
     const ed=G.escape-prev.escape;
     if(ed>0)            lines.push(`탈출도 +${ed}% 향상`);
     if(!prev.win&&G.win) lines.push('🎉 첫 탈출 성공!');
