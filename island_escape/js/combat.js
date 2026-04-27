@@ -35,7 +35,7 @@ function hideCbtDeckView(){
 
 // 기습: 첫 라운드 전투카드 1장 보장
 function drawAmbushHand(){
-  const isCbt = c => c.atk>0 || c.tag==='combat';
+  const isCbt = c => c.tag === 'combat';
   // 1. 덱에 공격카드 있으면 맨 끝(첫 드로우)으로 이동
   let idx = G.deck.findIndex(isCbt);
   if(idx !== -1){
