@@ -216,6 +216,14 @@ function renderCombat(){
   if(fleeBtn&&fleeBtn.style.display!=='none'){
     const {cost,hasCloak}=getFleeHpCost();
     fleeBtn.innerHTML=`💨 도망 (HP-${cost}${hasCloak?' 🧣':''})`;
+    const baseCost=CBT.fightChosen?15:8;
+    const rows=[
+      {icon:'💨',text:`기본 도망 비용: HP -${baseCost}`,cls:hasCloak?'info':'loss'},
+    ];
+    if(CBT.fightChosen) rows.push({icon:'⚔️',text:'기습 공격 선택 → 도주 패널티 적용',cls:'warn'});
+    if(hasCloak) rows.push({icon:'🧣',text:`깃털망토 패시브 → HP -${cost} (감소)`,cls:'gain'});
+    rows.push({icon:'❤️',text:`현재 HP ${G.hp} → 도망 후 ${G.hp-cost}`,cls:G.hp-cost<=0?'loss':G.hp-cost<15?'warn':'info'});
+    fleeBtn._att={title:'💨 도망',cost:`HP -${cost}`,rows};
   }
   document.getElementById('cbt-title').textContent=`⚔️ ${e.name} 출현!`;
   document.getElementById('cbt-sub').textContent=`라운드${CBT.turn} | 적 다음행동: ${CBT.stunned?'기절(피해없음)':`공격-${e.atk}HP`}`;

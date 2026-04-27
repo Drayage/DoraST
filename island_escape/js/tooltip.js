@@ -124,7 +124,7 @@ document.addEventListener('click', e=>{
 
 // ── 액션 버튼 툴팁 ──
 function initActionTT(){
-  ['btn-exp','btn-ga','btn-camp','btn-craft','btn-use','btn-sleep'].forEach(id=>{
+  ['btn-exp','btn-ga','btn-camp','btn-craft','btn-use','btn-sleep','btn-cbt-flee'].forEach(id=>{
     const el=document.getElementById(id);
     if(!el) return;
     el.addEventListener('mouseenter', e=>{ if(window.innerWidth>700&&el._att) showActionTT(e.clientX,e.clientY,el._att); });
