@@ -1,6 +1,6 @@
 {
-  "name": "망각의 맹그로브 섬 v0.2",
-  "short_name": "맹그로브섬",
+  "name": "무인도 탈출 v0.2",
+  "short_name": "무인도탈출",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0a0e14",
