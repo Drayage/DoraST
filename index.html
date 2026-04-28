@@ -2,17 +2,24 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; url=./island_escape/game.html">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="./manifest.json">
     <title>무인도 탈출 - 로딩 중</title>
     <script>
-        // 0초 만에 게임 페이지로 냅다 던져버리기
+        // PWA 비서 등록!
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js')
+                .then(() => console.log('완료! ✨'))
+                .catch((err) => console.log('에러', err));
+        }
+        // 경로에 언더바(_) 확인 완료! 0초만에 이동!
         window.location.replace("./island_escape/game.html");
     </script>
     <style>
-        body { background: #0a0e14; color: #7a9ab8; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        body { background: #0a0e14; color: #e8b84b; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: sans-serif; }
     </style>
 </head>
 <body>
-    <p>섬으로 끌려가는 중이야, 잠시만 기다려! 🌊🛶</p>
+    <p>섬으로 끌려가는 중... 🌊🛶</p>
 </body>
 </html>
