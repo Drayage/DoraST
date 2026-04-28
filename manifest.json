@@ -1,6 +1,6 @@
 {
   "name": "무인도 탈출",
-  "short_name": "DoraST",
+  "short_name": "무인도 탈출",
   "start_url": "/DoraST/island_escape/game.html",
   "display": "standalone",
   "background_color": "#0a1628",
