@@ -11,7 +11,7 @@ const ASSETS = [
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('파일 캐싱 중... 시발 노가다 성공! 📦');
+      console.log('파일 캐싱 중...!');
       return cache.addAll(ASSETS);
     })
   );
