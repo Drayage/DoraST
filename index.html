@@ -3,23 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="무인도 탈출!">
+    <meta name="theme-color" content="#e8b84b">
+    
     <link rel="manifest" href="./manifest.json">
-    <title>무인도 탈출 - 로딩 중</title>
+    <link rel="apple-touch-icon" href="./icon-512.png">
+
+    <title>무인도 탈출 - 생존기</title>
+
     <script>
-        // PWA 비서 등록!
+        // PWA 비서(Service Worker) 등록 - 더 확실한 방법으로!
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js')
-                .then(() => console.log('완료! ✨'))
-                .catch((err) => console.log('에러', err));
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('리완료! ✅', reg.scope))
+                    .catch(err => console.error('❌', err));
+            });
         }
-        // 경로에 언더바(_) 확인 완료! 0초만에 이동!
-        window.location.replace("./island_escape/game.html");
+
+        // 0.5초만 기다렸다가 게임으로 이동 (PWA 등록 시간을 벌어주는 거야!)
+        setTimeout(() => {
+            window.location.replace("./island_escape/game.html");
+        }, 500);
     </script>
     <style>
         body { background: #0a0e14; color: #e8b84b; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: sans-serif; }
     </style>
 </head>
 <body>
-    <p>섬으로 끌려가는 중... 🌊🛶</p>
+    <div style="text-align: center;">
+        <p>망각의 섬으로 진입 중...</p>
+        <small style="opacity: 0.5;">PWA 엔진 가동 중</small>
+    </div>
 </body>
 </html>
