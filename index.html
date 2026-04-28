@@ -1,24 +1,23 @@
-<! DOCTYPE html>
-<HTML  >p
-<<
-    <랑 charset="UTF-8">
-    <meta name="뷰포트" content="폭=장치폭, 초기 스케일=1.0">
-    <link rel="현" href="./manifest.json">
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="/DoraST/manifest.json">
     <title>망각의 맹그로브 섬 - 로딩 중</title>
     <script>
-        // PWA 비서 등록!
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js')
+            navigator.serviceWorker.register('/DoraST/service-worker.js')
                 .then(() => console.log('리리 비서 출근 완료! ✨'))
                 .catch((err) => console.log('비서가 뻗었어, 언니:', err));
         }
-        // 경로에 언더바(_) 확인 완료! 0초만에 이동!
+        window.location.replace("./island_escape/game.html");
     </script>
     <style>
-        body { background: #0a0e14; color: #e8b84b; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: sans-serif ; }
+        body { background: #0a0e14; color: #e8b84b; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: sans-serif; }
     </style>
 </head>
 <body>
-    <p> 섬으로 끌려가는 중... 🌊🛶</p>
-</몸>
-</HTML>
+    <p>섬으로 끌려가는 중... 🌊🛶</p>
+</body>
+</html>
