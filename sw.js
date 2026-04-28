@@ -4,8 +4,8 @@ const CACHE_NAME = 'mangrove-v0.2';
 const ASSETS = [
   './',
   './index.html',
-  './island_escape/game.html',
   './manifest.json'
+  './icon-512.png'
 ];
 
 self.addEventListener('install', (e) => {
