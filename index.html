@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="manifest" href="/DoraST/manifest.json">
-    <title>망각의 맹그로브 섬 - 로딩 중</title>
+    <title>무인도 탈출 로딩 중</title>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/DoraST/service-worker.js')
-                .then(() => console.log('리리 비서 출근 완료! ✨'))
-                .catch((err) => console.log('비서가 뻗었어, 언니:', err));
+                .then(() => console.log('완료! ✨'))
+                .catch((err) => console.log('뻗었어', err));
         }
         window.location.replace("./island_escape/game.html");
     </script>
