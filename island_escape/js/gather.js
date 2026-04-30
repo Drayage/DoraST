@@ -64,11 +64,11 @@ function doGather(opt, key, rate){
     const d=CARD_MAP[opt.res];
     log(`🎒 ${opt.label} 성공! ${d?.icon||''}${d?.name||opt.res}×${n} (AP-3)`,'gather');
     showItemPopup([{id:opt.res,icon:d?.icon||'📦',name:d?.name||opt.res,n}],`🎒 ${opt.label} 성공!`,()=>{
-      checkSurvival(); render();
+      checkSurvival(); render(); saveGame();
     });
   } else {
     G.gatherBonus[key]=(G.gatherBonus[key]||0)+5; // 실패 시 숨겨진 +5%
     log(`🎒 ${opt.label} 실패... 빈손 (AP-3)`,'danger');
-    checkSurvival(); render();
+    checkSurvival(); render(); saveGame();
   }
 }

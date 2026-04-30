@@ -197,7 +197,7 @@ function _afterDoom(early){
     showDoomLottery(); return;
   }
   if(Math.random()*100<calcSleepEvtChance(early)) showSleepEvt();
-  else render();
+  else { render(); saveGame(); }
 }
 
 function _showDoomModal(title,story,detail,cb){
@@ -431,4 +431,5 @@ function rmStatusCard(){
 function closeSleepEvt(){
   document.getElementById('se-mo').style.display='none';
   checkSurvival(); checkWin(); render();
+  saveGame();
 }

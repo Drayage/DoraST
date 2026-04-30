@@ -59,6 +59,7 @@ function goToTitle(){
   document.getElementById('go-scr').style.display='none';
   document.getElementById('title-scr').style.display='flex';
   document.body.classList.add('game-inactive');
+  if(typeof updateContinueBtn==='function') updateContinueBtn();
 }
 
 function triggerGameOver(reason){
@@ -70,6 +71,7 @@ function triggerGameOver(reason){
 
 function showEnding(win, reason){
   G.over=true; G.win=win;
+  clearSave();
   const headline=_endHeadline(win, reason);
   const statsHtml=_endStats();
   const hlItems=_endHighlights(win);

@@ -193,4 +193,5 @@ function closeJdg(){
   } else {
     _pendingItems=null;
   }
+  saveGame();
 }

@@ -477,4 +477,5 @@ function closeCombat(){
   if(CBT.hand?.length){ G.disc.push(...CBT.hand.filter(c=>!c._temp)); CBT.hand=[]; }
   if(G.hp<=0) triggerGameOver('전투 중 사망했습니다.');
   checkSurvival(); checkWin(); render();
+  saveGame();
 }

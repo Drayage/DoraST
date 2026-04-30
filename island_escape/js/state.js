@@ -7,9 +7,89 @@ const _tabMap={map:'map-col',deck:'ctr-col',stat:'rgt-col',help:'rgt-col'};
 let _pendingItems=null, _itemCb=null, _pendingItemCards=null;
 
 function startGame(){
+  clearSave();
   document.getElementById('title-scr').style.display='none';
   document.body.classList.remove('game-inactive');
   initGame();
+}
+
+function continueGame(){
+  if(!hasSave()) return;
+  document.getElementById('title-scr').style.display='none';
+  document.body.classList.remove('game-inactive');
+  loadGame();
+}
+
+const SAVE_KEY='ie_save';
+
+function saveGame(){
+  if(!G||!G.day||G.over) return;
+  try{
+    const snap={...G, logs:(G.logs||[]).slice(-30)};
+    localStorage.setItem(SAVE_KEY, JSON.stringify(snap));
+  }catch(e){ console.warn('save failed', e); }
+}
+
+function loadGame(){
+  try{
+    const raw=localStorage.getItem(SAVE_KEY);
+    if(!raw) return false;
+    const snap=JSON.parse(raw);
+    if(!snap||!snap.day||snap.over) return false;
+    G=snap;
+    _pendingItems=null; _itemCb=null; _pendingItemCards=null; _ucHand=[];
+    document.querySelectorAll('.mo').forEach(el=>el.style.display='none');
+    document.getElementById('go-scr').style.display='none';
+    initMobile();
+    log('💾 저장된 게임을 불러왔습니다.','system');
+    render();
+    return true;
+  }catch(e){ console.warn('load failed', e); return false; }
+}
+
+function hasSave(){
+  try{
+    const raw=localStorage.getItem(SAVE_KEY);
+    if(!raw) return false;
+    const snap=JSON.parse(raw);
+    return !!(snap&&snap.day&&!snap.over);
+  }catch(e){ return false; }
+}
+
+function getSaveInfo(){
+  try{
+    const raw=localStorage.getItem(SAVE_KEY);
+    if(!raw) return null;
+    const s=JSON.parse(raw);
+    if(!s||!s.day||s.over) return null;
+    return {day:s.day, escape:s.escape||0, islandId:s.islandId||'mangrove'};
+  }catch(e){ return null; }
+}
+
+function clearSave(){
+  try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
+}
+
+function updateContinueBtn(){
+  const btn=document.getElementById('btn-continue');
+  if(!btn) return;
+  const info=getSaveInfo();
+  const lbl=document.getElementById('btn-continue-info');
+  if(info){
+    btn.disabled=false;
+    btn.style.opacity='';
+    btn.style.cursor='';
+    if(lbl){
+      const isl=(typeof ISLANDS!=='undefined'&&ISLANDS[info.islandId])||{name:''};
+      lbl.textContent=`Day ${info.day} · 탈출 ${info.escape}%${isl.name?' · '+isl.name:''}`;
+      lbl.style.display='';
+    }
+  } else {
+    btn.disabled=true;
+    btn.style.opacity='.4';
+    btn.style.cursor='not-allowed';
+    if(lbl){ lbl.textContent='저장된 게임 없음'; lbl.style.display=''; }
+  }
 }
 
 function initGame(){
@@ -49,6 +129,7 @@ function initGame(){
   log('팁: 탐색→캠프→제작소에서 도구 제작→수집으로 자원 확보','');
   render();
   showIslandIntro();
+  saveGame();
 }
 
 function buildDeck(){
