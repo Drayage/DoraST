@@ -593,11 +593,11 @@ body.game-inactive #mob-tabs{
     <div id="act-panel">
       <div class="act-grid">
         <button class="btn" id="btn-exp" onclick="doExplore()">🔍 탐색 <span class="apb">AP2</span></button>
-        <button class="btn" id="btn-ga" onclick="openGather()">🎒 수집 <span class="apb">AP3</span></button>
+        <button class="btn" id="btn-ga" onclick="checkGatherDanger()">🎒 수집 <span class="apb">AP3</span></button>
         <button class="btn" id="btn-camp" onclick="doCamp()">🏕️ 캠프 건설 <span class="apb">AP8</span></button>
         <button class="btn purple-btn" id="btn-craft" onclick="openCraft()">🔨 제작 <span style="font-size:8px;color:var(--text3);">캠프·AP1~</span></button>
         <button class="btn green-btn full" id="btn-use" onclick="openUseCard()">✨ 카드 사용 — 5장 드로우 <span class="apb">AP1</span></button>
-        <button class="btn primary full" id="btn-sleep" onclick="doSleep()">🌙 취침 → 다음날</button>
+        <button class="btn primary full" id="btn-sleep" onclick="checkSleepDanger()">🌙 취침 → 다음날</button>
       </div>
     </div>
   </div>
