@@ -6,6 +6,12 @@
 <title>망각의 맹그로브 섬 v0.2</title>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="/DoraST/manifest.json">
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/DoraST/service-worker.js');
+  }
+</script>
 </head>
 <body class="game-inactive">
 

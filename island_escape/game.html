@@ -451,6 +451,12 @@ body.game-inactive #mob-tabs{
 #hdr,#layout,#mob-tabs{transition:filter .5s,opacity .5s;}
 
 </style>
+  <link rel="manifest" href="/DoraST/manifest.json">
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/DoraST/service-worker.js');
+  }
+</script>
 </head>
 <body class="game-inactive">
 
