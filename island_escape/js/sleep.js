@@ -108,13 +108,18 @@ function doSleep(){
   if(G.doomPhase===4){ hpR=Math.max(0,hpR-4); sanR=Math.max(0,sanR-2); }
 
   let ruinsBonusAP=0;
+  const campCount={cave:0,forest:0,shore:0,ruins:0};
   G.camps.forEach(cp=>{
     const t=G.tiles[cp];
-    if(t.id==='cave')   { sanR+=3; }
-    if(t.id==='forest') { addCard('berry',1); log('🌲 숲캠프: 작은 열매 자동생성 🍒','success'); }
-    if(t.id==='shore')  { addCard('dew',1);   log('🌊 해안캠프: 맺힌이슬 자동생성 💦','success'); }
-    if(t.id==='ruins')  { ruinsBonusAP+=1; G.san=Math.max(0,G.san-2); log('🏚️ 폐허캠프: AP+1 / 정신력-2',''); }
+    if(t.id==='cave')   { sanR+=3; campCount.cave++; }
+    if(t.id==='forest') { addCard('berry',1); campCount.forest++; }
+    if(t.id==='shore')  { addCard('dew',1);   campCount.shore++; }
+    if(t.id==='ruins')  { ruinsBonusAP+=1; G.san=Math.max(0,G.san-2); campCount.ruins++; }
   });
+  const _cx=n=>n>1?`(x${n})`:'';
+  if(campCount.forest) log(`🌲 숲캠프${_cx(campCount.forest)}: 작은 열매 🍒 ×${campCount.forest} 자동생성`,'success');
+  if(campCount.shore)  log(`🌊 해안캠프${_cx(campCount.shore)}: 맺힌이슬 💦 ×${campCount.shore} 자동생성`,'success');
+  if(campCount.ruins)  log(`🏚️ 폐허캠프${_cx(campCount.ruins)}: AP+${campCount.ruins} / 정신력-${campCount.ruins*2}`,'');
   const fatigueN=allCards().filter(c=>c.id==='fatigue').length;
   const preHun=G.hun, preThi=G.thi;
   G.weather=G.tomorrow;
