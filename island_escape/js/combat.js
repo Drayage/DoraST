@@ -329,6 +329,16 @@ function resolveCombat(){
   const lines=[]; let stun=false, poisonApplied=false;
   const hasArmor=allCards().some(c=>c.id==='leather_armor');
 
+  // 행동 카드 먼저 처리 (ATK/DEF 계산 전)
+  [...CBT.atkZone,...CBT.defZone].forEach(c=>{
+    if(c.tag==='action'){
+      const before=CBT.hand.length;
+      drawNCards(2, CBT.hand);
+      const drawn=CBT.hand.length-before;
+      lines.push({t:`🏃 달리기: ${drawn}장 드로우`,cls:'good'});
+    }
+  });
+
   [...CBT.atkZone,...CBT.defZone].forEach(c=>{
     if(c.cbtFx==='raw'&&CBT.atkZone.some(x=>x.uid===c.uid)){
       pierceAtk+=c.atk;

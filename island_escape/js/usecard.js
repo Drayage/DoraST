@@ -19,10 +19,10 @@ function openUseCard(){
 function renderUcCards(){
   const el=document.getElementById('uc-cards'); el.innerHTML='';
   _ucHand.forEach((card,i)=>{
-    const usable=!!card.use;
+    const usable=!!card.use||card.tag==='action';
     const kBoost=hasTool('knife')?8:0;
     const durStr=card.dur?`<div style="font-size:8px;color:var(--accent);font-family:var(--font-m);">🔋${card.curDur||card.dur}/${card.dur}</div>`:'';
-    const useLabels={eat:`🍗허기+${22+kBoost}`,drink:'💧갈증+28',heal:'🌿HP+10'};
+    const useLabels={eat:`🍗허기+${22+kBoost}`,drink:'💧갈증+28',heal:'🌿HP+10',_action:'🏃2장 드로우'};
     const div=document.createElement('div');
     div.style.cssText=`background:var(--bg3);border:1px solid ${usable?'var(--green2)':'var(--border)'};border-radius:9px;padding:10px 8px;width:90px;text-align:center;cursor:${usable?'pointer':'default'};opacity:${usable?1:0.5};transition:all .12s;`;
     div.innerHTML=`<div style="font-size:24px;margin-bottom:4px;">${card.icon}</div>
@@ -30,7 +30,7 @@ function renderUcCards(){
       <div class="card-tag tag-${card.tag}" style="font-size:6px;display:inline-block;margin-bottom:4px;">${card.tag}</div>
       <div style="font-size:7px;color:var(--text3);font-family:var(--font-m);">A${card.atk} D${card.def}</div>
       ${durStr}
-      ${usable?`<div style="margin-top:4px;font-size:8px;color:var(--green);font-family:var(--font-m);">${useLabels[card.use]||''}</div>`
+      ${usable?`<div style="margin-top:4px;font-size:8px;color:var(--green);font-family:var(--font-m);">${card.tag==='action'?useLabels._action:(useLabels[card.use]||'')}</div>`
               :'<div style="font-size:7px;color:var(--text3);margin-top:4px;">사용불가</div>'}`;
     if(usable) div.onclick=()=>ucUse(i);
     div.addEventListener('mouseenter',()=>showTT(card,div));
@@ -40,7 +40,18 @@ function renderUcCards(){
 }
 
 function ucUse(i){
-  const card=_ucHand[i]; if(!card||!card.use) return;
+  const card=_ucHand[i]; if(!card) return;
+  // 행동 카드 처리
+  if(card.tag==='action'){
+    const before=_ucHand.length;
+    _ucHand.splice(i,1);
+    G.disc.push({...card});
+    drawNCards(2, _ucHand);
+    const drawn=_ucHand.length-before+1;
+    log(`🏃 달리기: ${drawn}장 드로우`,'success');
+    renderUcCards(); checkSurvival(); render(); return;
+  }
+  if(!card.use) return;
   const resEl=document.getElementById('uc-result');
   const kBoost=hasTool('knife')?8:0;
   if(card.use==='eat'){

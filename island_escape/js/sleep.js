@@ -97,7 +97,7 @@ function doSleep(){
     if(t.id==='cave')   { sanR+=3; }
     if(t.id==='forest') { addCard('berry',1); log('🌲 숲캠프: 작은 열매 자동생성 🍒','success'); }
     if(t.id==='shore')  { addCard('dew',1);   log('🌊 해안캠프: 맺힌이슬 자동생성 💦','success'); }
-    if(t.id==='ruins')  { ruinsBonusAP+=1; log('🏚️ 폐허캠프: AP+1','success'); }
+    if(t.id==='ruins')  { ruinsBonusAP+=1; G.san=Math.max(0,G.san-5); log('🏚️ 폐허캠프: AP+1 / 정신력-5',''); }
   });
   const fatigueN=allCards().filter(c=>c.id==='fatigue').length;
   const preHun=G.hun, preThi=G.thi;

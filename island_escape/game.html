@@ -19,6 +19,7 @@
   --tag-tool:#5a4010;--tag-tool-t:#f0b840;
   --tag-combat:#1a2a5a;--tag-combat-t:#6090e8;
   --tag-status:#4a1818;--tag-status-t:#e07070;
+  --tag-action:#1a3a28;--tag-action-t:#6de8a0;
   --font-t:'Black Han Sans',sans-serif;
   --font-b:'Noto Sans KR',sans-serif;
   --font-m:'JetBrains Mono',monospace;
@@ -106,6 +107,8 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .tag-tool{background:var(--tag-tool);color:var(--tag-tool-t);}
 .tag-combat{background:var(--tag-combat);color:var(--tag-combat-t);}
 .tag-status{background:var(--tag-status);color:var(--tag-status-t);}
+.tag-action{background:var(--tag-action);color:var(--tag-action-t);}
+.sub-tag{font-size:5px;padding:1px 3px;border-radius:2px;background:var(--bg4);color:var(--text3);font-family:var(--font-m);margin-right:1px;display:inline-block;}
 
 /* LOG */
 #log-main{height:190px;overflow-y:auto;padding:5px 7px;}
@@ -121,7 +124,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .tt-inner{background:linear-gradient(160deg,var(--bg2),var(--bg3));border:1px solid var(--border2);border-radius:10px;overflow:hidden;box-shadow:0 14px 44px rgba(0,0,0,.85),0 0 0 1px rgba(255,255,255,.03);animation:ttPop .13s cubic-bezier(.34,1.4,.64,1);}
 .tt-strip{height:3px;width:100%;}
 .tt-strip.resource{background:var(--tag-resource-t);}.tt-strip.tool{background:var(--tag-tool-t);}
-.tt-strip.combat{background:var(--tag-combat-t);}.tt-strip.status{background:var(--tag-status-t);}
+.tt-strip.combat{background:var(--tag-combat-t);}.tt-strip.status{background:var(--tag-status-t);}.tt-strip.action{background:var(--tag-action-t);}
 .tt-body{padding:11px 12px 13px;}
 .tt-icon{font-size:30px;text-align:center;margin-bottom:5px;}
 .tt-name{font-family:var(--font-t);font-size:14px;color:var(--text);text-align:center;margin-bottom:4px;}
@@ -706,6 +709,7 @@ body.game-inactive #mob-tabs{
       <div class="tt-st"><div class="tt-sl">🛡️ 방어</div><div class="tt-sv" id="tt-def">0</div></div>
     </div>
     <div class="tt-desc" id="tt-desc"></div>
+    <div id="tt-subtags" style="display:none;margin:3px 0 1px;"></div>
     <div class="tt-fx tt-consumable" id="tt-con" style="display:none;"></div>
     <div class="tt-fx tt-use" id="tt-use" style="display:none;"></div>
     <div class="tt-fx tt-passive" id="tt-pass" style="display:none;"></div>
@@ -885,12 +889,6 @@ body.game-inactive #mob-tabs{
     </div>
     <div id="cbt-preview" style="font-size:9px;font-family:var(--font-m);text-align:center;padding:5px 8px;background:var(--bg3);border-radius:4px;margin-bottom:5px;color:var(--text3);">배정 후 예상 피해가 표시됩니다</div>
     <div style="font-size:8px;color:var(--text3);font-family:var(--font-m);margin-bottom:5px;">핸드 — 클릭하여 배정 | 배정된 카드 재클릭 시 해제</div>
-    <div style="display:flex;gap:5px;margin-bottom:6px;">
-      <button class="btn" style="font-size:8px;padding:3px 9px;" onclick="showCbtDeckView('deck')">🃏 뽑을 덱 <span id="cbt-dk-n">0</span>장</button>
-      <button class="btn" style="font-size:8px;padding:3px 9px;" onclick="showCbtDeckView('disc')">🗑 버림더미 <span id="cbt-dc-n">0</span>장</button>
-      <button class="btn" id="cbt-dv-close" onclick="hideCbtDeckView()" style="font-size:8px;padding:3px 9px;display:none;margin-left:auto;">✕ 닫기</button>
-    </div>
-    <div id="cbt-dv" style="display:none;max-height:140px;overflow-y:auto;background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:6px 8px;margin-bottom:6px;"></div>
     <div class="cbt-hd" id="cbt-hand"></div>
     <div class="res-area" id="cbt-res" style="display:none;"></div>
     <div class="cbt-btn-row">
@@ -898,6 +896,12 @@ body.game-inactive #mob-tabs{
       <button class="btn primary" id="btn-cbt-flee" onclick="fleeCombat()">💨 도망 (HP-15)</button>
       <button class="btn green-btn" id="btn-cbt-close" onclick="closeCombat()" style="display:none;">✓ 전투 종료</button>
     </div>
+    <div style="display:flex;gap:5px;margin-top:7px;padding-top:6px;border-top:1px solid var(--border);">
+      <button class="btn" style="font-size:8px;padding:3px 9px;" onclick="showCbtDeckView('deck')">🃏 덱 <span id="cbt-dk-n">0</span>장</button>
+      <button class="btn" style="font-size:8px;padding:3px 9px;" onclick="showCbtDeckView('disc')">🗑 버림 <span id="cbt-dc-n">0</span>장</button>
+      <button class="btn" id="cbt-dv-close" onclick="hideCbtDeckView()" style="font-size:8px;padding:3px 9px;display:none;margin-left:auto;">✕ 닫기</button>
+    </div>
+    <div id="cbt-dv" style="display:none;max-height:120px;overflow-y:auto;background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:6px 8px;margin-top:5px;"></div>
   </div>
 </div>
 
@@ -1104,82 +1108,86 @@ const WEATHER=[
 
 // dur: n회 사용 후 덱에서 영구 제거. 인스턴스에 curDur 추가
 const CARDS=[
-  {id:'wood',  name:'목재', icon:'🪵',tag:'resource',atk:0,def:1,n:4,
+  {id:'wood',  name:'목재', icon:'🪵',tag:'resource',atk:0,def:1,n:4,subTags:['무거움'],
    desc:'뗏목·도구 제작 핵심. 방어 판정에 유리.'},
-  {id:'metal', name:'고철', icon:'⚙️', tag:'resource',atk:1,def:0,n:3,
+  {id:'metal', name:'고철', icon:'⚙️', tag:'resource',atk:1,def:0,n:3,subTags:['무거움'],
    desc:'도구 제작·공격 판정. 해안에서 많이 발견.'},
-  {id:'food',  name:'식량', icon:'🍗',tag:'resource',atk:0,def:0,n:4,use:'eat',dur:3,
+  {id:'food',  name:'식량', icon:'🍗',tag:'resource',atk:0,def:0,n:4,use:'eat',dur:3,subTags:['고기'],
    desc:'허기 +22 (칼 보유 시 +30). 내구도 3회 사용 후 소진.'},
-  {id:'water', name:'물',   icon:'💧',tag:'resource',atk:0,def:0,n:3,use:'drink',dur:3,
+  {id:'water', name:'물',   icon:'💧',tag:'resource',atk:0,def:0,n:3,use:'drink',dur:3,subTags:[],
    desc:'갈증 +28. 내구도 3회 사용 후 소진.'},
-  {id:'berry', name:'작은 열매',icon:'🍒',tag:'resource',atk:0,def:0,n:0,use:'eat',dur:1,
+  {id:'berry', name:'작은 열매',icon:'🍒',tag:'resource',atk:0,def:0,n:0,use:'eat',dur:1,subTags:['열매'],
    desc:'캠프 주변 열매. 허기 +22. 1회용.'},
-  {id:'dew',   name:'맺힌이슬', icon:'💦',tag:'resource',atk:0,def:0,n:0,use:'drink',dur:1,
+  {id:'dew',   name:'맺힌이슬', icon:'💦',tag:'resource',atk:0,def:0,n:0,use:'drink',dur:1,subTags:[],
    desc:'이슬을 모아 마신다. 갈증 +28. 1회용.'},
-  {id:'herb',  name:'약초', icon:'🌿',tag:'resource',atk:0,def:0,n:2,use:'heal',dur:2,
+  {id:'herb',  name:'약초', icon:'🌿',tag:'resource',atk:0,def:0,n:2,use:'heal',dur:2,subTags:['열매'],
    desc:'HP +10. 내구도 2회 사용 후 소진.'},
   // 도구 — 패시브 + 수집장비
-  {id:'knife',    name:'칼',    icon:'🔪',tag:'tool',atk:4,def:1,n:0,
+  {id:'knife',    name:'칼',    icon:'🔪',tag:'tool',atk:4,def:1,n:0,subTags:['날카로움','뾰족함'],
    passiveDesc:'식량 섭취 허기+8 추가 (22→30)',
    desc:'패시브: 식량 회복 증가. 전투 공격력 4.'},
-  {id:'torch',    name:'횃불',  icon:'🕯️',tag:'tool',atk:2,def:1,n:0,gatherTool:true,
+  {id:'torch',    name:'횃불',  icon:'🕯️',tag:'tool',atk:2,def:1,n:0,gatherTool:true,subTags:[],
    passiveDesc:'탐색 tool 판정 성공 시 추가 보상 1장',
    desc:'패시브: 탐색 tool 성공 시 추가보상 1장 드로우. ATK2 DEF1.',
    gatherDesc:'🏚️ 폐허에서 수집 가능 → ⚙️고철 1~2개 획득'},
-  {id:'rope',     name:'밧줄',  icon:'🪢',tag:'tool',atk:0,def:3,n:0,
+  {id:'rope',     name:'밧줄',  icon:'🪢',tag:'tool',atk:0,def:3,n:0,subTags:[],
    passiveDesc:'카드사용 시 드로우 +1장 (중첩)',
    desc:'패시브: 카드사용 드로우 +1장 (개수만큼 중첩). DEF3.'},
-  {id:'axe',      name:'도끼',  icon:'🪓',tag:'tool',atk:3,def:1,n:0,gatherTool:true,
+  {id:'axe',      name:'도끼',  icon:'🪓',tag:'tool',atk:3,def:1,n:0,gatherTool:true,subTags:['날카로움','무거움'],
    desc:'🌲 숲에서 나무베기 수집 가능. 전투 ATK3 DEF1.',
    gatherDesc:'🌲 숲에서 수집 가능 → 🪵목재 1~2개 획득'},
-  {id:'gathering_knife',name:'채집칼',icon:'🗡️',tag:'tool',atk:2,def:1,n:0,gatherTool:true,
+  {id:'gathering_knife',name:'채집칼',icon:'🗡️',tag:'tool',atk:2,def:1,n:0,gatherTool:true,subTags:['날카로움','뾰족함'],
    desc:'🌲 숲에서 약초채집 수집 가능. 전투 ATK2 DEF1.',
    gatherDesc:'🌲 숲에서 수집 가능 → 🌿약초 1~2개 획득'},
-  {id:'fishing_rod',name:'낚싯대',icon:'🎣',tag:'tool',atk:0,def:2,n:0,gatherTool:true,
+  {id:'fishing_rod',name:'낚싯대',icon:'🎣',tag:'tool',atk:0,def:2,n:0,gatherTool:true,subTags:[],
    desc:'🏖️해변·🌊해안에서 낚시 수집 가능. DEF2.',
    gatherDesc:'🏖️ 해변·🌊 해안에서 수집 가능 → 🍗식량 1~2개 획득'},
-  {id:'canteen',  name:'물통',  icon:'🫙',tag:'tool',atk:0,def:2,n:0,gatherTool:true,
+  {id:'canteen',  name:'물통',  icon:'🫙',tag:'tool',atk:0,def:2,n:0,gatherTool:true,subTags:[],
    desc:'🌊 해안에서 물 채집 수집 가능. DEF2.',
    gatherDesc:'🌊 해안에서 수집 가능 → 💧물 1~2개 획득'},
-  {id:'pickaxe',  name:'곡괭이',icon:'⛏️',tag:'tool',atk:3,def:0,n:0,gatherTool:true,
+  {id:'pickaxe',  name:'곡괭이',icon:'⛏️',tag:'tool',atk:3,def:0,n:0,gatherTool:true,subTags:['뾰족함','무거움'],
    desc:'🪨 동굴에서 채굴 수집 가능. 전투 ATK3.',
    gatherDesc:'🪨 동굴에서 수집 가능 → ⚙️고철 1~2개 획득'},
   // 전투
-  {id:'spear', name:'창',  icon:'🗡️',tag:'combat',atk:8,def:0,n:1,cbtFx:'pierce',
+  {id:'spear', name:'창',  icon:'🗡️',tag:'combat',atk:8,def:0,n:1,cbtFx:'pierce',subTags:['날카로움','뾰족함'],
    desc:'관통: 공격배정 시 적 방어 완전무시 +4 추가공격.'},
-  {id:'shield',name:'방패',icon:'🛡️',tag:'combat',atk:0,def:8,n:1,cbtFx:'block',
+  {id:'shield',name:'방패',icon:'🛡️',tag:'combat',atk:0,def:8,n:1,cbtFx:'block',subTags:['무거움'],
    desc:'완전방어: 방어배정 시 +5 추가방어. DEF8.'},
-  {id:'trap',  name:'함정',icon:'🪤',tag:'combat',atk:5,def:3,n:1,cbtFx:'stun',
+  {id:'trap',  name:'함정',icon:'🪤',tag:'combat',atk:5,def:3,n:1,cbtFx:'stun',subTags:['뾰족함'],
    desc:'기절: 배정 시 적 다음라운드 피해 0. 추가ATK3.'},
   // 전투 획득 재료
-  {id:'hide',    name:'가죽',    icon:'🦴',tag:'resource',atk:0,def:1,n:0,
+  {id:'hide',    name:'가죽',    icon:'🦴',tag:'resource',atk:0,def:1,n:0,subTags:[],
    desc:'전투 획득. 가죽갑옷·독칼 제작 재료.'},
-  {id:'venom',   name:'독낭',    icon:'🧪',tag:'resource',atk:0,def:0,n:0,
+  {id:'venom',   name:'독낭',    icon:'🧪',tag:'resource',atk:0,def:0,n:0,subTags:[],
    desc:'전투 획득. 독칼 제작 재료.'},
-  {id:'feather', name:'깃털',    icon:'🪶',tag:'resource',atk:0,def:0,n:0,
+  {id:'feather', name:'깃털',    icon:'🪶',tag:'resource',atk:0,def:0,n:0,subTags:[],
    desc:'전투 획득. 깃털망토 제작 재료.'},
-  {id:'shard',   name:'고대파편',icon:'🔮',tag:'resource',atk:0,def:0,n:0,
+  {id:'shard',   name:'고대파편',icon:'🔮',tag:'resource',atk:0,def:0,n:0,subTags:[],
    desc:'전투 획득. 유물나침반 제작 재료.'},
   // 제작 아이템
-  {id:'leather_armor',name:'가죽갑옷',icon:'🧥',tag:'combat',atk:0,def:4,n:0,
+  {id:'leather_armor',name:'가죽갑옷',icon:'🧥',tag:'combat',atk:0,def:4,n:0,subTags:['무거움'],
    passiveDesc:'전투 시 받는 피해 -2',cbtFx:'armor',
    desc:'패시브: 전투 피해 경감 -2. DEF4.'},
-  {id:'poison_knife',name:'독칼',icon:'☠️',tag:'combat',atk:6,def:0,n:0,
+  {id:'poison_knife',name:'독칼',icon:'☠️',tag:'combat',atk:6,def:0,n:0,subTags:['날카로움','뾰족함'],
    cbtFx:'poison',desc:'독: 공격배정 시 적에게 매 라운드 추가 3피해. ATK6.'},
-  {id:'feather_cloak',name:'깃털망토',icon:'🧣',tag:'combat',atk:0,def:2,n:0,
+  {id:'feather_cloak',name:'깃털망토',icon:'🧣',tag:'combat',atk:0,def:2,n:0,subTags:[],
    passiveDesc:'도망 비용 HP-15 → HP-2',cbtFx:'cloak',
    desc:'패시브: 도망 비용 대폭 감소. DEF2.'},
-  {id:'compass',name:'유물나침반',icon:'🧭',tag:'tool',atk:0,def:0,n:0,
+  {id:'compass',name:'유물나침반',icon:'🧭',tag:'tool',atk:0,def:0,n:0,subTags:[],
    passiveDesc:'탈출도 +20% 즉시. 탐색 판정 2장 중 유리한 것 선택',
    desc:'고대 유물. 탈출도 즉시 +20%. 탐색 판정 어드밴티지.'},
-  {id:'ambush_fist',name:'맨손 기습',icon:'👊',tag:'combat',atk:3,def:0,n:0,cbtFx:'raw',
+  {id:'ambush_fist',name:'맨손 기습',icon:'👊',tag:'combat',atk:3,def:0,n:0,cbtFx:'raw',subTags:[],
    desc:'공격카드 없이 맨손 기습. ATK 3(방어무시). 전투 후 소멸.'},
+  // 행동 카드
+  {id:'running',name:'달리기',icon:'🏃',tag:'action',atk:0,def:0,n:2,subTags:[],
+   desc:'2장 드로우. 덱 부족 시 버림더미 셔플 후 보충. 전투/카드사용 시 발동.',
+   passiveDesc:'사용 시 2장 드로우 (덱+버림더미 합산)'},
   // 상태이상
-  {id:'injury',      name:'부상',icon:'🩹',tag:'status',atk:-1,def:-1,n:0,desc:'ATK·DEF -1.'},
-  {id:'fear',        name:'공포',icon:'😱',tag:'status',atk:-1,def:-1,n:0,desc:'ATK·DEF -1.'},
-  {id:'fatigue',     name:'피로',icon:'😴',tag:'status',atk:0, def:-1,n:0,desc:'DEF -1. 취침 AP회복 -2.'},
-  {id:'poison_status',name:'중독',icon:'💀',tag:'status',atk:-1,def:0,n:0,desc:'ATK -1. 매 취침 HP -5.'},
-  {id:'amnesia',     name:'망각',icon:'🌀',tag:'status',atk:-1,def:0,n:0,
+  {id:'injury',      name:'부상',icon:'🩹',tag:'status',atk:-1,def:-1,n:0,subTags:[],desc:'ATK·DEF -1.'},
+  {id:'fear',        name:'공포',icon:'😱',tag:'status',atk:-1,def:-1,n:0,subTags:[],desc:'ATK·DEF -1.'},
+  {id:'fatigue',     name:'피로',icon:'😴',tag:'status',atk:0, def:-1,n:0,subTags:[],desc:'DEF -1. 취침 AP회복 -2.'},
+  {id:'poison_status',name:'중독',icon:'💀',tag:'status',atk:-1,def:0,n:0,subTags:[],desc:'ATK -1. 매 취침 HP -5.'},
+  {id:'amnesia',     name:'망각',icon:'🌀',tag:'status',atk:-1,def:0,n:0,subTags:[],
    desc:'환각이 현실을 침식한다. 탐색 판정 시 정신력-3. 종말 단계에서 확률로 다시 출현한다.',
    passiveDesc:'망각: 탐색 판정 시 정신력-3'},
 ];
@@ -1248,10 +1256,10 @@ const EVENTS={
       {label:'보이는 대로 채집',icon:'🤲',req:'resource',reward:{card:'herb',n:1},desc:'자원판정. 실패:빈손.'},
     ]},
   find_shelter:{
-    name:'은신처 발견',flavor:'폭풍을 피할 수 있는 작은 동굴 입구가 보인다.',
+    name:'은신처 발견',flavor:'폭풍을 피할 수 있는 작은 동굴 입구가 보인다. 무거운 잔해가 입구를 막고 있다.',
     choices:[
-      {label:'깊이 탐색한다',icon:'🕯️',req:'tool',reward:{san:10,card:'metal',n:1},failPen:{hp:-15},
-       greatCard:'torch',greatBonus:{san:8,ap:2},desc:'도구판정. 성공:정신력+10+고철 / 대성공(횃불):+정신력+8+AP×2 / 실패:HP-15'},
+      {label:'깊이 탐색한다',icon:'🕯️',req:'tool',subReq:'무거움',subPct:60,reward:{san:10,card:'metal',n:1},failPen:{hp:-15},
+       greatCard:'torch',greatBonus:{san:8,ap:2},desc:'도구판정 또는 #무거움 60%. 성공:정신력+10+고철 / 대성공(횃불):+정신력+8+AP×2 / 실패:HP-15'},
       {label:'입구만 살핀다',icon:'👁️',req:null,reward:{san:5},desc:'무조건. 정신력+5.'},
     ]},
   find_blueprint:{
@@ -1287,12 +1295,12 @@ const EVENTS={
        desc:'무조건. 탈출도+5%.'},
     ]},
   trap_pit:{
-    name:'야생 덫 구덩이',flavor:'덤불 사이에 정교하게 파인 함정이 보인다. 먹이가 걸려든 것 같다.',
+    name:'야생 덫 구덩이',flavor:'덤불 사이에 정교하게 파인 함정이 보인다. 날카로운 가시와 먹이가 걸려든 것 같다.',
     choices:[
-      {label:'전리품을 회수한다',icon:'🎯',req:'resource',
+      {label:'전리품을 회수한다',icon:'🎯',req:'resource',subReq:'날카로움',subPct:70,
        reward:{card:'food',n:3},failPen:{hp:-12},
        greatCard:'gathering_knife',greatBonus:{card:'hide',n:1},
-       desc:'자원판정. 성공:식량×3 / 대성공(채집칼):+가죽×1 / 실패:HP-12'},
+       desc:'자원판정 또는 #날카로움 70%. 성공:식량×3 / 대성공(채집칼):+가죽×1 / 실패:HP-12'},
       {label:'건드리지 않고 지나친다',icon:'🚶',req:null,
        reward:{},
        desc:'무조건. 빈손. 안전.'},
@@ -1571,6 +1579,18 @@ function rmFromDeck(id, n){
 function canCraft(rec){ return rec.cost.every(c=>cntInDeck(c.id)>=c.n); }
 
 function hasTool(id){ return allCards().some(c=>c.id===id); }
+
+// 덱에서 n장 드로우해 targetArr에 직접 추가 (달리기 등 액션 카드용)
+function drawNCards(n, targetArr){
+  for(let i=0;i<n;i++){
+    if(!G.deck.length){
+      if(!G.disc.length) break;
+      G.deck=shuffle([...G.disc]); G.disc=[];
+      log('🔀 덱 셔플 (달리기)','');
+    }
+    targetArr.push(G.deck.pop());
+  }
+}
 
 // 덱에서 n장 드로우 (부족하면 버림더미 섞어 보충)
 function drawToHand(n){
@@ -1971,6 +1991,13 @@ function showTT(c, el){
   av.textContent=c.atk; av.className='tt-sv'+(c.atk>0?' pos':c.atk<0?' neg':' zero');
   dv.textContent=c.def; dv.className='tt-sv'+(c.def>0?' pos':c.def<0?' neg':' zero');
   document.getElementById('tt-desc').textContent=c.desc||c.name;
+  const stEl=document.getElementById('tt-subtags');
+  if(stEl){
+    if(c.subTags&&c.subTags.length){
+      stEl.style.display='';
+      stEl.innerHTML=c.subTags.map(t=>`<span class="sub-tag">#${t}</span>`).join('');
+    } else stEl.style.display='none';
+  }
 
   const con=document.getElementById('tt-con');
   if(c.dur){
@@ -2320,9 +2347,10 @@ function showExploreChoice(evt){
     const matchCnt=ch.req?cards.reduce((s,c)=>s+(c.tag===ch.req?1:0),0):99;
     const prob=ch.req?Math.min(99,Math.round(matchCnt/Math.max(1,cards.length)*100)):100;
     const div=document.createElement('div'); div.className='ex-choice fi';
-    const reqBadge=ch.req
+    const reqBadge=(ch.req
       ?`<span class="card-tag tag-${ch.req}" style="font-size:8px;">${ch.req}판정</span>`
-      :`<span style="color:var(--green);font-size:8px;">✓ 무조건</span>`;
+      :`<span style="color:var(--green);font-size:8px;">✓ 무조건</span>`)
+      +(ch.subReq?`<span style="font-size:7px;color:var(--text3);margin-left:4px;">또는 <span class="sub-tag">#${ch.subReq}</span> ${ch.subPct||50}%</span>`:'')
     const greatInfo=ch.greatCard
       ?`<span style="color:var(--accent);font-size:8px;"> ★ ${CARD_MAP[ch.greatCard]?.name} 뽑으면 대성공</span>`:'';
     const rTxt=fmtR(ch.reward), pTxt=ch.failPen?fmtP(ch.failPen):'', gTxt=ch.greatBonus?fmtR(ch.greatBonus):'';
@@ -2380,8 +2408,11 @@ function doJudgment(evt, ch){
     top=G.deck.length?G.deck[G.deck.length-1]:null;
     if(top) G.disc.push(G.deck.pop());
   }
-  const success=!ch.req||(top&&top.tag===ch.req);
-  const isGreat=!!(ch.greatCard&&top&&top.id===ch.greatCard);
+  const primaryOk=!ch.req||(top&&top.tag===ch.req);
+  const subTagHit=ch.subReq&&top&&(top.subTags||[]).includes(ch.subReq);
+  const subOk=subTagHit&&Math.random()*100<(ch.subPct||50);
+  const success=primaryOk||subOk;
+  const isGreat=primaryOk&&!!(ch.greatCard&&top&&top.id===ch.greatCard);
   const escGain=Math.max(ch.reward?.escape||0, ch.greatBonus?.escape||0);
   const escLoss=Math.max(ch.failPen?.escape||0, 0);
   const escRelevant=escGain>0||escLoss>0;
@@ -2395,7 +2426,11 @@ function doJudgment(evt, ch){
   cardEl.classList.remove('flipped'); backEl.className='jdg-back';
   ['jdg-res','jdg-det','jdg-bon','jdg-ok'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById('jdg-title').textContent='🎴 덱 맨 위 카드를 뒤집는 중...';
-  document.getElementById('jdg-req').textContent=ch.req?`요구 태그: ${ch.req}`:'조건 없음 — 무조건 성공';
+  {
+    let reqTxt=ch.req?`요구 태그: ${ch.req}`:'조건 없음 — 무조건 성공';
+    if(ch.subReq) reqTxt+=` · 또는 #${ch.subReq} ${ch.subPct||50}%`;
+    document.getElementById('jdg-req').textContent=reqTxt;
+  }
   document.getElementById('jdg-cicon').textContent=top?top.icon:'?';
   document.getElementById('jdg-cname').textContent=top?top.name:'덱 없음';
   document.getElementById('jdg-ctag').innerHTML=top?`<span class="card-tag tag-${top.tag}" style="font-size:7px;">${top.tag}</span>`:'';
@@ -2427,6 +2462,7 @@ function doJudgment(evt, ch){
         }
       }
       if(compassExtra) bonLines.push(`🧭 나침반: ${compassExtra.icon}${compassExtra.name} 제외 → 유리한 카드 선택`);
+      if(subOk&&!primaryOk) bonLines.push(`🏷️ #${ch.subReq} 보조 태그로 성공! (${ch.subPct||50}%)`);
       if(isGreat){
         resEl.className='jdg-res great'; resEl.textContent='★ 대성공!';
         applyR(ch.reward,lines); applyR(ch.greatBonus,lines);
@@ -2767,10 +2803,10 @@ function openUseCard(){
 function renderUcCards(){
   const el=document.getElementById('uc-cards'); el.innerHTML='';
   _ucHand.forEach((card,i)=>{
-    const usable=!!card.use;
+    const usable=!!card.use||card.tag==='action';
     const kBoost=hasTool('knife')?8:0;
     const durStr=card.dur?`<div style="font-size:8px;color:var(--accent);font-family:var(--font-m);">🔋${card.curDur||card.dur}/${card.dur}</div>`:'';
-    const useLabels={eat:`🍗허기+${22+kBoost}`,drink:'💧갈증+28',heal:'🌿HP+10'};
+    const useLabels={eat:`🍗허기+${22+kBoost}`,drink:'💧갈증+28',heal:'🌿HP+10',_action:'🏃2장 드로우'};
     const div=document.createElement('div');
     div.style.cssText=`background:var(--bg3);border:1px solid ${usable?'var(--green2)':'var(--border)'};border-radius:9px;padding:10px 8px;width:90px;text-align:center;cursor:${usable?'pointer':'default'};opacity:${usable?1:0.5};transition:all .12s;`;
     div.innerHTML=`<div style="font-size:24px;margin-bottom:4px;">${card.icon}</div>
@@ -2778,7 +2814,7 @@ function renderUcCards(){
       <div class="card-tag tag-${card.tag}" style="font-size:6px;display:inline-block;margin-bottom:4px;">${card.tag}</div>
       <div style="font-size:7px;color:var(--text3);font-family:var(--font-m);">A${card.atk} D${card.def}</div>
       ${durStr}
-      ${usable?`<div style="margin-top:4px;font-size:8px;color:var(--green);font-family:var(--font-m);">${useLabels[card.use]||''}</div>`
+      ${usable?`<div style="margin-top:4px;font-size:8px;color:var(--green);font-family:var(--font-m);">${card.tag==='action'?useLabels._action:(useLabels[card.use]||'')}</div>`
               :'<div style="font-size:7px;color:var(--text3);margin-top:4px;">사용불가</div>'}`;
     if(usable) div.onclick=()=>ucUse(i);
     div.addEventListener('mouseenter',()=>showTT(card,div));
@@ -2788,7 +2824,18 @@ function renderUcCards(){
 }
 
 function ucUse(i){
-  const card=_ucHand[i]; if(!card||!card.use) return;
+  const card=_ucHand[i]; if(!card) return;
+  // 행동 카드 처리
+  if(card.tag==='action'){
+    const before=_ucHand.length;
+    _ucHand.splice(i,1);
+    G.disc.push({...card});
+    drawNCards(2, _ucHand);
+    const drawn=_ucHand.length-before+1;
+    log(`🏃 달리기: ${drawn}장 드로우`,'success');
+    renderUcCards(); checkSurvival(); render(); return;
+  }
+  if(!card.use) return;
   const resEl=document.getElementById('uc-result');
   const kBoost=hasTool('knife')?8:0;
   if(card.use==='eat'){
@@ -2930,7 +2977,7 @@ function doSleep(){
     if(t.id==='cave')   { sanR+=3; }
     if(t.id==='forest') { addCard('berry',1); log('🌲 숲캠프: 작은 열매 자동생성 🍒','success'); }
     if(t.id==='shore')  { addCard('dew',1);   log('🌊 해안캠프: 맺힌이슬 자동생성 💦','success'); }
-    if(t.id==='ruins')  { ruinsBonusAP+=1; log('🏚️ 폐허캠프: AP+1','success'); }
+    if(t.id==='ruins')  { ruinsBonusAP+=1; G.san=Math.max(0,G.san-5); log('🏚️ 폐허캠프: AP+1 / 정신력-5',''); }
   });
   const fatigueN=allCards().filter(c=>c.id==='fatigue').length;
   const preHun=G.hun, preThi=G.thi;
@@ -3600,6 +3647,16 @@ function resolveCombat(){
   const lines=[]; let stun=false, poisonApplied=false;
   const hasArmor=allCards().some(c=>c.id==='leather_armor');
 
+  // 행동 카드 먼저 처리 (ATK/DEF 계산 전)
+  [...CBT.atkZone,...CBT.defZone].forEach(c=>{
+    if(c.tag==='action'){
+      const before=CBT.hand.length;
+      drawNCards(2, CBT.hand);
+      const drawn=CBT.hand.length-before;
+      lines.push({t:`🏃 달리기: ${drawn}장 드로우`,cls:'good'});
+    }
+  });
+
   [...CBT.atkZone,...CBT.defZone].forEach(c=>{
     if(c.cbtFx==='raw'&&CBT.atkZone.some(x=>x.uid===c.uid)){
       pierceAtk+=c.atk;
@@ -3836,7 +3893,7 @@ function campBonus(tileId){
   if(tileId==='cave')   return '취침 정신력+3';
   if(tileId==='forest') return '취침 작은 열매 생성';
   if(tileId==='shore')  return '취침 맺힌이슬 생성';
-  if(tileId==='ruins')  return '취침 AP+1(캠프당)';
+  if(tileId==='ruins')  return '취침 AP+1 / 정신력-5(캠프당)';
   return '';
 }
 
@@ -3937,9 +3994,11 @@ function render(){
     const div=document.createElement('div');
     div.className='card'+(discUids.has(c.uid)?' card-disc':'');
     const durDisp=c.dur?`<br><span style="color:var(--accent);font-size:6px;">🔋${c.curDur||c.dur}/${c.dur}</span>`:'';
+    const subTagHtml=(c.subTags&&c.subTags.length)?`<div style="margin-top:1px;">${c.subTags.map(t=>`<span class="sub-tag">#${t}</span>`).join('')}</div>`:'';
     div.innerHTML=`<div class="card-icon">${c.icon}</div>
       <div class="card-name">${c.name}</div>
       <div class="card-tag tag-${c.tag}">${c.tag}</div>
+      ${subTagHtml}
       <div class="card-stats">A${c.atk} D${c.def}${durDisp}</div>`;
     div.addEventListener('mouseenter',()=>showTT(c,div));
     div.addEventListener('mouseleave',hideTT);

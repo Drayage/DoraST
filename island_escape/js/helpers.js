@@ -51,6 +51,18 @@ function canCraft(rec){ return rec.cost.every(c=>cntInDeck(c.id)>=c.n); }
 
 function hasTool(id){ return allCards().some(c=>c.id===id); }
 
+// 덱에서 n장 드로우해 targetArr에 직접 추가 (달리기 등 액션 카드용)
+function drawNCards(n, targetArr){
+  for(let i=0;i<n;i++){
+    if(!G.deck.length){
+      if(!G.disc.length) break;
+      G.deck=shuffle([...G.disc]); G.disc=[];
+      log('🔀 덱 셔플 (달리기)','');
+    }
+    targetArr.push(G.deck.pop());
+  }
+}
+
 // 덱에서 n장 드로우 (부족하면 버림더미 섞어 보충)
 function drawToHand(n){
   const hand=[];

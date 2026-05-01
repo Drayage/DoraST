@@ -17,6 +17,13 @@ function showTT(c, el){
   av.textContent=c.atk; av.className='tt-sv'+(c.atk>0?' pos':c.atk<0?' neg':' zero');
   dv.textContent=c.def; dv.className='tt-sv'+(c.def>0?' pos':c.def<0?' neg':' zero');
   document.getElementById('tt-desc').textContent=c.desc||c.name;
+  const stEl=document.getElementById('tt-subtags');
+  if(stEl){
+    if(c.subTags&&c.subTags.length){
+      stEl.style.display='';
+      stEl.innerHTML=c.subTags.map(t=>`<span class="sub-tag">#${t}</span>`).join('');
+    } else stEl.style.display='none';
+  }
 
   const con=document.getElementById('tt-con');
   if(c.dur){
