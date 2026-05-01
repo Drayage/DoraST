@@ -22,6 +22,18 @@ const TILE_TYPES=[
      {tool:'fishing_rod',res:'food',label:'낚시',flavor:'해안에서 낚싯대로 낚시한다.'},
      {tool:'canteen',res:'water',label:'물 채집',flavor:'물통에 깨끗한 물을 담는다.'},
    ]},
+  {id:'lookout', name:'전망대', icon:'🗼', cls:'t-lookout',
+   flavor:'섬 끝, 바다가 보이는 높은 곳. 신호를 보내기 좋아 보인다.',
+   events:['nothing','res_wood','find_blueprint'],
+   gather:[]},
+  {id:'oblivion_lake', name:'망각의 호수', icon:'🌑', cls:'t-lake',
+   flavor:'고요하고 검은 수면. 여기에 버리면 다시는 돌아오지 않는다.',
+   events:['nothing','haunted_spot','isolation_dread'],
+   gather:[]},
+  {id:'oblivion_swamp', name:'망각의 늪', icon:'🕳️', cls:'t-swamp',
+   flavor:'검은 수면 아래 무언가가 기억을 삼킨다. 발을 딛는 순간, 무언가가 사라진다.',
+   events:['nothing','haunted_spot'],
+   gather:[]},
 ];
 
 const WEATHER=[
@@ -109,6 +121,13 @@ const CARDS=[
   {id:'running',name:'달리기',icon:'🏃',tag:'action',atk:0,def:0,n:1,subTags:[],
    desc:'2장 드로우. 덱 부족 시 버림더미 셔플 후 보충. 전투/카드사용 시 즉시 발동.',
    passiveDesc:'사용 시 2장 드로우 (덱+버림더미 합산)'},
+  // 구조신호 시스템
+  {id:'flare_kit', name:'신호탄 키트', icon:'🧨', tag:'tool', atk:0, def:0, n:0, subTags:['뾰족함'],
+   gatherTool:false,
+   desc:'전망대(🗼) 탐색 시 덱 5장 중 이 카드가 나오면 구조신호 🎆 1개 획득.'},
+  {id:'signal', name:'구조신호', icon:'🎆', tag:'tool', atk:0, def:0, n:0, subTags:[],
+   gatherTool:false,
+   desc:'전망대(🗼)에서 전체 덱 10장 중 5장 이상이면 탈출 성공!'},
   // 상태이상
   {id:'injury',      name:'부상',icon:'🩹',tag:'status',atk:-1,def:-1,n:0,subTags:[],desc:'ATK·DEF -1.'},
   {id:'fear',        name:'공포',icon:'😱',tag:'status',atk:-1,def:-1,n:0,subTags:[],desc:'ATK·DEF -1.'},
@@ -285,6 +304,9 @@ const RECIPES=[
   {id:'r_pknife',  cat:'전투',name:'독칼',     icon:'☠️',result:'poison_knife',   rn:1,ap:1,cost:[{id:'hide',n:1},{id:'venom',n:1}],  desc:'독:매라운드+3피해. ATK6. 가죽+독낭.'},
   {id:'r_fcloak',  cat:'전투',name:'깃털망토', icon:'🧣',result:'feather_cloak',  rn:1,ap:1,cost:[{id:'feather',n:2}],               desc:'패시브:도망비용HP-2. DEF2. 깃털×2.'},
   {id:'r_compass', cat:'탈출',name:'유물나침반',icon:'🧭',result:'compass',       rn:1,ap:1,cost:[{id:'shard',n:2}],                  desc:'즉시 탈출도+20%. 고대파편×2.'},
+  {id:'r_flare_kit', cat:'탈출', name:'신호탄 키트', icon:'🧨', result:'flare_kit', rn:1, ap:1,
+   cost:[{id:'metal',n:1},{id:'wood',n:1}],
+   desc:'전망대에서 구조신호를 탐색하는 도구. 금속×1 목재×1.'},
   // 뗏목 — 뽑기 시스템 (대성공1/성공3/실패1)
   {id:'r_raft',    cat:'탈출',name:'뗏목 부품',icon:'🛶',result:null,             rn:0,ap:2,cost:[{id:'wood',n:3},{id:'metal',n:1}],
    desc:'대성공(1/5): +30%  성공(3/5): +15%  실패(1/5): -10%', raftLottery:true},

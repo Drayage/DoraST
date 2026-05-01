@@ -89,8 +89,20 @@ function showTileTT(mx, my, t, i){
 
   let icon='', name='', rows=[];
   if(t.wasSeen && !t.revealed){
-    icon='🌫️'; name=t.name;
+    icon='🌫️'; name='???';
     rows.push({cls:'fog', html:'안개에 가려진 지역'});
+    document.getElementById('ttt-icon').textContent=icon;
+    document.getElementById('ttt-name').textContent=name;
+    const rowsEl=document.getElementById('ttt-rows');
+    rowsEl.innerHTML=rows.map(r=>`<div class="ttt-row ${r.cls}">${r.html}</div>`).join('');
+    tt.style.display='block';
+    const ttW=160, ttH=40+rows.length*20;
+    let left=mx+16, top=my-8;
+    if(left+ttW>window.innerWidth-4) left=mx-ttW-10;
+    if(top+ttH>window.innerHeight-4) top=window.innerHeight-ttH-4;
+    top=Math.max(4,top);
+    tt.style.left=left+'px'; tt.style.top=top+'px';
+    return;
   } else {
     icon=i===G.pos?'🧍':(t.hasCamp?'🏕️':t.icon);
     name=t.name;
@@ -101,6 +113,9 @@ function showTileTT(mx, my, t, i){
       rows.push({cls:'ap', html:`🚶 이동 <b>AP ${ap}</b>`});
     }
     if(t.hasCamp) rows.push({cls:'camp', html:'🏕️ 캠프 설치됨'});
+    if(!t.explored && t.id==='oblivion_swamp'){
+      rows.push({cls:'danger', html:'⚠️ 탐색 시 덱에서 카드 1장 무작위 소멸!'});
+    }
     if(t.explored){
       rows.push({cls:'done', html:'✓ 탐색 완료'});
       (t.gather||[]).forEach(o=>{

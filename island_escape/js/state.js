@@ -105,6 +105,7 @@ function initGame(){
     over:false, win:false, logs:[], kills:0,
     raftTry:0, raftGreat:0, raftFail:0,
     gatherCnt:{}, gatherBonus:{}, tilesMoved:0,
+    lastOblivion:-99, signalEscape:false,
     islandId,
   };
   _pendingItems=null; _itemCb=null; _pendingItemCards=null; _ucHand=[];

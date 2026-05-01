@@ -56,6 +56,9 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .tile.t-beach{background:#1a1a0e;border-color:#3a3010;}.tile.t-forest{background:#0e1a10;border-color:#103018;}
 .tile.t-cave{background:#141418;border-color:#2a2a32;}.tile.t-ruins{background:#14100e;border-color:#2a2018;}
 .tile.t-shore{background:#0e1420;border-color:#103040;}
+.tile.t-lookout{background:#1a2a1a;border-color:#4a8a5a;color:#aecbae;}
+.tile.t-lake{background:#080814;border-color:#334466;color:#8899cc;}
+.tile.t-swamp{background:#0d0d0a;border-color:#443322;color:#998877;}
 
 /* ACTIONS */
 #act-panel{padding:7px 9px;border-top:1px solid var(--border);}
@@ -253,6 +256,9 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .sc.sc-doom-pulse{animation:scFlip 1.8s cubic-bezier(.15,0,.85,1),doomPulse 1.8s ease;}
 
 @keyframes milestoneAnim{0%{opacity:0;transform:translateX(-50%) translateY(-16px) scale(.9);}15%{opacity:1;transform:translateX(-50%) translateY(0) scale(1);}80%{opacity:1;transform:translateX(-50%) translateY(0);}100%{opacity:0;transform:translateX(-50%) translateY(-8px);}}
+.oblivion-card-pick{background:var(--bg3);border:1px solid #334466;border-radius:9px;padding:12px 14px;min-width:80px;cursor:pointer;transition:all .12s;text-align:center;}
+.oblivion-card-pick:hover{background:#1a1a2e;border-color:var(--red2);box-shadow:0 0 12px rgba(200,60,60,.3);}
+.swamp-toast{position:fixed;top:80px;left:50%;transform:translateX(-50%);z-index:900;background:rgba(14,10,8,.96);border:1px solid #774433;border-radius:11px;padding:9px 22px;text-align:center;pointer-events:none;animation:milestoneAnim 2.8s ease forwards;box-shadow:0 4px 18px rgba(180,60,20,.25);font-family:var(--font-t);font-size:14px;color:#cc8866;white-space:nowrap;}
 .esc-milestone{position:fixed;top:62px;left:50%;transform:translateX(-50%);z-index:900;background:rgba(8,18,12,.95);border:1px solid var(--green);border-radius:13px;padding:10px 26px;text-align:center;pointer-events:none;animation:milestoneAnim 3.8s ease forwards;box-shadow:0 4px 24px rgba(74,224,160,.25);}
 .em-pct{font-family:var(--font-t);font-size:20px;color:var(--green);text-shadow:0 0 14px rgba(74,224,160,.6);}
 .em-msg{font-size:9px;color:var(--text2);margin-top:3px;font-family:var(--font-m);}

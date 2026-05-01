@@ -12,7 +12,7 @@ function checkWin(){
   if(G.escape>=85&&!G.escMile[85]){ G.escMile[85]=true; showEscapeMilestone(15); }
   if(G.escape>=100&&!G.over){
     G.over=true;
-    showVictoryFanfare(()=>showEnding(true,null));
+    showVictoryFanfare(()=>showEnding(true, G.signalEscape?'signal':null));
   }
 }
 
@@ -105,6 +105,7 @@ function showEnding(win, reason){
 
 function _endHeadline(win, reason){
   if(win){
+    if(reason==='signal') return {main:'구조 성공', sub:`${G.day}일 만에 구조신호로 탈출했다.`};
     let main='탈출 성공';
     if(G.hp>=70&&G.san>=70&&G.day<=15) main='완벽한 생존';
     else if(G.hp<20||G.san<20)         main='간신히 살아남았다';

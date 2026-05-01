@@ -219,6 +219,45 @@ function render(){
   useRows.push({icon:'🍗', text:'식량·물·약초 즉시 사용 가능', cls:'info'});
   d.btnUse._att={title:'✨ 카드 사용', cost:'AP 1', rows:useRows};
 
+  // 특수 타일 액션 패널
+  const specEl=document.getElementById('act-special');
+  if(specEl){
+    if(ct.id==='lookout'&&ct.explored){
+      const hasKit=cards.some(c=>c.id==='flare_kit');
+      const sigCnt=cards.filter(c=>c.id==='signal').length;
+      const coolLeft=3-(p.day-(p.lastOblivion||-99));
+      specEl.style.display='';
+      specEl.innerHTML=`<div style="font-size:9px;color:#aecbae;font-family:var(--font-m);margin-bottom:5px;">🗼 전망대 전용 행동</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
+          <button class="btn" style="border-color:#4a8a5a;color:#aecbae;font-size:10px;"
+            onclick="doFlareSearch()" ${p.ap<2||p.over?'disabled':''}>
+            🧨 신호탄 탐색<span class="apb" style="margin-left:4px;">AP2</span>
+          </button>
+          <button class="btn" style="border-color:#40c080;color:#80e0a0;font-size:10px;"
+            onclick="attemptSignalEscape()" ${p.ap<3||p.over||!sigCnt?'disabled':''}>
+            🆘 구조신호 발사<span class="apb" style="margin-left:4px;">AP3</span>
+          </button>
+        </div>
+        <div style="font-size:8px;color:var(--text3);font-family:var(--font-m);margin-top:4px;">
+          ${hasKit?'🧨 신호탄 키트 보유':'⚠️ 신호탄 키트 없음 (캠프에서 제작)'} · 구조신호 ${sigCnt}장 (5장 필요)
+        </div>`;
+    } else if(ct.id==='oblivion_lake'&&ct.explored){
+      const coolDays=3-(p.day-(p.lastOblivion||-99));
+      const onCool=coolDays>0;
+      specEl.style.display='';
+      specEl.innerHTML=`<div style="font-size:9px;color:#8899cc;font-family:var(--font-m);margin-bottom:5px;">🌑 망각의 호수 전용 행동</div>
+        <button class="btn full" style="border-color:#334466;color:#8899cc;font-size:10px;"
+          onclick="doOblivion()" ${p.ap<2||p.over||onCool?'disabled':''}>
+          🌑 망각 행동 — 덱 3장 중 1장 소멸<span class="apb" style="margin-left:4px;">AP2</span>
+        </button>
+        <div style="font-size:8px;color:var(--text3);font-family:var(--font-m);margin-top:4px;">
+          ${onCool?`쿨다운: ${coolDays}일 남음`:'사용 가능 · 선택한 카드 영구 소멸 (취소 불가)'}
+        </div>`;
+    } else {
+      specEl.style.display='none';
+    }
+  }
+
   // 취침
   const sleepEarly=p.ap>=4;
   let sHpR=sleepEarly?15:9;

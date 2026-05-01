@@ -22,6 +22,31 @@ function buildMap(){
       }
     }
   });
+  // lookout 1개, oblivion_lake 1개 보장 (시작 위치에서 거리 4 이상)
+  ['lookout','oblivion_lake'].forEach(tid=>{
+    if(!G.tiles.some(t=>t.id===tid)){
+      const cands=[];
+      for(let i=0;i<49;i++){
+        if(tileDist(i,G.pos)>=4 && !['lookout','oblivion_lake'].includes(G.tiles[i].id)) cands.push(i);
+      }
+      if(cands.length){
+        const idx=cands[Math.floor(Math.random()*cands.length)];
+        const tDef=TILE_TYPES.find(t=>t.id===tid);
+        if(tDef) G.tiles[idx]={...tDef,revealed:false,hasPlayer:false,hasCamp:false,explored:false};
+      }
+    }
+  });
+  // oblivion_swamp 2개 배치 (시작 위치에서 거리 3 이상, lookout/oblivion_lake 자리 제외)
+  const specialIds=['lookout','oblivion_lake','oblivion_swamp'];
+  const swampCands=[];
+  for(let i=0;i<49;i++){
+    if(tileDist(i,G.pos)>=3 && !specialIds.includes(G.tiles[i].id)) swampCands.push(i);
+  }
+  shuffle(swampCands);
+  const swampDef=TILE_TYPES.find(t=>t.id==='oblivion_swamp');
+  for(let s=0;s<2&&s<swampCands.length;s++){
+    if(swampDef) G.tiles[swampCands[s]]={...swampDef,revealed:false,hasPlayer:false,hasCamp:false,explored:false};
+  }
   G.tiles[G.pos].revealed=true; G.tiles[G.pos].hasPlayer=true;
   getAdj(G.pos).forEach(i=>G.tiles[i].revealed=true);
 }

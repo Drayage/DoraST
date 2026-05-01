@@ -6,6 +6,7 @@ function doExplore(){
   const t=G.tiles[G.pos];
   if(t.explored){log('이미 탐색한 지역이다.','');return;}
   G.ap-=2; t.explored=true;
+  if(t.id==='oblivion_swamp') _swampDevour();
   const evtId=t.events[Math.floor(Math.random()*t.events.length)];
   if(ENEMIES[evtId]){ showEncounter(evtId); return; }
   const evt=EVENTS[evtId];

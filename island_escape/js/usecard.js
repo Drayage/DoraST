@@ -24,7 +24,7 @@ function renderUcCards(){
   const _curUcUIDs=new Set(_ucHand.map(c=>c.uid));
   let _ucAnimIdx=0;
   _ucHand.forEach((card,i)=>{
-    const usable=!!card.use||card.tag==='action';
+    const usable=(!!card.use||card.tag==='action')&&card.id!=='flare_kit'&&card.id!=='signal';
     const kBoost=hasTool('knife')?8:0;
     const durStr=card.dur?`<div style="font-size:8px;color:var(--accent);font-family:var(--font-m);">🔋${card.curDur||card.dur}/${card.dur}</div>`:'';
     const useLabels={eat:`🍗허기+${22+kBoost}`,drink:'💧갈증+28',heal:'🌿HP+10',_action:'🏃2장 드로우'};
@@ -51,6 +51,11 @@ function renderUcCards(){
 
 function ucUse(i){
   const card=_ucHand[i]; if(!card) return;
+  if(card.id==='flare_kit'||card.id==='signal'){
+    document.getElementById('uc-result').textContent=`${card.icon} ${card.name} — 전망대(🗼)에서만 사용 가능`;
+    document.getElementById('uc-result').style.color='var(--red)';
+    return;
+  }
   // 행동 카드 처리
   if(card.tag==='action'){
     const before=_ucHand.length;
