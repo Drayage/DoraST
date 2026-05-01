@@ -67,12 +67,12 @@ function renderCraft(){
       </div>
       <div style="font-size:8px;color:var(--text2);line-height:1.5;">${rec.desc}</div>
       <div style="font-size:8px;font-family:var(--font-m);">재료: ${costHtml} → ${resHtml}</div>
-      <button class="btn" style="${canDo?'border-color:var(--purple);color:var(--purple);':''}" onclick="doCraft('${rec.id}')" ${canDo?'':'disabled'}>
+      <button class="btn" style="${canDo?'border-color:var(--purple);color:var(--purple);':''}" onclick="event.stopPropagation();doCraft('${rec.id}')" ${canDo?'':'disabled'}>
         🔨 제작 (AP${rec.ap})${!ok?' — 재료부족':!hasAP?' — AP부족':''}
       </button>`;
-    if(resultDef&&window.innerWidth>700){
-      div.addEventListener('mouseenter',()=>showTT(resultDef,div));
-      div.addEventListener('mouseleave',hideTT);
+    if(resultDef){
+      if(window.innerWidth>700){ div.addEventListener('mouseenter',()=>showTT(resultDef,div)); div.addEventListener('mouseleave',hideTT); }
+      else { div.addEventListener('click',e=>{ e.stopPropagation(); const tt=document.getElementById('tt'); if(tt.style.display==='block') tt.style.display='none'; else showTT(resultDef,div); }); }
     }
     lEl.appendChild(div);
   });
