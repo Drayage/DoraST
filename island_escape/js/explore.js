@@ -120,6 +120,9 @@ function doJudgment(evt, ch){
   cardEl.classList.remove('flipped'); backEl.className='jdg-back';
   ['jdg-res','jdg-det','jdg-bon','jdg-ok'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById('jdg-title').textContent='🎴 덱 맨 위 카드를 뒤집는 중...';
+  // 카드 딜 애니메이션 (기존 클래스 제거 → reflow → 재추가)
+  const wrapEl=document.getElementById('jdg-wrap');
+  wrapEl.classList.remove('jdg-deal'); void wrapEl.offsetWidth; wrapEl.classList.add('jdg-deal');
   {
     let reqTxt;
     if(ch.req&&ch.subReq) reqTxt=`요구: ${ch.req} 태그 또는 #${ch.subReq}`;
