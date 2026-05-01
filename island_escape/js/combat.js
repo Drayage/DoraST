@@ -1,6 +1,8 @@
 // ═══════════════ COMBAT ═══════════════
 // [버그수정] 창 관통 방어무시 구현 / 뱀·박쥐 패널티 적용 / 유령 패널티는 패배 시에만
 
+let _prevCbtHandUIDs=new Set();
+
 function drawCombatHand(){ return drawToHand(5); }
 
 function showCbtDeckView(which){
@@ -189,6 +191,7 @@ function encFlee(){
 function startCombat(evtId, ambush, fightChosen){
   const enemy=ENEMIES[evtId];
   CBT={enemy:{...enemy,curHp:enemy.hp},hand:[],atkZone:[],defZone:[],resolved:false,turn:1,stunned:false,poisoned:false,penaltyApplied:false,fightChosen:!!fightChosen};
+  _prevCbtHandUIDs=new Set();
   CBT.hand = ambush ? drawAmbushHand() : drawCombatHand();
   _cbtMode=null;
   ['btn-cbt-resolve','btn-cbt-flee'].forEach(id=>document.getElementById(id).style.display='');
@@ -318,17 +321,24 @@ function renderCombat(){
   renderZone('atk-zone',CBT.atkZone,'atk');
   renderZone('def-zone',CBT.defZone,'def');
   const hEl=document.getElementById('cbt-hand'); hEl.innerHTML='';
+  const _curCbtUIDs=new Set(CBT.hand.map(c=>c.uid));
+  let _cbtAnimIdx=0;
   CBT.hand.forEach((c,i)=>{
     const inA=CBT.atkZone.some(x=>x.uid===c.uid);
     const inD=CBT.defZone.some(x=>x.uid===c.uid);
     const div=document.createElement('div');
     div.className='c-card'+(inA?' a-atk':inD?' a-def':'');
+    if(!_prevCbtHandUIDs.has(c.uid)){
+      div.classList.add('card-draw');
+      div.style.animationDelay=(_cbtAnimIdx++*80)+'ms';
+    }
     div.innerHTML=`<div style="font-size:16px;">${c.icon}</div><div style="font-size:7px;font-weight:700;margin:2px 0;">${c.name}</div><div style="font-size:6px;font-family:var(--font-m);color:var(--text3);">A${c.atk} D${c.def}</div><div class="card-tag tag-${c.tag}" style="font-size:5px;">${c.tag}</div>`;
     div.onclick=()=>cbtCardClick(i);
     div.addEventListener('mouseenter',()=>showTT(c,div));
     div.addEventListener('mouseleave',hideTT);
     hEl.appendChild(div);
   });
+  _prevCbtHandUIDs=_curCbtUIDs;
 }
 
 function renderZone(id, arr, t){
@@ -493,6 +503,7 @@ function closeCombat(){
   document.getElementById('cbt-mo').style.display='none';
   const p=document.getElementById('cbt-popup'); if(p) p.remove();
   hideCbtDeckView();
+  _prevCbtHandUIDs=new Set();
   if(CBT.hand?.length){ G.disc.push(...CBT.hand.filter(c=>!c._temp)); CBT.hand=[]; }
   if(G.hp<=0) triggerGameOver('전투 중 사망했습니다.');
   checkSurvival(); checkWin(); render();

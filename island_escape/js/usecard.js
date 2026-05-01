@@ -1,5 +1,7 @@
 // ═══════════════ USE CARD ═══════════════
 
+let _prevUcHandUIDs=new Set();
+
 function openUseCard(){
   if(G.over) return;
   if(G.ap<1){log('AP부족 (카드사용:AP1)','danger');render();return;}
@@ -9,6 +11,7 @@ function openUseCard(){
   const drawN=5+ropeCnt+beachCampCnt;
   _ucHand=drawToHand(drawN);
   if(!_ucHand.length){log('덱이 비어있다.','danger');G.ap+=1;render();return;}
+  _prevUcHandUIDs=new Set();
   const bonusDesc=(ropeCnt?` (🪢밧줄+${ropeCnt})`:'')+(beachCampCnt?` (🏖️해변캠프+${beachCampCnt})`:'');
   document.getElementById('uc-sub').textContent=`${_ucHand.length}장 드로우${bonusDesc} — 사용할 카드 선택`;
   document.getElementById('uc-result').textContent='';
@@ -18,6 +21,8 @@ function openUseCard(){
 
 function renderUcCards(){
   const el=document.getElementById('uc-cards'); el.innerHTML='';
+  const _curUcUIDs=new Set(_ucHand.map(c=>c.uid));
+  let _ucAnimIdx=0;
   _ucHand.forEach((card,i)=>{
     const usable=!!card.use||card.tag==='action';
     const kBoost=hasTool('knife')?8:0;
@@ -25,6 +30,10 @@ function renderUcCards(){
     const useLabels={eat:`🍗허기+${22+kBoost}`,drink:'💧갈증+28',heal:'🌿HP+10',_action:'🏃2장 드로우'};
     const div=document.createElement('div');
     div.style.cssText=`background:var(--bg3);border:1px solid ${usable?'var(--green2)':'var(--border)'};border-radius:9px;padding:10px 8px;width:90px;text-align:center;cursor:${usable?'pointer':'default'};opacity:${usable?1:0.5};transition:all .12s;`;
+    if(!_prevUcHandUIDs.has(card.uid)){
+      div.classList.add('card-draw');
+      div.style.animationDelay=(_ucAnimIdx++*80)+'ms';
+    }
     div.innerHTML=`<div style="font-size:24px;margin-bottom:4px;">${card.icon}</div>
       <div style="font-size:8px;font-weight:700;color:var(--text);margin-bottom:2px;">${card.name}</div>
       <div class="card-tag tag-${card.tag}" style="font-size:6px;display:inline-block;margin-bottom:4px;">${card.tag}</div>
@@ -37,6 +46,7 @@ function renderUcCards(){
     div.addEventListener('mouseleave',hideTT);
     el.appendChild(div);
   });
+  _prevUcHandUIDs=_curUcUIDs;
 }
 
 function ucUse(i){
@@ -87,6 +97,7 @@ function ucUse(i){
 
 function closeUseCard(){
   G.disc.push(..._ucHand); _ucHand=[];
+  _prevUcHandUIDs=new Set();
   document.getElementById('uc-mo').style.display='none';
   document.getElementById('tt').style.display='none';
   render();
