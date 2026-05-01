@@ -7,11 +7,13 @@ function showCbtDeckView(which){
   const panel=document.getElementById('cbt-dv');
   const closeBtn=document.getElementById('cbt-dv-close');
   if(!panel) return;
+  CBT._dvOpen=which;
   const cards=which==='deck'?G.deck:[...G.disc].reverse();
   if(!cards.length){
     panel.innerHTML=`<div style="font-size:9px;color:var(--text3);font-family:var(--font-m);padding:6px;">${which==='deck'?'덱이 비어있습니다.':'버림더미가 비어있습니다.'}</div>`;
   } else {
-    panel.innerHTML=cards.map(c=>`
+    panel.innerHTML=`<div style="font-size:8px;color:var(--text3);font-family:var(--font-m);margin-bottom:4px;">${which==='deck'?'🃏 뽑을 덱':'🗑 버림더미'} (${cards.length}장 · 실시간)</div>`+
+      cards.map(c=>`
       <div style="display:flex;align-items:center;gap:7px;padding:3px 0;border-bottom:1px solid var(--border);font-family:var(--font-m);">
         <span style="font-size:14px;flex-shrink:0;">${c.icon}</span>
         <span style="font-size:9px;color:var(--text);flex:1;">${c.name}</span>
@@ -31,6 +33,9 @@ function hideCbtDeckView(){
   const closeBtn=document.getElementById('cbt-dv-close');
   if(panel) panel.style.display='none';
   if(closeBtn) closeBtn.style.display='none';
+  CBT._dvOpen=null;
+  const dkBtn=document.getElementById('cbt-dk-n'); if(dkBtn) dkBtn.parentElement.style.borderColor='';
+  const dcBtn=document.getElementById('cbt-dc-n'); if(dcBtn) dcBtn.parentElement.style.borderColor='';
 }
 
 // 기습: 첫 라운드 전투카드 1장 보장
@@ -214,6 +219,17 @@ function clearAssign(){ CBT.atkZone=[]; CBT.defZone=[]; renderCombat(); }
 
 function cbtCardClick(i){
   const c=CBT.hand[i]; if(!c) return;
+  // 행동 카드: 즉시 사용 (배정 없이 바로 발동)
+  if(c.tag==='action'){
+    CBT.atkZone=CBT.atkZone.filter(x=>x.uid!==c.uid);
+    CBT.defZone=CBT.defZone.filter(x=>x.uid!==c.uid);
+    CBT.hand.splice(i,1);
+    G.disc.push({...c});
+    const before=CBT.hand.length;
+    drawNCards(2, CBT.hand);
+    log(`🏃 ${c.name}: ${CBT.hand.length-before}장 드로우`,'success');
+    renderCombat(); return;
+  }
   const inA=CBT.atkZone.some(x=>x.uid===c.uid);
   const inD=CBT.defZone.some(x=>x.uid===c.uid);
   if(inA||inD){
@@ -251,6 +267,8 @@ function renderCombat(){
   const e=CBT.enemy;
   const dkN=document.getElementById('cbt-dk-n'); if(dkN) dkN.textContent=G.deck.length;
   const dcN=document.getElementById('cbt-dc-n'); if(dcN) dcN.textContent=G.disc.length;
+  // 덱/버림더미 뷰가 열려 있으면 실시간 갱신
+  if(CBT._dvOpen) showCbtDeckView(CBT._dvOpen);
   const fleeBtn=document.getElementById('btn-cbt-flee');
   if(fleeBtn&&fleeBtn.style.display!=='none'){
     const {cost,hasCloak}=getFleeHpCost();
@@ -328,16 +346,6 @@ function resolveCombat(){
   let pD=0, normalAtk=0, pierceAtk=0;
   const lines=[]; let stun=false, poisonApplied=false;
   const hasArmor=allCards().some(c=>c.id==='leather_armor');
-
-  // 행동 카드 먼저 처리 (ATK/DEF 계산 전)
-  [...CBT.atkZone,...CBT.defZone].forEach(c=>{
-    if(c.tag==='action'){
-      const before=CBT.hand.length;
-      drawNCards(2, CBT.hand);
-      const drawn=CBT.hand.length-before;
-      lines.push({t:`🏃 달리기: ${drawn}장 드로우`,cls:'good'});
-    }
-  });
 
   [...CBT.atkZone,...CBT.defZone].forEach(c=>{
     if(c.cbtFx==='raw'&&CBT.atkZone.some(x=>x.uid===c.uid)){
@@ -484,6 +492,7 @@ function _doFleeCombat(cost, hasCloak){
 function closeCombat(){
   document.getElementById('cbt-mo').style.display='none';
   const p=document.getElementById('cbt-popup'); if(p) p.remove();
+  hideCbtDeckView();
   if(CBT.hand?.length){ G.disc.push(...CBT.hand.filter(c=>!c._temp)); CBT.hand=[]; }
   if(G.hp<=0) triggerGameOver('전투 중 사망했습니다.');
   checkSurvival(); checkWin(); render();

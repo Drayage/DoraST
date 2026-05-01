@@ -106,8 +106,8 @@ const CARDS=[
   {id:'ambush_fist',name:'맨손 기습',icon:'👊',tag:'combat',atk:3,def:0,n:0,cbtFx:'raw',subTags:[],
    desc:'공격카드 없이 맨손 기습. ATK 3(방어무시). 전투 후 소멸.'},
   // 행동 카드
-  {id:'running',name:'달리기',icon:'🏃',tag:'action',atk:0,def:0,n:2,subTags:[],
-   desc:'2장 드로우. 덱 부족 시 버림더미 셔플 후 보충. 전투/카드사용 시 발동.',
+  {id:'running',name:'달리기',icon:'🏃',tag:'action',atk:0,def:0,n:1,subTags:[],
+   desc:'2장 드로우. 덱 부족 시 버림더미 셔플 후 보충. 전투/카드사용 시 즉시 발동.',
    passiveDesc:'사용 시 2장 드로우 (덱+버림더미 합산)'},
   // 상태이상
   {id:'injury',      name:'부상',icon:'🩹',tag:'status',atk:-1,def:-1,n:0,subTags:[],desc:'ATK·DEF -1.'},
@@ -185,8 +185,10 @@ const EVENTS={
   find_shelter:{
     name:'은신처 발견',flavor:'폭풍을 피할 수 있는 작은 동굴 입구가 보인다. 무거운 잔해가 입구를 막고 있다.',
     choices:[
-      {label:'깊이 탐색한다',icon:'🕯️',req:'tool',subReq:'무거움',subPct:60,reward:{san:10,card:'metal',n:1},failPen:{hp:-15},
-       greatCard:'torch',greatBonus:{san:8,ap:2},desc:'도구판정 또는 #무거움 60%. 성공:정신력+10+고철 / 대성공(횃불):+정신력+8+AP×2 / 실패:HP-15'},
+      {label:'잔해를 밀어낸다',icon:'🪨',req:null,subReq:'무거움',reward:{san:10,card:'metal',n:1},failPen:{hp:-15},
+       desc:'#무거움 카드만 성공. 성공:정신력+10+고철 / 실패:HP-15'},
+      {label:'깊이 탐색한다',icon:'🕯️',req:'tool',reward:{san:10,card:'metal',n:1},failPen:{hp:-15},
+       greatCard:'torch',greatBonus:{san:8,ap:2},desc:'도구판정. 성공:정신력+10+고철 / 대성공(횃불):+정신력+8+AP×2 / 실패:HP-15'},
       {label:'입구만 살핀다',icon:'👁️',req:null,reward:{san:5},desc:'무조건. 정신력+5.'},
     ]},
   find_blueprint:{
@@ -224,10 +226,13 @@ const EVENTS={
   trap_pit:{
     name:'야생 덫 구덩이',flavor:'덤불 사이에 정교하게 파인 함정이 보인다. 날카로운 가시와 먹이가 걸려든 것 같다.',
     choices:[
-      {label:'전리품을 회수한다',icon:'🎯',req:'resource',subReq:'날카로움',subPct:70,
+      {label:'가시를 잘라낸다',icon:'✂️',req:null,subReq:'날카로움',
+       reward:{card:'food',n:3},failPen:{hp:-12},
+       desc:'#날카로움 카드만 성공. 성공:식량×3 / 실패:HP-12'},
+      {label:'전리품을 회수한다',icon:'🎯',req:'resource',
        reward:{card:'food',n:3},failPen:{hp:-12},
        greatCard:'gathering_knife',greatBonus:{card:'hide',n:1},
-       desc:'자원판정 또는 #날카로움 70%. 성공:식량×3 / 대성공(채집칼):+가죽×1 / 실패:HP-12'},
+       desc:'자원판정. 성공:식량×3 / 대성공(채집칼):+가죽×1 / 실패:HP-12'},
       {label:'건드리지 않고 지나친다',icon:'🚶',req:null,
        reward:{},
        desc:'무조건. 빈손. 안전.'},

@@ -19,13 +19,17 @@ function showExploreChoice(evt){
   document.getElementById('ex-flavor').textContent=evt.flavor;
   const el=document.getElementById('ex-choices'); el.innerHTML='';
   evt.choices.forEach(ch=>{
-    const matchCnt=ch.req?cards.reduce((s,c)=>s+(c.tag===ch.req?1:0),0):99;
-    const prob=ch.req?Math.min(99,Math.round(matchCnt/Math.max(1,cards.length)*100)):100;
+    let matchCnt;
+    if(ch.req)        matchCnt=cards.reduce((s,c)=>s+(c.tag===ch.req?1:0),0);
+    else if(ch.subReq) matchCnt=cards.reduce((s,c)=>s+((c.subTags||[]).includes(ch.subReq)?1:0),0);
+    else               matchCnt=cards.length;
+    const prob=(ch.req||ch.subReq)?Math.min(99,Math.round(matchCnt/Math.max(1,cards.length)*100)):100;
     const div=document.createElement('div'); div.className='ex-choice fi';
-    const reqBadge=(ch.req
+    const reqBadge=ch.req
       ?`<span class="card-tag tag-${ch.req}" style="font-size:8px;">${ch.req}판정</span>`
-      :`<span style="color:var(--green);font-size:8px;">✓ 무조건</span>`)
-      +(ch.subReq?`<span style="font-size:7px;color:var(--text3);margin-left:4px;">또는 <span class="sub-tag">#${ch.subReq}</span> ${ch.subPct||50}%</span>`:'')
+      :ch.subReq
+        ?`<span class="sub-tag" style="font-size:8px;padding:2px 5px;">#${ch.subReq} 판정</span>`
+        :`<span style="color:var(--green);font-size:8px;">✓ 무조건</span>`;
     const greatInfo=ch.greatCard
       ?`<span style="color:var(--accent);font-size:8px;"> ★ ${CARD_MAP[ch.greatCard]?.name} 뽑으면 대성공</span>`:'';
     const rTxt=fmtR(ch.reward), pTxt=ch.failPen?fmtP(ch.failPen):'', gTxt=ch.greatBonus?fmtR(ch.greatBonus):'';
@@ -83,11 +87,10 @@ function doJudgment(evt, ch){
     top=G.deck.length?G.deck[G.deck.length-1]:null;
     if(top) G.disc.push(G.deck.pop());
   }
-  const primaryOk=!ch.req||(top&&top.tag===ch.req);
-  const subTagHit=ch.subReq&&top&&(top.subTags||[]).includes(ch.subReq);
-  const subOk=subTagHit&&Math.random()*100<(ch.subPct||50);
+  const primaryOk=ch.req?(top&&top.tag===ch.req):(!ch.subReq);
+  const subOk=!!(ch.subReq&&top&&(top.subTags||[]).includes(ch.subReq));
   const success=primaryOk||subOk;
-  const isGreat=primaryOk&&!!(ch.greatCard&&top&&top.id===ch.greatCard);
+  const isGreat=!!(ch.greatCard&&top&&top.id===ch.greatCard);
   const escGain=Math.max(ch.reward?.escape||0, ch.greatBonus?.escape||0);
   const escLoss=Math.max(ch.failPen?.escape||0, 0);
   const escRelevant=escGain>0||escLoss>0;
@@ -102,8 +105,11 @@ function doJudgment(evt, ch){
   ['jdg-res','jdg-det','jdg-bon','jdg-ok'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById('jdg-title').textContent='🎴 덱 맨 위 카드를 뒤집는 중...';
   {
-    let reqTxt=ch.req?`요구 태그: ${ch.req}`:'조건 없음 — 무조건 성공';
-    if(ch.subReq) reqTxt+=` · 또는 #${ch.subReq} ${ch.subPct||50}%`;
+    let reqTxt;
+    if(ch.req&&ch.subReq) reqTxt=`요구: ${ch.req} 태그 또는 #${ch.subReq}`;
+    else if(ch.req)       reqTxt=`요구 태그: ${ch.req}`;
+    else if(ch.subReq)    reqTxt=`요구: #${ch.subReq} 카드 (보조 태그)`;
+    else                  reqTxt='조건 없음 — 무조건 성공';
     document.getElementById('jdg-req').textContent=reqTxt;
   }
   document.getElementById('jdg-cicon').textContent=top?top.icon:'?';
@@ -137,7 +143,7 @@ function doJudgment(evt, ch){
         }
       }
       if(compassExtra) bonLines.push(`🧭 나침반: ${compassExtra.icon}${compassExtra.name} 제외 → 유리한 카드 선택`);
-      if(subOk&&!primaryOk) bonLines.push(`🏷️ #${ch.subReq} 보조 태그로 성공! (${ch.subPct||50}%)`);
+      if(subOk&&!primaryOk) bonLines.push(`🏷️ #${ch.subReq} 보조 태그 매치 성공!`);
       if(isGreat){
         resEl.className='jdg-res great'; resEl.textContent='★ 대성공!';
         applyR(ch.reward,lines); applyR(ch.greatBonus,lines);
