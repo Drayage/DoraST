@@ -296,6 +296,8 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .c-card.a-atk{border-color:var(--red);background:rgba(224,80,80,.08);}
 .c-card.a-def{border-color:var(--blue);background:rgba(74,144,212,.08);}
 .c-card.a-action{border-color:var(--accent);box-shadow:0 0 7px rgba(232,184,75,.3);}
+.c-card.c-inert{opacity:.3;cursor:default;filter:grayscale(.6);}
+.c-card.c-inert:hover{transform:none;border-color:var(--border);}
 .smart-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px;}
 .res-area{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px;margin-bottom:9px;font-family:var(--font-m);font-size:10px;line-height:1.8;}
 .rl{margin-bottom:1px;}.rl.good{color:var(--green);}.rl.bad{color:var(--red);}.rl.neutral{color:var(--text2);}
@@ -2993,6 +2995,22 @@ function checkSleepDanger(){
       ()=>doSleep());
     return;
   }
+  // 정신력 0 예측
+  const early=G.ap>=4;
+  let sSanR=early?4:2;
+  if(G.doomPhase===4) sSanR=Math.max(0,sSanR-2);
+  G.camps.forEach(cp=>{ if(G.tiles[cp]?.id==='cave') sSanR+=3; });
+  const ruinsCnt=G.camps.filter(cp=>G.tiles[cp]?.id==='ruins').length;
+  const sanAfterRuins=Math.max(0,G.san-ruinsCnt*2);
+  const doomSanExtra=G.doomPhase>=4?Math.floor((G.doom-79)/6):0;
+  const sanDrain=(G.camps.length?2:5)+doomSanExtra;
+  const sanAfter=Math.min(100,Math.max(0,sanAfterRuins+sSanR-sanDrain+tW.san));
+  if(sanAfter<=0){
+    showConfirm('⚠️ 정신력 위기',
+      `취침 후 정신력이 0이 됩니다.\n현재 정신력 ${G.san} → 예상 ${sanAfter}\n계속 진행하시겠습니까?`,
+      ()=>doSleep());
+    return;
+  }
   doSleep();
 }
 
@@ -3023,7 +3041,7 @@ function doSleep(){
     if(t.id==='cave')   { sanR+=3; }
     if(t.id==='forest') { addCard('berry',1); log('🌲 숲캠프: 작은 열매 자동생성 🍒','success'); }
     if(t.id==='shore')  { addCard('dew',1);   log('🌊 해안캠프: 맺힌이슬 자동생성 💦','success'); }
-    if(t.id==='ruins')  { ruinsBonusAP+=1; G.san=Math.max(0,G.san-5); log('🏚️ 폐허캠프: AP+1 / 정신력-5',''); }
+    if(t.id==='ruins')  { ruinsBonusAP+=1; G.san=Math.max(0,G.san-2); log('🏚️ 폐허캠프: AP+1 / 정신력-2',''); }
   });
   const fatigueN=allCards().filter(c=>c.id==='fatigue').length;
   const preHun=G.hun, preThi=G.thi;
@@ -3691,13 +3709,14 @@ function renderCombat(){
     const inA=CBT.atkZone.some(x=>x.uid===c.uid);
     const inD=CBT.defZone.some(x=>x.uid===c.uid);
     const div=document.createElement('div');
-    div.className='c-card'+(inA?' a-atk':inD?' a-def':'')+(c.tag==='action'?' a-action':'');
+    const isInert=c.atk<=0&&c.def<=0&&!c.cbtFx&&c.tag!=='action';
+    div.className='c-card'+(inA?' a-atk':inD?' a-def':'')+(c.tag==='action'?' a-action':'')+(isInert?' c-inert':'');
     if(!_prevCbtHandUIDs.has(c.uid)){
       div.classList.add('card-draw');
       div.style.animationDelay=(_cbtAnimIdx++*80)+'ms';
     }
     div.innerHTML=`<div style="font-size:16px;">${c.icon}</div><div style="font-size:7px;font-weight:700;margin:2px 0;">${c.name}</div><div style="font-size:6px;font-family:var(--font-m);color:var(--text3);">A${c.atk} D${c.def}</div><div class="card-tag tag-${c.tag}" style="font-size:5px;">${c.tag}</div>`;
-    div.onclick=()=>cbtCardClick(i);
+    div.onclick=isInert?null:()=>cbtCardClick(i);
     div.addEventListener('mouseenter',()=>showTT(c,div));
     div.addEventListener('mouseleave',hideTT);
     hEl.appendChild(div);
@@ -3959,7 +3978,7 @@ function campBonus(tileId){
   if(tileId==='cave')   return '취침 정신력+3';
   if(tileId==='forest') return '취침 작은 열매 생성';
   if(tileId==='shore')  return '취침 맺힌이슬 생성';
-  if(tileId==='ruins')  return '취침 AP+1 / 정신력-5(캠프당)';
+  if(tileId==='ruins')  return '취침 AP+1 / 정신력-2(캠프당)';
   return '';
 }
 

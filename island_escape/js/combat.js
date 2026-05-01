@@ -327,13 +327,14 @@ function renderCombat(){
     const inA=CBT.atkZone.some(x=>x.uid===c.uid);
     const inD=CBT.defZone.some(x=>x.uid===c.uid);
     const div=document.createElement('div');
-    div.className='c-card'+(inA?' a-atk':inD?' a-def':'')+(c.tag==='action'?' a-action':'');
+    const isInert=c.atk<=0&&c.def<=0&&!c.cbtFx&&c.tag!=='action';
+    div.className='c-card'+(inA?' a-atk':inD?' a-def':'')+(c.tag==='action'?' a-action':'')+(isInert?' c-inert':'');
     if(!_prevCbtHandUIDs.has(c.uid)){
       div.classList.add('card-draw');
       div.style.animationDelay=(_cbtAnimIdx++*80)+'ms';
     }
     div.innerHTML=`<div style="font-size:16px;">${c.icon}</div><div style="font-size:7px;font-weight:700;margin:2px 0;">${c.name}</div><div style="font-size:6px;font-family:var(--font-m);color:var(--text3);">A${c.atk} D${c.def}</div><div class="card-tag tag-${c.tag}" style="font-size:5px;">${c.tag}</div>`;
-    div.onclick=()=>cbtCardClick(i);
+    div.onclick=isInert?null:()=>cbtCardClick(i);
     div.addEventListener('mouseenter',()=>showTT(c,div));
     div.addEventListener('mouseleave',hideTT);
     hEl.appendChild(div);

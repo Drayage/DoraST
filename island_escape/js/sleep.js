@@ -67,6 +67,22 @@ function checkSleepDanger(){
       ()=>doSleep());
     return;
   }
+  // 정신력 0 예측
+  const early=G.ap>=4;
+  let sSanR=early?4:2;
+  if(G.doomPhase===4) sSanR=Math.max(0,sSanR-2);
+  G.camps.forEach(cp=>{ if(G.tiles[cp]?.id==='cave') sSanR+=3; });
+  const ruinsCnt=G.camps.filter(cp=>G.tiles[cp]?.id==='ruins').length;
+  const sanAfterRuins=Math.max(0,G.san-ruinsCnt*2);
+  const doomSanExtra=G.doomPhase>=4?Math.floor((G.doom-79)/6):0;
+  const sanDrain=(G.camps.length?2:5)+doomSanExtra;
+  const sanAfter=Math.min(100,Math.max(0,sanAfterRuins+sSanR-sanDrain+tW.san));
+  if(sanAfter<=0){
+    showConfirm('⚠️ 정신력 위기',
+      `취침 후 정신력이 0이 됩니다.\n현재 정신력 ${G.san} → 예상 ${sanAfter}\n계속 진행하시겠습니까?`,
+      ()=>doSleep());
+    return;
+  }
   doSleep();
 }
 
@@ -97,7 +113,7 @@ function doSleep(){
     if(t.id==='cave')   { sanR+=3; }
     if(t.id==='forest') { addCard('berry',1); log('🌲 숲캠프: 작은 열매 자동생성 🍒','success'); }
     if(t.id==='shore')  { addCard('dew',1);   log('🌊 해안캠프: 맺힌이슬 자동생성 💦','success'); }
-    if(t.id==='ruins')  { ruinsBonusAP+=1; G.san=Math.max(0,G.san-5); log('🏚️ 폐허캠프: AP+1 / 정신력-5',''); }
+    if(t.id==='ruins')  { ruinsBonusAP+=1; G.san=Math.max(0,G.san-2); log('🏚️ 폐허캠프: AP+1 / 정신력-2',''); }
   });
   const fatigueN=allCards().filter(c=>c.id==='fatigue').length;
   const preHun=G.hun, preThi=G.thi;

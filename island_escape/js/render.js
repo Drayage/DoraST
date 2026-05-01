@@ -28,7 +28,7 @@ function campBonus(tileId){
   if(tileId==='cave')   return '취침 정신력+3';
   if(tileId==='forest') return '취침 작은 열매 생성';
   if(tileId==='shore')  return '취침 맺힌이슬 생성';
-  if(tileId==='ruins')  return '취침 AP+1 / 정신력-5(캠프당)';
+  if(tileId==='ruins')  return '취침 AP+1 / 정신력-2(캠프당)';
   return '';
 }
 

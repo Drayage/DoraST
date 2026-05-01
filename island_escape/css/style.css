@@ -288,6 +288,8 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .c-card.a-atk{border-color:var(--red);background:rgba(224,80,80,.08);}
 .c-card.a-def{border-color:var(--blue);background:rgba(74,144,212,.08);}
 .c-card.a-action{border-color:var(--accent);box-shadow:0 0 7px rgba(232,184,75,.3);}
+.c-card.c-inert{opacity:.3;cursor:default;filter:grayscale(.6);}
+.c-card.c-inert:hover{transform:none;border-color:var(--border);}
 .smart-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px;}
 .res-area{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px;margin-bottom:9px;font-family:var(--font-m);font-size:10px;line-height:1.8;}
 .rl{margin-bottom:1px;}.rl.good{color:var(--green);}.rl.bad{color:var(--red);}.rl.neutral{color:var(--text2);}
