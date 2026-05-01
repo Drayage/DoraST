@@ -14,16 +14,32 @@ function doExplore(){
 }
 
 function showExploreChoice(evt){
-  const cards=allCards();
+  // Use actual draw pile for probability; fall back to deck+disc only when draw pile is empty
+  const baseDeck=G.deck.length?G.deck:allCards();
+  const hasCompass=hasTool('compass');
   document.getElementById('ex-title').textContent=`${G.tiles[G.pos].icon} ${evt.name}`;
   document.getElementById('ex-flavor').textContent=evt.flavor;
   const el=document.getElementById('ex-choices'); el.innerHTML='';
   evt.choices.forEach(ch=>{
     let matchCnt;
-    if(ch.req)        matchCnt=cards.reduce((s,c)=>s+(c.tag===ch.req?1:0),0);
-    else if(ch.subReq) matchCnt=cards.reduce((s,c)=>s+((c.subTags||[]).includes(ch.subReq)?1:0),0);
-    else               matchCnt=cards.length;
-    const prob=(ch.req||ch.subReq)?Math.min(99,Math.round(matchCnt/Math.max(1,cards.length)*100)):100;
+    if(ch.req)         matchCnt=baseDeck.reduce((s,c)=>s+(c.tag===ch.req?1:0),0);
+    else if(ch.subReq) matchCnt=baseDeck.reduce((s,c)=>s+((c.subTags||[]).includes(ch.subReq)?1:0),0);
+    else               matchCnt=baseDeck.length;
+    const deckLen=Math.max(1,baseDeck.length);
+    const baseP=matchCnt/deckLen;
+    let displayProb, compassNote='';
+    if(ch.req||ch.subReq){
+      if(hasCompass&&baseDeck.length>=2){
+        // advantage: pick better of 2 draws → P(success) = 1-(1-p)²
+        displayProb=Math.min(99,Math.round((1-(1-baseP)*(1-baseP))*100));
+        compassNote=' 🧭';
+      } else {
+        displayProb=Math.min(99,Math.round(baseP*100));
+      }
+    } else {
+      displayProb=100;
+    }
+    const probColor=displayProb>=70?'var(--green)':displayProb>=40?'var(--text2)':'var(--red)';
     const div=document.createElement('div'); div.className='ex-choice fi';
     const reqBadge=ch.req
       ?`<span class="card-tag tag-${ch.req}" style="font-size:8px;">${ch.req}판정</span>`
@@ -37,7 +53,7 @@ function showExploreChoice(evt){
       <div class="ex-ci">${ch.icon}</div>
       <div>
         <div class="ex-cn">${ch.label}</div>
-        <div class="ex-cd">${reqBadge} <span style="color:var(--text3);">성공률≈${prob}%</span>${greatInfo}</div>
+        <div class="ex-cd">${reqBadge} <span style="color:${probColor};">성공률≈${displayProb}%${compassNote}</span>${greatInfo}</div>
         <div class="ex-cd">${ch.desc}</div>
         <div style="font-size:8px;margin-top:3px;">
           ${rTxt?`<span style="color:var(--green);">✓ ${rTxt}</span>`:''}
@@ -79,7 +95,7 @@ function doJudgment(evt, ch){
   const hasCompass=hasTool('compass');
   if(hasCompass&&G.deck.length>=2){
     const c1=G.deck[G.deck.length-1], c2=G.deck[G.deck.length-2];
-    const score=c=>(ch.greatCard&&c&&c.id===ch.greatCard)?2:(!ch.req||(c&&c.tag===ch.req))?1:0;
+    const score=c=>!c?-1:ch.greatCard&&c.id===ch.greatCard?3:ch.req&&c.tag===ch.req?2:ch.subReq&&(c.subTags||[]).includes(ch.subReq)?1:!ch.req&&!ch.subReq?1:0;
     const useSecond=score(c2)>score(c1);
     top=useSecond?c2:c1; compassExtra=useSecond?c1:c2;
     G.disc.push(G.deck.pop()); G.disc.push(G.deck.pop());
