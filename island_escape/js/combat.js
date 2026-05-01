@@ -5,6 +5,14 @@ let _prevCbtHandUIDs=new Set();
 
 function drawCombatHand(){ return drawToHand(5); }
 
+function autoAssignStatusCards(){
+  CBT.hand.forEach(c=>{
+    if(c.tag!=='status') return;
+    if(c.atk<0 && !CBT.atkZone.some(x=>x.uid===c.uid)) CBT.atkZone.push(c);
+    if(c.def<0 && !CBT.defZone.some(x=>x.uid===c.uid)) CBT.defZone.push(c);
+  });
+}
+
 function showCbtDeckView(which){
   const panel=document.getElementById('cbt-dv');
   const closeBtn=document.getElementById('cbt-dv-close');
@@ -193,6 +201,7 @@ function startCombat(evtId, ambush, fightChosen){
   CBT={enemy:{...enemy,curHp:enemy.hp},hand:[],atkZone:[],defZone:[],resolved:false,turn:1,stunned:false,poisoned:false,penaltyApplied:false,fightChosen:!!fightChosen};
   _prevCbtHandUIDs=new Set();
   CBT.hand = ambush ? drawAmbushHand() : drawCombatHand();
+  autoAssignStatusCards();
   _cbtMode=null;
   ['btn-cbt-resolve','btn-cbt-flee'].forEach(id=>document.getElementById(id).style.display='');
   document.getElementById('btn-cbt-close').style.display='none';
@@ -230,6 +239,7 @@ function cbtCardClick(i){
     G.disc.push({...c});
     const before=CBT.hand.length;
     drawNCards(2, CBT.hand);
+    autoAssignStatusCards();
     log(`🏃 ${c.name}: ${CBT.hand.length-before}장 드로우`,'success');
     renderCombat(); return;
   }
@@ -311,8 +321,9 @@ function renderCombat(){
   const prevEl=document.getElementById('cbt-preview');
   if(prevEl){
     let preAtk=0; let hasPierce=false;
-    CBT.atkZone.forEach(c=>{if(c.cbtFx==='pierce'){preAtk+=c.atk+4;hasPierce=true;}else if(c.cbtFx==='stun')preAtk+=c.atk+3;else preAtk+=Math.max(0,c.atk);});
-    let preDef=0; CBT.defZone.forEach(c=>{preDef+=c.cbtFx==='block'?c.def+5:Math.max(0,c.def);});
+    CBT.atkZone.forEach(c=>{if(c.cbtFx==='pierce'){preAtk+=c.atk+4;hasPierce=true;}else if(c.cbtFx==='stun')preAtk+=c.atk+3;else preAtk+=c.tag==='status'?c.atk:Math.max(0,c.atk);});
+    let preDef=0; CBT.defZone.forEach(c=>{preDef+=c.cbtFx==='block'?c.def+5:c.tag==='status'?c.def:Math.max(0,c.def);});
+    preAtk=Math.max(0,preAtk); preDef=Math.max(0,preDef);
     const dmgE=hasPierce?preAtk:Math.max(0,preAtk-e.def);
     const eAk=CBT.stunned?0:e.atk; let dmgP=Math.max(0,eAk-preDef);
     if(allCards().some(c=>c.id==='leather_armor')&&dmgP>0) dmgP=Math.max(0,dmgP-2);
@@ -348,8 +359,13 @@ function renderZone(id, arr, t){
   const el=document.getElementById(id); el.innerHTML='';
   arr.forEach(c=>{
     const mc=document.createElement('span'); mc.className='mini-card';
-    mc.innerHTML=`${c.icon} ${c.name} ${t==='atk'?`⚔️${Math.max(0,c.atk)}`:`🛡️${Math.max(0,c.def)}`}`;
-    mc.onclick=()=>{ CBT.atkZone=CBT.atkZone.filter(x=>x.uid!==c.uid); CBT.defZone=CBT.defZone.filter(x=>x.uid!==c.uid); renderCombat(); };
+    if(c.tag==='status'){
+      mc.innerHTML=`${c.icon} ${c.name} 🔒${t==='atk'?c.atk:c.def}`;
+      mc.style.cssText='opacity:.65;cursor:default;';
+    } else {
+      mc.innerHTML=`${c.icon} ${c.name} ${t==='atk'?`⚔️${Math.max(0,c.atk)}`:`🛡️${Math.max(0,c.def)}`}`;
+      mc.onclick=()=>{ CBT.atkZone=CBT.atkZone.filter(x=>x.uid!==c.uid); CBT.defZone=CBT.defZone.filter(x=>x.uid!==c.uid); renderCombat(); };
+    }
     el.appendChild(mc);
   });
 }
@@ -377,8 +393,16 @@ function resolveCombat(){
       normalAtk+=c.atk; poisonApplied=true;
       lines.push({t:`★ 독칼: 독상태 부여(매라운드+3)`,cls:'good'});
     } else {
-      if(CBT.atkZone.some(x=>x.uid===c.uid)) normalAtk+=Math.max(0,c.atk);
-      if(CBT.defZone.some(x=>x.uid===c.uid)) pD+=Math.max(0,c.def);
+      if(CBT.atkZone.some(x=>x.uid===c.uid)){
+        const v=c.tag==='status'?c.atk:Math.max(0,c.atk);
+        normalAtk+=v;
+        if(c.tag==='status'&&v<0) lines.push({t:`${c.icon} ${c.name}: ATK${v}`,cls:'bad'});
+      }
+      if(CBT.defZone.some(x=>x.uid===c.uid)){
+        const v=c.tag==='status'?c.def:Math.max(0,c.def);
+        pD+=v;
+        if(c.tag==='status'&&v<0) lines.push({t:`${c.icon} ${c.name}: DEF${v}`,cls:'bad'});
+      }
     }
   });
 
@@ -471,6 +495,7 @@ function _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,will
     CBT.atkZone=[]; CBT.defZone=[];
     G.disc.push(...CBT.hand.filter(c=>!c._temp)); CBT.hand=[];
     CBT.hand=drawCombatHand();
+    autoAssignStatusCards();
     resEl.innerHTML+=`<div class="rl neutral">— 라운드${CBT.turn}: ${CBT.hand.length}장 드로우 —</div>`;
     log(`⚔️ 라운드${CBT.turn} (내HP:${G.hp} 적HP:${e.curHp})`,'combat');
   }
