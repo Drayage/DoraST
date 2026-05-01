@@ -333,7 +333,9 @@ function renderCombat(){
       div.classList.add('card-draw');
       div.style.animationDelay=(_cbtAnimIdx++*80)+'ms';
     }
-    div.innerHTML=`<div style="font-size:16px;">${c.icon}</div><div style="font-size:7px;font-weight:700;margin:2px 0;">${c.name}</div><div style="font-size:6px;font-family:var(--font-m);color:var(--text3);">A${c.atk} D${c.def}</div><div class="card-tag tag-${c.tag}" style="font-size:5px;">${c.tag}</div>`;
+    const atkS=c.atk>0?'color:var(--red);font-weight:800;':'color:var(--text3);';
+    const defS=c.def>0?'color:var(--blue);font-weight:800;':'color:var(--text3);';
+    div.innerHTML=`<div style="font-size:16px;">${c.icon}</div><div style="font-size:7px;font-weight:700;margin:2px 0;">${c.name}</div><div style="font-size:9px;font-family:var(--font-m);display:flex;gap:4px;justify-content:center;margin:2px 0;"><span style="${atkS}">⚔${c.atk}</span><span style="${defS}">🛡${c.def}</span></div><div class="card-tag tag-${c.tag}" style="font-size:5px;">${c.tag}</div>`;
     div.onclick=isInert?null:()=>cbtCardClick(i);
     div.addEventListener('mouseenter',()=>showTT(c,div));
     div.addEventListener('mouseleave',hideTT);
