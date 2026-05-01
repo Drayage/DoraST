@@ -1,12 +1,22 @@
 // ═══════════════ MAP ═══════════════
 // 7×7 = 49 타일, 시작위치 24 (행3 열3, 중앙)
 
+// 랜덤 생성에 쓸 기본 5종 타일만 추출
+const BASE_TILE_IDS=['beach','forest','cave','ruins','shore'];
+
+function _placeTile(idx, id){
+  const def=TILE_TYPES.find(t=>t.id===id);
+  if(def) G.tiles[idx]={...def,revealed:false,hasPlayer:false,hasCamp:false,explored:false};
+}
+
 function buildMap(){
+  const baseTiles=TILE_TYPES.filter(t=>BASE_TILE_IDS.includes(t.id));
   G.tiles=[];
   for(let i=0;i<49;i++){
-    const t=TILE_TYPES[Math.floor(Math.random()*TILE_TYPES.length)];
+    const t=baseTiles[Math.floor(Math.random()*baseTiles.length)];
     G.tiles.push({...t, revealed:false, hasPlayer:false, hasCamp:false, explored:false});
   }
+
   // 시작 위치(24) 반경 2 이내에 forest/beach/cave 보장
   const near=[];
   for(let i=0;i<49;i++){
@@ -17,36 +27,40 @@ function buildMap(){
       const candidates=near.filter(i=>!['forest','beach','cave'].includes(G.tiles[i].id));
       if(candidates.length){
         const idx=candidates[Math.floor(Math.random()*candidates.length)];
-        const tDef=TILE_TYPES.find(t=>t.id===tid);
-        if(tDef) G.tiles[idx]={...tDef,revealed:false,hasPlayer:false,hasCamp:false,explored:false};
+        _placeTile(idx, tid);
       }
     }
   });
-  // lookout 1개, oblivion_lake 1개 보장 (시작 위치에서 거리 4 이상)
-  ['lookout','oblivion_lake'].forEach(tid=>{
-    if(!G.tiles.some(t=>t.id===tid)){
-      const cands=[];
-      for(let i=0;i<49;i++){
-        if(tileDist(i,G.pos)>=4 && !['lookout','oblivion_lake'].includes(G.tiles[i].id)) cands.push(i);
-      }
-      if(cands.length){
-        const idx=cands[Math.floor(Math.random()*cands.length)];
-        const tDef=TILE_TYPES.find(t=>t.id===tid);
-        if(tDef) G.tiles[idx]={...tDef,revealed:false,hasPlayer:false,hasCamp:false,explored:false};
-      }
-    }
-  });
-  // oblivion_swamp 2개 배치 (시작 위치에서 거리 3 이상, lookout/oblivion_lake 자리 제외)
+
+  // 특수 타일 배치 — 이미 특수 타일이 없는 칸에만 덮어씀
   const specialIds=['lookout','oblivion_lake','oblivion_swamp'];
-  const swampCands=[];
-  for(let i=0;i<49;i++){
-    if(tileDist(i,G.pos)>=3 && !specialIds.includes(G.tiles[i].id)) swampCands.push(i);
+  const isSpecial=i=>specialIds.includes(G.tiles[i].id);
+
+  // 전망대(lookout) 1개: 시작 거리 5 이상
+  const lookoutPool=shuffle(Array.from({length:49},(_,i)=>i)
+    .filter(i=>tileDist(i,G.pos)>=5 && !isSpecial(i)));
+  if(lookoutPool.length) _placeTile(lookoutPool[0], 'lookout');
+
+  // 망각의 호수(oblivion_lake) 1개: 시작 거리 3 이상, lookout과 거리 2 이상
+  const lookoutIdx=G.tiles.findIndex(t=>t.id==='lookout');
+  const lakePool=shuffle(Array.from({length:49},(_,i)=>i)
+    .filter(i=>tileDist(i,G.pos)>=3 && !isSpecial(i)
+            && (lookoutIdx<0||tileDist(i,lookoutIdx)>=2)));
+  if(lakePool.length) _placeTile(lakePool[0], 'oblivion_lake');
+
+  // 망각의 늪(oblivion_swamp) 2개: 시작 거리 3 이상, 특수 타일과 거리 2 이상, 서로 거리 3 이상
+  const swampBase=shuffle(Array.from({length:49},(_,i)=>i)
+    .filter(i=>tileDist(i,G.pos)>=3 && !isSpecial(i)));
+  let placed=0;
+  let firstSwampIdx=-1;
+  for(const i of swampBase){
+    if(placed===0){
+      _placeTile(i,'oblivion_swamp'); firstSwampIdx=i; placed++;
+    } else if(placed===1){
+      if(tileDist(i,firstSwampIdx)>=3){ _placeTile(i,'oblivion_swamp'); placed++; break; }
+    }
   }
-  shuffle(swampCands);
-  const swampDef=TILE_TYPES.find(t=>t.id==='oblivion_swamp');
-  for(let s=0;s<2&&s<swampCands.length;s++){
-    if(swampDef) G.tiles[swampCands[s]]={...swampDef,revealed:false,hasPlayer:false,hasCamp:false,explored:false};
-  }
+
   G.tiles[G.pos].revealed=true; G.tiles[G.pos].hasPlayer=true;
   getAdj(G.pos).forEach(i=>G.tiles[i].revealed=true);
 }
