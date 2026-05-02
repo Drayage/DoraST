@@ -122,12 +122,24 @@ function attemptSignalEscape(){
     ()=>{
       const count=drawn.filter(c=>c.id==='signal').length;
       const ok=count>=5;
-      _sfFinish(
-        ok?`🎆 ${count}장 포착 — 구조선이 온다!`:`🆘 ${count}/5장 — 신호 부족`,
-        ok?'var(--green)':'var(--red)',
-        ok?'탈출!':'확인',
-        ()=>{ if(ok){G.signalEscape=true;G.escape=100;checkWin();} render(); }
-      );
+      if(!ok){
+        // 실패 패널티: 구조신호 1~2장 소멸 + 정신력 손실
+        const lose=Math.min(1+Math.floor(Math.random()*2), sigCnt);
+        let removed=0;
+        for(const arr of [G.deck,G.disc]){
+          let i=arr.length-1;
+          while(i>=0&&removed<lose){ if(arr[i].id==='signal'){arr.splice(i,1);removed++;} i--; }
+        }
+        const sanDmg=10+Math.floor(Math.random()*6);
+        G.san=Math.max(0,G.san-sanDmg);
+        flashDamage();
+        const failMsg=`🆘 ${count}/5장 — 실패. 구조신호 ${removed}장 소멸, 정신력-${sanDmg}`;
+        log(failMsg,'danger');
+        _sfFinish(failMsg,'var(--red)','확인',()=>{ checkSurvival(); render(); });
+      } else {
+        _sfFinish(`🎆 ${count}장 포착 — 구조선이 온다!`,'var(--green)','탈출!',
+          ()=>{ G.signalEscape=true;G.escape=100;checkWin(); render(); });
+      }
     }
   );
 }
