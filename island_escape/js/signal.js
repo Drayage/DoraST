@@ -96,48 +96,38 @@ function _showSignalMilestone(count){
 // ── 전망대: 구조신호 발사 ──
 function attemptSignalEscape(){
   if(G.over) return;
-  if(G.ap<3){log('AP부족 (구조신호 발사:AP3)','danger');return;}
+  if(G.ap<5){log('AP부족 (구조신호 발사:AP5)','danger');return;}
   const sigCnt=allCards().filter(c=>c.id==='signal').length;
   if(!sigCnt){log('🎆 구조신호가 없다. 신호탄 탐색으로 먼저 획득해야 한다.','danger');return;}
-  G.ap-=3;
+  G.ap-=5;
 
   const pool=[...G.deck,...G.disc];
   const shuffled=shuffle([...pool]);
-  const drawn=shuffled.slice(0,Math.min(10,shuffled.length));
+  const drawn=shuffled.slice(0,Math.min(3,shuffled.length));
 
-  _openSfModal('🆘 구조신호 발사','10장 중 🎆가 5장 이상이면 탈출 성공!');
+  _openSfModal('🆘 구조신호 발사','뽑은 3장이 모두 🎆이면 탈출 성공!');
 
-  // 4장까지 점진 가속 → 4장 직후 최고 긴장 → 5장 확정 후 빠르게
+  // 앞 카드가 신호일수록 다음 딜레이 증가 — 실패 확정 시 빠르게
   _runFlipSeq(
     drawn,
     (i,found)=>{
-      if(found>=5) return 120;   // 승리 확정 — 남은 카드 빠르게
-      if(found===4) return 950;  // 5번째를 향한 결정적 한 장 — 최대 슬로우
-      if(found===3) return 560;
-      if(found===2) return 390;
-      if(found===1) return 300;
-      return 240;
+      if(found<i) return 130;  // 이미 실패 확정, 남은 카드 빠르게
+      if(i===2) return 950;    // 마지막 카드 — 최대 긴장
+      if(i===1) return 700;    // 두 번째 카드 — 긴장 고조
+      return 420;              // 첫 번째 카드
     },
     c=>c.id==='signal'?'highlight':'dimmed',
     ()=>{
-      const count=drawn.filter(c=>c.id==='signal').length;
-      const ok=count>=5;
+      const ok=drawn.length===3&&drawn.every(c=>c.id==='signal');
       if(!ok){
-        // 실패 패널티: 구조신호 1~2장 소멸 + 정신력 손실
-        const lose=Math.min(1+Math.floor(Math.random()*2), sigCnt);
-        let removed=0;
-        for(const arr of [G.deck,G.disc]){
-          let i=arr.length-1;
-          while(i>=0&&removed<lose){ if(arr[i].id==='signal'){arr.splice(i,1);removed++;} i--; }
-        }
-        const sanDmg=10+Math.floor(Math.random()*6);
+        const sanDmg=12+Math.floor(Math.random()*7);
         G.san=Math.max(0,G.san-sanDmg);
         flashDamage();
-        const failMsg=`🆘 ${count}/5장 — 실패. 구조신호 ${removed}장 소멸, 정신력-${sanDmg}`;
+        const failMsg=`🆘 실패 — 정신력-${sanDmg}`;
         log(failMsg,'danger');
         _sfFinish(failMsg,'var(--red)','확인',()=>{ checkSurvival(); render(); });
       } else {
-        _sfFinish(`🎆 ${count}장 포착 — 구조선이 온다!`,'var(--green)','탈출!',
+        _sfFinish('🎆🎆🎆 구조선이 온다!','var(--green)','탈출!',
           ()=>{ G.signalEscape=true;G.escape=100;checkWin(); render(); });
       }
     }

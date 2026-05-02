@@ -127,7 +127,7 @@ const CARDS=[
    desc:'전망대(🗼) 탐색 시 덱 5장 중 이 카드가 나오면 구조신호 🎆 1개 획득.'},
   {id:'signal', name:'구조신호', icon:'🎆', tag:'tool', atk:0, def:0, n:0, subTags:[],
    gatherTool:false,
-   desc:'전망대(🗼)에서 전체 덱 10장 중 5장 이상이면 탈출 성공!'},
+   desc:'전망대(🗼)에서 3장 드로우 — 3장 모두 이 카드이면 탈출 성공!'},
   // 상태이상
   {id:'injury',      name:'부상',icon:'🩹',tag:'status',atk:-1,def:-1,n:0,subTags:[],desc:'ATK·DEF -1.'},
   {id:'fear',        name:'공포',icon:'😱',tag:'status',atk:-1,def:-1,n:0,subTags:[],desc:'ATK·DEF -1.'},

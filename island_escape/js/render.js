@@ -234,12 +234,12 @@ function render(){
             🧨 신호탄 탐색<span class="apb" style="margin-left:4px;">AP2</span>
           </button>
           <button class="btn" style="border-color:#40c080;color:#80e0a0;font-size:10px;"
-            onclick="attemptSignalEscape()" ${p.ap<3||p.over||!sigCnt?'disabled':''}>
-            🆘 구조신호 발사<span class="apb" style="margin-left:4px;">AP3</span>
+            onclick="attemptSignalEscape()" ${p.ap<5||p.over||!sigCnt?'disabled':''}>
+            🆘 구조신호 발사<span class="apb" style="margin-left:4px;">AP5</span>
           </button>
         </div>
         <div style="font-size:8px;color:var(--text3);font-family:var(--font-m);margin-top:4px;">
-          ${hasKit?'🧨 신호탄 키트 보유':'⚠️ 신호탄 키트 없음 (캠프에서 제작)'} · 구조신호 ${sigCnt}장 (5장 필요)
+          ${hasKit?'🧨 신호탄 키트 보유':'⚠️ 신호탄 키트 없음 (캠프에서 제작)'} · 구조신호 ${sigCnt}장 보유
         </div>`;
     } else if(ct.id==='oblivion_lake'&&ct.explored){
       const coolDays=3-(p.day-(p.lastOblivion||-99));
