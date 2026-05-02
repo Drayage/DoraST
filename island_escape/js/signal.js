@@ -57,11 +57,11 @@ function doFlareSearch(){
 
   _openSfModal('🧨 신호탄 탐색',`덱 5장 — 🧨 키트가 나오면 구조신호 획득`);
 
-  // 보유 구조신호 수가 많을수록 딜레이 증가 (기대감 고조)
+  // 키트 발견 전: 점진적 증가 / 발견 후: 즉시 빠르게
   const base=360+prevCnt*90;
   _runFlipSeq(
     drawn,
-    (i)=>base+i*70,
+    (i,found)=>found>=1?130:base+i*70,
     c=>c.id==='flare_kit'?'kit-highlight':'dimmed',
     ()=>{
       const hit=drawn.some(c=>c.id==='flare_kit');
@@ -107,10 +107,17 @@ function attemptSignalEscape(){
 
   _openSfModal('🆘 구조신호 발사','10장 중 🎆가 5장 이상이면 탈출 성공!');
 
-  // 신호 발견될수록 딜레이 증가 (긴장감 고조)
+  // 4장까지 점진 가속 → 4장 직후 최고 긴장 → 5장 확정 후 빠르게
   _runFlipSeq(
     drawn,
-    (i,found)=>300+Math.min(found,4)*190,
+    (i,found)=>{
+      if(found>=5) return 120;   // 승리 확정 — 남은 카드 빠르게
+      if(found===4) return 950;  // 5번째를 향한 결정적 한 장 — 최대 슬로우
+      if(found===3) return 560;
+      if(found===2) return 390;
+      if(found===1) return 300;
+      return 240;
+    },
     c=>c.id==='signal'?'highlight':'dimmed',
     ()=>{
       const count=drawn.filter(c=>c.id==='signal').length;
