@@ -72,11 +72,12 @@ function fmtR(r){
   if(!r) return '';
   const p=[];
   if(r.card){const d=CARD_MAP[r.card];if(d)p.push(`${d.icon}${d.name}×${r.n||1}`);}
-  if(r.san)   p.push(`정신력+${r.san}`);
-  if(r.escape)p.push(`탈출+${r.escape}%`);
-  if(r.hun)   p.push(`허기+${r.hun}`);
-  if(r.hp)    p.push(`HP+${r.hp}`);
-  if(r.ap)    p.push(`AP+${r.ap}`);
+  if(r.san)        p.push(`정신력${r.san>=0?'+':''}${r.san}`);
+  if(r.escape)     p.push(`탈출+${r.escape}%`);
+  if(r.hun)        p.push(`허기+${r.hun}`);
+  if(r.hp)         p.push(`HP+${r.hp}`);
+  if(r.ap)         p.push(`AP+${r.ap}`);
+  if(r.revealTile){const td=TILE_TYPES.find(t=>t.id===r.revealTile);p.push(`${td?.icon||'📍'}${td?.name||r.revealTile} 위치 표시`);}
   return p.join(' ');
 }
 
@@ -179,6 +180,11 @@ function doJudgment(evt, ch){
         resEl.className='jdg-res fail'; resEl.textContent='✗ 실패...';
         if(ch.failPen) applyPen(ch.failPen,lines); else lines.push('별다른 피해 없음');
       }
+      // curseDeck: 선택 시 무조건 덱에 저주 카드 추가
+      if(ch.curseDeck){
+        addCard(ch.curseDeck,1);
+        bonLines.push(`🌀 ${CARD_MAP[ch.curseDeck]?.name||ch.curseDeck}: 덱에 스며들었다`);
+      }
       const detEl=document.getElementById('jdg-det');
       detEl.style.display=''; detEl.textContent=lines.join('\n');
       const bonEl=document.getElementById('jdg-bon');
@@ -199,17 +205,20 @@ function applyR(r, lines){
     const d=CARD_MAP[r.card];
     lines.push(`${d?.icon||''}${d?.name||r.card}×${r.n||1}`);
     if(_pendingItems!=null){
-      // 팝업에서 클릭으로 획득 — addCard는 claimItem에서 처리
       for(let i=0;i<(r.n||1);i++) _pendingItems.push({id:r.card,icon:d?.icon||'📦',name:d?.name||r.card,n:1});
     } else {
       addCard(r.card,r.n||1);
     }
   }
-  if(r.san)   {G.san=Math.min(100,Math.max(0,G.san+r.san)); lines.push(r.san>=0?`정신력+${r.san}`:`정신력${r.san}`);}
-  if(r.escape){G.escape=Math.min(100,G.escape+r.escape);lines.push(`탈출+${r.escape}%`);}
-  if(r.hun)   {G.hun=Math.min(100,G.hun+r.hun);  lines.push(`허기+${r.hun}`);}
-  if(r.hp)    {G.hp=Math.min(100,G.hp+r.hp);     lines.push(`HP+${r.hp}`);}
-  if(r.ap)    {G.ap=Math.min(G.maxAP+4,G.ap+r.ap);lines.push(`AP+${r.ap}환급`);}
+  if(r.san)        {G.san=Math.min(100,Math.max(0,G.san+r.san)); lines.push(r.san>=0?`정신력+${r.san}`:`정신력${r.san}`);}
+  if(r.escape)     {G.escape=Math.min(100,G.escape+r.escape);lines.push(`탈출+${r.escape}%`);}
+  if(r.hun)        {G.hun=Math.min(100,G.hun+r.hun);  lines.push(`허기+${r.hun}`);}
+  if(r.hp)         {G.hp=Math.min(100,G.hp+r.hp);     lines.push(`HP+${r.hp}`);}
+  if(r.ap)         {G.ap=Math.min(G.maxAP+4,G.ap+r.ap);lines.push(`AP+${r.ap}환급`);}
+  if(r.revealTile) {
+    const idx=G.tiles.findIndex(t=>t.id===r.revealTile);
+    if(idx>=0&&!G.tiles[idx].revealed){ G.tiles[idx].revealed=true; const td=TILE_TYPES.find(t=>t.id===r.revealTile); lines.push(`${td?.icon||'📍'}${td?.name||r.revealTile} 위치 발견`); }
+  }
 }
 
 function applyPen(p, lines){

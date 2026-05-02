@@ -629,13 +629,14 @@
   </div>
 </div>
 
-<!-- 신호 발사 결과 모달 -->
-<div id="sigres-mo" class="mo" onclick="if(event.target===this)this.style.display='none'">
-  <div class="mb" style="text-align:center;max-width:400px;">
-    <div style="font-family:var(--font-t);font-size:18px;margin-bottom:4px;" id="sigres-title"></div>
-    <div style="font-size:11px;font-family:var(--font-m);margin-bottom:10px;" id="sigres-count"></div>
-    <div id="sigres-cards" style="background:var(--bg3);border-radius:7px;padding:10px;margin-bottom:12px;min-height:44px;line-height:1.6;"></div>
-    <button class="btn primary" id="sigres-ok" style="font-size:12px;padding:8px 22px;">확인</button>
+<!-- 신호 카드 플립 시퀀스 (신호탄 탐색 / 구조신호 발사 공통) -->
+<div id="signal-flip-mo" class="mo">
+  <div class="mb" style="text-align:center;max-width:480px;width:92vw;">
+    <div id="sf-title" style="font-family:var(--font-t);font-size:16px;margin-bottom:5px;"></div>
+    <div id="sf-subtitle" style="font-size:9px;color:var(--text2);font-family:var(--font-m);margin-bottom:14px;"></div>
+    <div id="sf-cards" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:14px;min-height:80px;align-items:center;"></div>
+    <div id="sf-result" style="font-size:12px;font-family:var(--font-m);margin-bottom:10px;min-height:18px;"></div>
+    <button id="sf-ok" class="btn primary" style="display:none;font-size:12px;padding:8px 22px;">확인</button>
   </div>
 </div>
 

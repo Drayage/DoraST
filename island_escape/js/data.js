@@ -28,11 +28,11 @@ const TILE_TYPES=[
    gather:[]},
   {id:'oblivion_lake', name:'망각의 호수', icon:'🌑', cls:'t-lake',
    flavor:'고요하고 검은 수면. 여기에 버리면 다시는 돌아오지 않는다.',
-   events:['nothing','haunted_spot','isolation_dread'],
+   events:['see_lookout','oblivion_curse','haunted_spot','isolation_dread'],
    gather:[]},
   {id:'oblivion_swamp', name:'망각의 늪', icon:'🕳️', cls:'t-swamp',
    flavor:'검은 수면 아래 무언가가 기억을 삼킨다. 발을 딛는 순간, 무언가가 사라진다.',
-   events:['nothing','haunted_spot'],
+   events:['see_lookout','oblivion_curse','haunted_spot'],
    gather:[]},
 ];
 
@@ -287,6 +287,28 @@ const EVENTS={
       {label:'불을 다시 피운다',icon:'🕯️',req:null,
        reward:{san:8},
        desc:'무조건. 따뜻한 불로 정신력+8 회복.'},
+    ]},
+  see_lookout:{
+    name:'저 멀리 전망대',
+    flavor:'안개 사이로 높은 구조물이 희미하게 보인다. 저 위에서라면 신호를 보낼 수 있을 것 같다.',
+    choices:[
+      {label:'위치를 기억한다',icon:'🗼',req:null,
+       reward:{revealTile:'lookout',san:5},
+       desc:'무조건. 전망대 위치가 지도에 표시된다. 정신력+5.'},
+      {label:'그냥 지나친다',icon:'🚶',req:null,
+       reward:{},
+       desc:'무조건. 빈손.'},
+    ]},
+  oblivion_curse:{
+    name:'망각의 기운',
+    flavor:'어두운 수면이 마음속으로 파고드는 것 같다. 기억의 일부가 흐릿해지는 느낌이다.',
+    choices:[
+      {label:'정신을 붙잡는다',icon:'🧠',req:'tool',
+       reward:{san:5},failPen:{san:-10,card:'amnesia'},
+       desc:'도구판정. 성공:정신력+5 / 실패:정신력-10+망각 카드 추가.'},
+      {label:'몸에 맡긴다',icon:'😶',req:null,
+       reward:{san:-5},curseDeck:'amnesia',
+       desc:'무조건. 정신력-5. 망각 카드가 덱에 스며든다.'},
     ]},
 };
 
