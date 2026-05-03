@@ -4695,10 +4695,15 @@ function render(){
       const dN=deckPool.length;
       const kitN=deckPool.filter(c=>c.id==='flare_kit').length;
       let flareProb=0;
-      if(dN>0&&kitN>0){
-        let pNone=1;
-        for(let i=0;i<Math.min(5,dN);i++){const r=(dN-kitN)-i;if(r<=0){pNone=0;break;}pNone*=r/(dN-i);}
-        flareProb=Math.round((1-pNone)*100);
+      if(kitN>0){
+        // 덱<5장이고 키트가 현재 덱에 있으면 → 덱 전부 먼저 뽑히므로 100% 확정
+        if(p.deck.length<5&&p.deck.some(c=>c.id==='flare_kit')){
+          flareProb=100;
+        } else if(dN>0){
+          let pNone=1;
+          for(let i=0;i<Math.min(5,dN);i++){const r=(dN-kitN)-i;if(r<=0){pNone=0;break;}pNone*=r/(dN-i);}
+          flareProb=Math.round((1-pNone)*100);
+        }
       }
       // 구조신호 발사: 전체 N장 중 3장 모두 signal일 확률
       let sigProb=0;
