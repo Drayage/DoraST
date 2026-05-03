@@ -226,12 +226,14 @@ function render(){
       const hasKit=cards.some(c=>c.id==='flare_kit');
       const sigCnt=cards.filter(c=>c.id==='signal').length;
       const N=cards.length;
-      // 신호탄 탐색: 5장 중 kit 1장 이상 뽑힐 확률 (초기하분포)
-      const kitN=cards.filter(c=>c.id==='flare_kit').length;
+      // 신호탄 탐색: 현재 덱(G.deck)에서 5장 드로우 시 kit 1장 이상 확률
+      const deckPool=p.deck.length>=5?p.deck:[...p.deck,...p.disc]; // 5장 미만이면 버림더미 포함(리셔플 발생)
+      const dN=deckPool.length;
+      const kitN=deckPool.filter(c=>c.id==='flare_kit').length;
       let flareProb=0;
-      if(N>0&&kitN>0){
+      if(dN>0&&kitN>0){
         let pNone=1;
-        for(let i=0;i<Math.min(5,N);i++){const r=(N-kitN)-i;if(r<=0){pNone=0;break;}pNone*=r/(N-i);}
+        for(let i=0;i<Math.min(5,dN);i++){const r=(dN-kitN)-i;if(r<=0){pNone=0;break;}pNone*=r/(dN-i);}
         flareProb=Math.round((1-pNone)*100);
       }
       // 구조신호 발사: 전체 N장 중 3장 모두 signal일 확률
