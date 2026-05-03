@@ -1933,7 +1933,7 @@ function showEnding(win, reason){
   const statsHtml=_endStats();
   const hlItems=_endHighlights(win);
   const prevLines=_prevRunComp();
-  const streak=_saveRun(win);
+  const streak=_saveRun(win, reason);
 
   let streakHtml='';
   if(streak.count>=2){
@@ -2045,7 +2045,7 @@ function _prevRunComp(){
   }catch(e){ return []; }
 }
 
-function _saveRun(win){
+function _saveRun(win, reason){
   try{
     const prev=JSON.parse(localStorage.getItem('ie_prev')||'{}');
     localStorage.setItem('ie_prev',JSON.stringify({
@@ -2054,6 +2054,7 @@ function _saveRun(win){
     }));
     const rec=JSON.parse(localStorage.getItem('ie_records')||'{"runs":[],"best":{},"streak":{"type":null,"count":0}}');
     const entry={day:G.day,escape:G.escape,doom:Math.min(100,G.doom),win,
+      method:reason||'raft',
       date:new Date().toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'})};
     rec.runs.unshift(entry); rec.runs=rec.runs.slice(0,5);
     if(!rec.best.survival||G.day>rec.best.survival.day) rec.best.survival=entry;
@@ -2081,7 +2082,7 @@ function showRecords(){
       html+='<div class="pn-ver" style="margin-bottom:8px;">';
       html+='<div class="pn-tag">🏆 최고 기록</div>';
       if(best.survival)   html+=`<div style="font-size:9px;color:var(--text2);font-family:var(--font-m);margin:2px 0;">🗓️ 최장 생존 <b style="color:var(--accent);">${best.survival.day}일</b> — 탈출 ${best.survival.escape}% · ${best.survival.date}</div>`;
-      if(best.escape)     html+=`<div style="font-size:9px;color:var(--text2);font-family:var(--font-m);margin:2px 0;">🚀 최단 탈출 <b style="color:var(--green);">${best.escape.day}일</b> — ${best.escape.date}</div>`;
+      if(best.escape)     html+=`<div style="font-size:9px;color:var(--text2);font-family:var(--font-m);margin:2px 0;">🚀 최단 탈출 <b style="color:var(--green);">${best.escape.day}일</b>${best.escape.method==='signal'?' 🎆신호':' 🛶뗏목'} — ${best.escape.date}</div>`;
       if(best.winStreak)  html+=`<div style="font-size:9px;color:var(--text2);font-family:var(--font-m);margin:2px 0;">🔥 최대 연승 <b style="color:var(--accent);">${best.winStreak}연승</b></div>`;
       if(best.lossStreak) html+=`<div style="font-size:9px;color:var(--text2);font-family:var(--font-m);margin:2px 0;">💀 최대 연패 <b style="color:var(--red);">${best.lossStreak}연패</b></div>`;
       html+='</div>';
@@ -2089,11 +2090,12 @@ function showRecords(){
     if(runs.length){
       html+='<div class="pn-tag" style="margin-bottom:6px;">📜 최근 기록</div>';
       runs.forEach((r,i)=>{
-        const win=r.win?'<span style="color:var(--green);font-weight:700;">탈출 성공</span>':'<span style="color:var(--red);">실패</span>';
+        const winTxt=r.win?'<span style="color:var(--green);font-weight:700;">탈출 성공</span>':'<span style="color:var(--red);">실패</span>';
+        const methodBadge=r.win?(r.method==='signal'?'<span style="color:var(--accent);">🎆신호</span>':'<span style="color:var(--text3);">🛶뗏목</span>'):'';
         html+=`<div style="display:flex;align-items:center;gap:8px;background:var(--bg3);border-radius:6px;padding:7px 10px;margin-bottom:5px;font-family:var(--font-m);font-size:9px;">
           <span style="color:var(--text3);min-width:14px;">${i+1}</span>
           <span style="color:var(--text3);">${r.date}</span>
-          ${win}
+          ${winTxt}${methodBadge}
           <span style="color:var(--accent);">🗓️${r.day}일</span>
           <span style="color:var(--green);">🛶${r.escape}%</span>
           <span style="color:var(--red);margin-left:auto;">🌫️${r.doom}%</span>
