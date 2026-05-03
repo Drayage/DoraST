@@ -127,6 +127,8 @@ function initGame(){
     else { wxTxt=`${wx.icon}${wx.name}`; }
   }
   log(`${isl.icon} ${isl.startLog}${wxTxt?` ( ${wxTxt} )`:''}`,'system');
+  const startDebris=G.deck.filter(c=>c.id==='debris').length;
+  log(`🪨 시작 덱에 잔해 ${startDebris}장${startDebris>=3?' (식량·물 +1)':''}`, startDebris>=3?'success':'');
   log('팁: 탐색→캠프→제작소에서 도구 제작→수집으로 자원 확보','');
   render();
   showIslandIntro();
@@ -142,5 +144,17 @@ function buildDeck(){
       c.push(card);
     }
   });
+  // 시작 잔해 카드 2~3장
+  const debrisDef=CARDS.find(d=>d.id==='debris');
+  const debrisCnt=2+Math.floor(Math.random()*2); // 2 or 3
+  if(debrisDef){
+    for(let i=0;i<debrisCnt;i++) c.push({...debrisDef,uid:uid()});
+  }
+  if(debrisCnt>=3){
+    // 잔해 3장이면 식량·물 1장씩 보상
+    const fd=CARDS.find(d=>d.id==='food'), wd=CARDS.find(d=>d.id==='water');
+    if(fd){const fc={...fd,uid:uid()};if(fd.dur)fc.curDur=fd.dur;c.push(fc);}
+    if(wd){const wc={...wd,uid:uid()};if(wd.dur)wc.curDur=wd.dur;c.push(wc);}
+  }
   G.deck=shuffle(c);
 }

@@ -78,6 +78,7 @@ function fmtR(r){
   if(r.hp)         p.push(`HP+${r.hp}`);
   if(r.ap)         p.push(`AP+${r.ap}`);
   if(r.revealTile){const td=TILE_TYPES.find(t=>t.id===r.revealTile);p.push(`${td?.icon||'📍'}${td?.name||r.revealTile} 위치 표시`);}
+  if(r.removeCard){const d=CARD_MAP[r.removeCard];p.push(`${d?.icon||''}${d?.name||r.removeCard} 소멸`);}
   return p.join(' ');
 }
 
@@ -218,6 +219,13 @@ function applyR(r, lines){
   if(r.revealTile) {
     const idx=G.tiles.findIndex(t=>t.id===r.revealTile);
     if(idx>=0&&!G.tiles[idx].revealed){ G.tiles[idx].revealed=true; const td=TILE_TYPES.find(t=>t.id===r.revealTile); lines.push(`${td?.icon||'📍'}${td?.name||r.revealTile} 위치 발견`); }
+  }
+  if(r.removeCard){
+    const rd=CARD_MAP[r.removeCard];
+    let di=G.disc.findIndex(c=>c.id===r.removeCard);
+    if(di>=0){G.disc.splice(di,1);lines.push(`${rd?.icon||''}${rd?.name||r.removeCard} 소멸`);}
+    else{di=G.deck.findIndex(c=>c.id===r.removeCard);if(di>=0){G.deck.splice(di,1);lines.push(`${rd?.icon||''}${rd?.name||r.removeCard} 소멸`);}
+    else lines.push(`${rd?.name||r.removeCard} 없음`);}
   }
 }
 

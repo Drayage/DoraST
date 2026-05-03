@@ -2,10 +2,10 @@
 
 const TILE_TYPES=[
   {id:'beach', name:'해변',icon:'🏖️',cls:'t-beach',flavor:'해변의 모래사장을 걷는다. 파도 소리가 들려온다.',
-   events:['res_wood','res_metal','res_food','old_fire','nothing'],
+   events:['res_wood','res_metal','res_food','old_fire','nothing','debris_find'],
    gather:[{tool:'fishing_rod',res:'food',label:'낚시',flavor:'해변에서 낚싯대로 물고기를 잡는다.'}]},
   {id:'forest',name:'숲',  icon:'🌲',cls:'t-forest',flavor:'울창한 숲이다. 여러 동식물의 소리가 들린다.',
-   events:['res_wood','res_wood','res_food','res_herb','cbt_boar','cbt_snake','trap_pit'],
+   events:['res_wood','res_wood','res_food','res_herb','cbt_boar','cbt_snake','trap_pit','debris_find'],
    gather:[
      {tool:'gathering_knife',res:'herb',label:'약초채집',flavor:'채집칼로 약초를 모은다.'},
      {tool:'axe',res:'wood',label:'나무베기',flavor:'도끼로 나무를 벤다.'},
@@ -14,7 +14,7 @@ const TILE_TYPES=[
    events:['res_metal','res_metal','res_metal','cbt_bat','find_shelter','nothing'],
    gather:[{tool:'pickaxe',res:'metal',label:'채굴',flavor:'곡괭이로 동굴 벽을 캔다.'}]},
   {id:'ruins', name:'폐허',icon:'🏚️',cls:'t-ruins',flavor:'오래된 구조물의 잔해가 흩어져 있다. 무언가 숨겨져 있을 것 같다.',
-   events:['res_metal','find_blueprint','cbt_ghost','res_food','survivor_note','haunted_spot'],
+   events:['res_metal','find_blueprint','cbt_ghost','res_food','survivor_note','haunted_spot','debris_find'],
    gather:[{tool:'torch',res:'metal',label:'유물탐색',flavor:'횃불로 폐허를 샅샅이 뒤진다.'}]},
   {id:'shore', name:'해안',icon:'🌊',cls:'t-shore',flavor:'거친 파도가 해안을 두드린다. 표류물이 밀려와 있다.',
    events:['res_food','res_metal','find_wreckage','nothing','isolation_dread'],
@@ -136,6 +136,10 @@ const CARDS=[
   {id:'amnesia',     name:'망각',icon:'🌀',tag:'status',atk:-1,def:0,n:0,subTags:[],
    desc:'환각이 현실을 침식한다. 탐색 판정 시 정신력-3. 종말 단계에서 확률로 다시 출현한다.',
    passiveDesc:'망각: 탐색 판정 시 정신력-3'},
+  {id:'debris', name:'잔해', icon:'🪨', tag:'resource', atk:0, def:0, n:0, subTags:['무거움'],
+   desc:'파도에 쓸려온 쓸모없는 잔해. 덱을 차지할 뿐이다. 버려야 가볍다.'},
+  {id:'good_sleep', name:'꿀잠', icon:'😪', tag:'resource', atk:0, def:0, n:0, dur:1, use:'good_sleep', subTags:[],
+   desc:'숙면의 여운. 사용 시 HP+10, 정신력+8 회복. 내구도 1.'},
 ];
 
 const ENEMIES={
@@ -298,6 +302,17 @@ const EVENTS={
       {label:'그냥 지나친다',icon:'🚶',req:null,
        reward:{},
        desc:'무조건. 빈손.'},
+    ]},
+  debris_find:{
+    name:'파편 더미',
+    flavor:'해안에 밀려온 잡동사니가 쌓여 있다. 뒤지면 뭔가 나오겠지만, 손이 더러워진다.',
+    choices:[
+      {label:'샅샅이 뒤진다',icon:'🔍',req:null,
+       reward:{card:'food',n:1},curseDeck:'debris',
+       desc:'무조건. 식량×1 획득. 잔해 카드가 덱에 추가된다.'},
+      {label:'잔해를 정리한다',icon:'🧹',req:null,
+       reward:{removeCard:'debris'},
+       desc:'무조건. 덱의 잔해 카드 1장 제거.'},
     ]},
   oblivion_curse:{
     name:'망각의 기운',

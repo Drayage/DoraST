@@ -272,7 +272,7 @@ function showRaftLottery(){
   document.getElementById('se-ok').onclick=null;
   document.getElementById('se-title').textContent='🛶 뗏목 부품 제작 — 뽑기!';
   document.getElementById('se-flavor').textContent='부품을 조립하다 보니 결과가 어떻게 될지 알 수 없다. 5장 중 1장을 선택하라.';
-  document.getElementById('se-hint').textContent='대성공(1): 탈출+30% | 성공(3): 탈출+15% | 실패(1): 탈출-10%';
+  document.getElementById('se-hint').textContent='대성공(1): 탈출+30%+잔해 | 성공(3): 탈출+15%+잔해 | 실패(1): 탈출-10%·잔해 제거';
   document.getElementById('se-result').textContent='';
   document.getElementById('se-ok').style.display='none';
   const cardsEl=document.getElementById('se-cards'); cardsEl.innerHTML='';
@@ -305,16 +305,21 @@ function revealRaft(el, type){
     if(type==='great'){
       G.escape=Math.min(100,G.escape+30);
       G.raftGreat=(G.raftGreat||0)+1;
-      resEl.style.color='var(--accent)'; resEl.textContent='★ 대성공! 뛰어난 부품 완성. 탈출도 +30%';
-      log('🛶 뗏목 제작 대성공! 탈출도+30%','success');
+      addCard('debris',1);
+      resEl.style.color='var(--accent)'; resEl.textContent='★ 대성공! 뛰어난 부품 완성. 탈출도 +30% (잔해 +1)';
+      log('🛶 뗏목 제작 대성공! 탈출도+30%, 잔해 카드 추가','success');
     } else if(type==='ok'){
       G.escape=Math.min(100,G.escape+15);
-      resEl.style.color='var(--green)'; resEl.textContent='✓ 성공. 괜찮은 부품 완성. 탈출도 +15%';
-      log('🛶 뗏목 제작 성공. 탈출도+15%','success');
+      addCard('debris',1);
+      resEl.style.color='var(--green)'; resEl.textContent='✓ 성공. 괜찮은 부품 완성. 탈출도 +15% (잔해 +1)';
+      log('🛶 뗏목 제작 성공. 탈출도+15%, 잔해 카드 추가','success');
     } else {
       G.escape=Math.max(0,G.escape-10);
       G.raftFail=(G.raftFail||0)+1;
-      resEl.style.color='var(--red)'; resEl.textContent='✗ 실패. 부품이 망가졌다. 탈출도 -10%';
+      let di=G.disc.findIndex(c=>c.id==='debris');
+      if(di>=0){G.disc.splice(di,1);log('🪨 잔해 카드 1장 소멸','');}
+      else{di=G.deck.findIndex(c=>c.id==='debris');if(di>=0){G.deck.splice(di,1);log('🪨 잔해 카드 1장 소멸','');}}
+      resEl.style.color='var(--red)'; resEl.textContent='✗ 실패. 부품이 망가졌다. 탈출도 -10% (잔해 제거)';
       log('🛶 뗏목 제작 실패. 탈출도-10%','danger');
     }
     if(G.escape!==escBefore) notifyEscapeChange(escBefore,G.escape,'뗏목 제작');
@@ -423,9 +428,9 @@ function revealSC(el, type){
     const resEl=document.getElementById('se-result');
     if(type==='ok'){
       resEl.style.color='var(--green)';
-      resEl.textContent='✓ 푹 잤다! 덱의 상태이상 카드 1장이 사라졌다.';
-      rmStatusCard();
-      log('😴 취침이벤트: 숙면 — 상태이상 1장 제거','success');
+      resEl.textContent='✓ 꿀잠! 회복 카드가 덱에 추가됐다.';
+      addCard('good_sleep',1);
+      log('😴 취침이벤트: 꿀잠 — 😪꿀잠 카드 추가','success');
     } else if(type==='fail'){
       resEl.style.color='var(--red)';
       resEl.textContent='✗ 잠을 설쳤다. AP -2.';

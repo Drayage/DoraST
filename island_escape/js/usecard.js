@@ -27,7 +27,7 @@ function renderUcCards(){
     const usable=(!!card.use||card.tag==='action')&&card.id!=='flare_kit'&&card.id!=='signal';
     const kBoost=hasTool('knife')?8:0;
     const durStr=card.dur?`<div style="font-size:8px;color:var(--accent);font-family:var(--font-m);">🔋${card.curDur||card.dur}/${card.dur}</div>`:'';
-    const useLabels={eat:`🍗허기+${22+kBoost}`,drink:'💧갈증+28',heal:'🌿HP+10',_action:'🏃2장 드로우'};
+    const useLabels={eat:`🍗허기+${22+kBoost}`,drink:'💧갈증+28',heal:'🌿HP+10',good_sleep:'😪HP+10·정신력+8',_action:'🏃2장 드로우'};
     const div=document.createElement('div');
     div.style.cssText=`background:var(--bg3);border:1px solid ${usable?'var(--green2)':'var(--border)'};border-radius:9px;padding:10px 8px;width:90px;text-align:center;cursor:${usable?'pointer':'default'};opacity:${usable?1:0.5};transition:all .12s;`;
     if(!_prevUcHandUIDs.has(card.uid)){
@@ -84,6 +84,12 @@ function ucUse(i){
     resEl.textContent='🌿 약초 — HP+10';
     resEl.style.color='var(--green)';
     log('🌿 약초. HP+10','success');
+  } else if(card.use==='good_sleep'){
+    G.hp=Math.min(100,G.hp+10);
+    G.san=Math.min(100,G.san+8);
+    resEl.textContent='😪 꿀잠 — HP+10, 정신력+8';
+    resEl.style.color='var(--green)';
+    log('😪 꿀잠. HP+10, 정신력+8','success');
   }
   if(card.dur){
     card.curDur=(card.curDur||card.dur)-1;

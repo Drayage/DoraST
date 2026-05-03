@@ -1129,10 +1129,10 @@ body.game-inactive #mob-tabs{
 
 const TILE_TYPES=[
   {id:'beach', name:'해변',icon:'🏖️',cls:'t-beach',flavor:'해변의 모래사장을 걷는다. 파도 소리가 들려온다.',
-   events:['res_wood','res_metal','res_food','old_fire','nothing'],
+   events:['res_wood','res_metal','res_food','old_fire','nothing','debris_find'],
    gather:[{tool:'fishing_rod',res:'food',label:'낚시',flavor:'해변에서 낚싯대로 물고기를 잡는다.'}]},
   {id:'forest',name:'숲',  icon:'🌲',cls:'t-forest',flavor:'울창한 숲이다. 여러 동식물의 소리가 들린다.',
-   events:['res_wood','res_wood','res_food','res_herb','cbt_boar','cbt_snake','trap_pit'],
+   events:['res_wood','res_wood','res_food','res_herb','cbt_boar','cbt_snake','trap_pit','debris_find'],
    gather:[
      {tool:'gathering_knife',res:'herb',label:'약초채집',flavor:'채집칼로 약초를 모은다.'},
      {tool:'axe',res:'wood',label:'나무베기',flavor:'도끼로 나무를 벤다.'},
@@ -1141,7 +1141,7 @@ const TILE_TYPES=[
    events:['res_metal','res_metal','res_metal','cbt_bat','find_shelter','nothing'],
    gather:[{tool:'pickaxe',res:'metal',label:'채굴',flavor:'곡괭이로 동굴 벽을 캔다.'}]},
   {id:'ruins', name:'폐허',icon:'🏚️',cls:'t-ruins',flavor:'오래된 구조물의 잔해가 흩어져 있다. 무언가 숨겨져 있을 것 같다.',
-   events:['res_metal','find_blueprint','cbt_ghost','res_food','survivor_note','haunted_spot'],
+   events:['res_metal','find_blueprint','cbt_ghost','res_food','survivor_note','haunted_spot','debris_find'],
    gather:[{tool:'torch',res:'metal',label:'유물탐색',flavor:'횃불로 폐허를 샅샅이 뒤진다.'}]},
   {id:'shore', name:'해안',icon:'🌊',cls:'t-shore',flavor:'거친 파도가 해안을 두드린다. 표류물이 밀려와 있다.',
    events:['res_food','res_metal','find_wreckage','nothing','isolation_dread'],
@@ -1263,6 +1263,10 @@ const CARDS=[
   {id:'amnesia',     name:'망각',icon:'🌀',tag:'status',atk:-1,def:0,n:0,subTags:[],
    desc:'환각이 현실을 침식한다. 탐색 판정 시 정신력-3. 종말 단계에서 확률로 다시 출현한다.',
    passiveDesc:'망각: 탐색 판정 시 정신력-3'},
+  {id:'debris', name:'잔해', icon:'🪨', tag:'resource', atk:0, def:0, n:0, subTags:['무거움'],
+   desc:'파도에 쓸려온 쓸모없는 잔해. 덱을 차지할 뿐이다. 버려야 가볍다.'},
+  {id:'good_sleep', name:'꿀잠', icon:'😪', tag:'resource', atk:0, def:0, n:0, dur:1, use:'good_sleep', subTags:[],
+   desc:'숙면의 여운. 사용 시 HP+10, 정신력+8 회복. 내구도 1.'},
 ];
 
 const ENEMIES={
@@ -1425,6 +1429,17 @@ const EVENTS={
       {label:'그냥 지나친다',icon:'🚶',req:null,
        reward:{},
        desc:'무조건. 빈손.'},
+    ]},
+  debris_find:{
+    name:'파편 더미',
+    flavor:'해안에 밀려온 잡동사니가 쌓여 있다. 뒤지면 뭔가 나오겠지만, 손이 더러워진다.',
+    choices:[
+      {label:'샅샅이 뒤진다',icon:'🔍',req:null,
+       reward:{card:'food',n:1},curseDeck:'debris',
+       desc:'무조건. 식량×1 획득. 잔해 카드가 덱에 추가된다.'},
+      {label:'잔해를 정리한다',icon:'🧹',req:null,
+       reward:{removeCard:'debris'},
+       desc:'무조건. 덱의 잔해 카드 1장 제거.'},
     ]},
   oblivion_curse:{
     name:'망각의 기운',
@@ -1611,6 +1626,8 @@ function initGame(){
     else { wxTxt=`${wx.icon}${wx.name}`; }
   }
   log(`${isl.icon} ${isl.startLog}${wxTxt?` ( ${wxTxt} )`:''}`,'system');
+  const startDebris=G.deck.filter(c=>c.id==='debris').length;
+  log(`🪨 시작 덱에 잔해 ${startDebris}장${startDebris>=3?' (식량·물 +1)':''}`, startDebris>=3?'success':'');
   log('팁: 탐색→캠프→제작소에서 도구 제작→수집으로 자원 확보','');
   render();
   showIslandIntro();
@@ -1626,6 +1643,18 @@ function buildDeck(){
       c.push(card);
     }
   });
+  // 시작 잔해 카드 2~3장
+  const debrisDef=CARDS.find(d=>d.id==='debris');
+  const debrisCnt=2+Math.floor(Math.random()*2); // 2 or 3
+  if(debrisDef){
+    for(let i=0;i<debrisCnt;i++) c.push({...debrisDef,uid:uid()});
+  }
+  if(debrisCnt>=3){
+    // 잔해 3장이면 식량·물 1장씩 보상
+    const fd=CARDS.find(d=>d.id==='food'), wd=CARDS.find(d=>d.id==='water');
+    if(fd){const fc={...fd,uid:uid()};if(fd.dur)fc.curDur=fd.dur;c.push(fc);}
+    if(wd){const wc={...wd,uid:uid()};if(wd.dur)wc.curDur=wd.dur;c.push(wc);}
+  }
   G.deck=shuffle(c);
 }
 
@@ -2562,6 +2591,7 @@ function fmtR(r){
   if(r.hp)         p.push(`HP+${r.hp}`);
   if(r.ap)         p.push(`AP+${r.ap}`);
   if(r.revealTile){const td=TILE_TYPES.find(t=>t.id===r.revealTile);p.push(`${td?.icon||'📍'}${td?.name||r.revealTile} 위치 표시`);}
+  if(r.removeCard){const d=CARD_MAP[r.removeCard];p.push(`${d?.icon||''}${d?.name||r.removeCard} 소멸`);}
   return p.join(' ');
 }
 
@@ -2702,6 +2732,13 @@ function applyR(r, lines){
   if(r.revealTile) {
     const idx=G.tiles.findIndex(t=>t.id===r.revealTile);
     if(idx>=0&&!G.tiles[idx].revealed){ G.tiles[idx].revealed=true; const td=TILE_TYPES.find(t=>t.id===r.revealTile); lines.push(`${td?.icon||'📍'}${td?.name||r.revealTile} 위치 발견`); }
+  }
+  if(r.removeCard){
+    const rd=CARD_MAP[r.removeCard];
+    let di=G.disc.findIndex(c=>c.id===r.removeCard);
+    if(di>=0){G.disc.splice(di,1);lines.push(`${rd?.icon||''}${rd?.name||r.removeCard} 소멸`);}
+    else{di=G.deck.findIndex(c=>c.id===r.removeCard);if(di>=0){G.deck.splice(di,1);lines.push(`${rd?.icon||''}${rd?.name||r.removeCard} 소멸`);}
+    else lines.push(`${rd?.name||r.removeCard} 없음`);}
   }
 }
 
@@ -3005,7 +3042,7 @@ function renderUcCards(){
     const usable=(!!card.use||card.tag==='action')&&card.id!=='flare_kit'&&card.id!=='signal';
     const kBoost=hasTool('knife')?8:0;
     const durStr=card.dur?`<div style="font-size:8px;color:var(--accent);font-family:var(--font-m);">🔋${card.curDur||card.dur}/${card.dur}</div>`:'';
-    const useLabels={eat:`🍗허기+${22+kBoost}`,drink:'💧갈증+28',heal:'🌿HP+10',_action:'🏃2장 드로우'};
+    const useLabels={eat:`🍗허기+${22+kBoost}`,drink:'💧갈증+28',heal:'🌿HP+10',good_sleep:'😪HP+10·정신력+8',_action:'🏃2장 드로우'};
     const div=document.createElement('div');
     div.style.cssText=`background:var(--bg3);border:1px solid ${usable?'var(--green2)':'var(--border)'};border-radius:9px;padding:10px 8px;width:90px;text-align:center;cursor:${usable?'pointer':'default'};opacity:${usable?1:0.5};transition:all .12s;`;
     if(!_prevUcHandUIDs.has(card.uid)){
@@ -3062,6 +3099,12 @@ function ucUse(i){
     resEl.textContent='🌿 약초 — HP+10';
     resEl.style.color='var(--green)';
     log('🌿 약초. HP+10','success');
+  } else if(card.use==='good_sleep'){
+    G.hp=Math.min(100,G.hp+10);
+    G.san=Math.min(100,G.san+8);
+    resEl.textContent='😪 꿀잠 — HP+10, 정신력+8';
+    resEl.style.color='var(--green)';
+    log('😪 꿀잠. HP+10, 정신력+8','success');
   }
   if(card.dur){
     card.curDur=(card.curDur||card.dur)-1;
@@ -3362,7 +3405,7 @@ function showRaftLottery(){
   document.getElementById('se-ok').onclick=null;
   document.getElementById('se-title').textContent='🛶 뗏목 부품 제작 — 뽑기!';
   document.getElementById('se-flavor').textContent='부품을 조립하다 보니 결과가 어떻게 될지 알 수 없다. 5장 중 1장을 선택하라.';
-  document.getElementById('se-hint').textContent='대성공(1): 탈출+30% | 성공(3): 탈출+15% | 실패(1): 탈출-10%';
+  document.getElementById('se-hint').textContent='대성공(1): 탈출+30%+잔해 | 성공(3): 탈출+15%+잔해 | 실패(1): 탈출-10%·잔해 제거';
   document.getElementById('se-result').textContent='';
   document.getElementById('se-ok').style.display='none';
   const cardsEl=document.getElementById('se-cards'); cardsEl.innerHTML='';
@@ -3395,16 +3438,21 @@ function revealRaft(el, type){
     if(type==='great'){
       G.escape=Math.min(100,G.escape+30);
       G.raftGreat=(G.raftGreat||0)+1;
-      resEl.style.color='var(--accent)'; resEl.textContent='★ 대성공! 뛰어난 부품 완성. 탈출도 +30%';
-      log('🛶 뗏목 제작 대성공! 탈출도+30%','success');
+      addCard('debris',1);
+      resEl.style.color='var(--accent)'; resEl.textContent='★ 대성공! 뛰어난 부품 완성. 탈출도 +30% (잔해 +1)';
+      log('🛶 뗏목 제작 대성공! 탈출도+30%, 잔해 카드 추가','success');
     } else if(type==='ok'){
       G.escape=Math.min(100,G.escape+15);
-      resEl.style.color='var(--green)'; resEl.textContent='✓ 성공. 괜찮은 부품 완성. 탈출도 +15%';
-      log('🛶 뗏목 제작 성공. 탈출도+15%','success');
+      addCard('debris',1);
+      resEl.style.color='var(--green)'; resEl.textContent='✓ 성공. 괜찮은 부품 완성. 탈출도 +15% (잔해 +1)';
+      log('🛶 뗏목 제작 성공. 탈출도+15%, 잔해 카드 추가','success');
     } else {
       G.escape=Math.max(0,G.escape-10);
       G.raftFail=(G.raftFail||0)+1;
-      resEl.style.color='var(--red)'; resEl.textContent='✗ 실패. 부품이 망가졌다. 탈출도 -10%';
+      let di=G.disc.findIndex(c=>c.id==='debris');
+      if(di>=0){G.disc.splice(di,1);log('🪨 잔해 카드 1장 소멸','');}
+      else{di=G.deck.findIndex(c=>c.id==='debris');if(di>=0){G.deck.splice(di,1);log('🪨 잔해 카드 1장 소멸','');}}
+      resEl.style.color='var(--red)'; resEl.textContent='✗ 실패. 부품이 망가졌다. 탈출도 -10% (잔해 제거)';
       log('🛶 뗏목 제작 실패. 탈출도-10%','danger');
     }
     if(G.escape!==escBefore) notifyEscapeChange(escBefore,G.escape,'뗏목 제작');
@@ -3513,9 +3561,9 @@ function revealSC(el, type){
     const resEl=document.getElementById('se-result');
     if(type==='ok'){
       resEl.style.color='var(--green)';
-      resEl.textContent='✓ 푹 잤다! 덱의 상태이상 카드 1장이 사라졌다.';
-      rmStatusCard();
-      log('😴 취침이벤트: 숙면 — 상태이상 1장 제거','success');
+      resEl.textContent='✓ 꿀잠! 회복 카드가 덱에 추가됐다.';
+      addCard('good_sleep',1);
+      log('😴 취침이벤트: 꿀잠 — 😪꿀잠 카드 추가','success');
     } else if(type==='fail'){
       resEl.style.color='var(--red)';
       resEl.textContent='✗ 잠을 설쳤다. AP -2.';
