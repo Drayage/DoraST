@@ -72,6 +72,7 @@ function fmtR(r){
   if(!r) return '';
   const p=[];
   if(r.card){const d=CARD_MAP[r.card];if(d)p.push(`${d.icon}${d.name}×${r.n||1}`);}
+  if(r.cards) r.cards.forEach(c=>{const d=CARD_MAP[c.id];if(d)p.push(`${d.icon}${d.name}×${c.n||1}`);});
   if(r.san)        p.push(`정신력${r.san>=0?'+':''}${r.san}`);
   if(r.escape)     p.push(`탈출+${r.escape}%`);
   if(r.hun)        p.push(`허기+${r.hun}`);
@@ -122,7 +123,7 @@ function doJudgment(evt, ch){
   const cardEl=document.getElementById('jdg-card'), backEl=document.getElementById('jdg-back');
   cardEl.classList.remove('flipped'); backEl.className='jdg-back';
   ['jdg-res','jdg-det','jdg-bon','jdg-ok'].forEach(id=>document.getElementById(id).style.display='none');
-  document.getElementById('jdg-title').textContent='🎴 덱 맨 위 카드를 뒤집는 중...';
+  document.getElementById('jdg-title').textContent=ch.devourDrawn?'🪦 소멸 — 덱 맨 위 카드를 확인한다...':'🎴 덱 맨 위 카드를 뒤집는 중...';
   // 카드 딜 애니메이션 (기존 클래스 제거 → reflow → 재추가)
   const wrapEl=document.getElementById('jdg-wrap');
   wrapEl.classList.remove('jdg-deal'); void wrapEl.offsetWidth; wrapEl.classList.add('jdg-deal');
@@ -141,7 +142,7 @@ function doJudgment(evt, ch){
 
   setTimeout(()=>{
     cardEl.classList.add('flipped');
-    backEl.classList.add(isGreat?'great':success?'ok':'fail');
+    backEl.classList.add(ch.devourDrawn?'fail':isGreat?'great':success?'ok':'fail');
     setTimeout(()=>{
       const resEl=document.getElementById('jdg-res');
       resEl.style.display='';
@@ -166,7 +167,17 @@ function doJudgment(evt, ch){
       }
       if(compassExtra) bonLines.push(`🧭 나침반: ${compassExtra.icon}${compassExtra.name} 제외 → 유리한 카드 선택`);
       if(subOk&&!primaryOk) bonLines.push(`🏷️ #${ch.subReq} 보조 태그 매치 성공!`);
-      if(isGreat){
+      if(ch.devourDrawn){
+        resEl.className='jdg-res fail'; resEl.textContent='🪦 소멸 완료';
+        if(top){
+          const di=G.disc.findIndex(c=>c.uid===top.uid);
+          if(di>=0) G.disc.splice(di,1);
+          lines.push(`🪦 ${top.icon}${top.name} 영구 소멸`);
+          log(`🪦 파편 정리: ${top.icon}${top.name} 소멸`,'danger');
+        } else {
+          lines.push('덱이 비어있음');
+        }
+      } else if(isGreat){
         resEl.className='jdg-res great'; resEl.textContent='★ 대성공!';
         applyR(ch.reward,lines); applyR(ch.greatBonus,lines);
         bonLines.push(`★ ${CARD_MAP[ch.greatCard]?.name||ch.greatCard} 대성공 발동!`);
@@ -194,7 +205,7 @@ function doJudgment(evt, ch){
       okEl.onclick=()=>closeJdg();
       okEl.style.display='';
       if(G.escape!==escBefore) notifyEscapeChange(escBefore,G.escape,evt.name);
-      log(`[${isGreat?'대성공':success?'성공':'실패'}] ${evt.name} — ${lines.join(', ')}`,(isGreat||success)?'success':'danger');
+      log(`[${ch.devourDrawn?'소멸':isGreat?'대성공':success?'성공':'실패'}] ${evt.name} — ${lines.join(', ')}`,ch.devourDrawn?'danger':(isGreat||success)?'success':'danger');
       checkSurvival(); checkWin(); render();
     }, postFlipDelay);
   }, preFlipDelay);
@@ -210,6 +221,17 @@ function applyR(r, lines){
     } else {
       addCard(r.card,r.n||1);
     }
+  }
+  if(r.cards){
+    r.cards.forEach(c=>{
+      const d=CARD_MAP[c.id];
+      lines.push(`${d?.icon||''}${d?.name||c.id}×${c.n||1}`);
+      if(_pendingItems!=null){
+        for(let i=0;i<(c.n||1);i++) _pendingItems.push({id:c.id,icon:d?.icon||'📦',name:d?.name||c.id,n:1});
+      } else {
+        addCard(c.id,c.n||1);
+      }
+    });
   }
   if(r.san)        {G.san=Math.min(100,Math.max(0,G.san+r.san)); lines.push(r.san>=0?`정신력+${r.san}`:`정신력${r.san}`);}
   if(r.escape)     {G.escape=Math.min(100,G.escape+r.escape);lines.push(`탈출+${r.escape}%`);}

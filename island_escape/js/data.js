@@ -308,11 +308,11 @@ const EVENTS={
     flavor:'해안에 밀려온 잡동사니가 쌓여 있다. 뒤지면 뭔가 나오겠지만, 손이 더러워진다.',
     choices:[
       {label:'샅샅이 뒤진다',icon:'🔍',req:null,
-       reward:{card:'food',n:1},curseDeck:'debris',
-       desc:'무조건. 식량×1 획득. 잔해 카드가 덱에 추가된다.'},
+       reward:{cards:[{id:'debris',n:1},{id:'wood',n:2},{id:'metal',n:1}]},
+       desc:'무조건. 잔해×1 추가 + 목재×2·고철×1 획득.'},
       {label:'잔해를 정리한다',icon:'🧹',req:null,
-       reward:{removeCard:'debris'},
-       desc:'무조건. 덱의 잔해 카드 1장 제거.'},
+       devourDrawn:true,reward:{},
+       desc:'무조건. 덱 맨 위 카드 1장 소멸.'},
     ]},
   oblivion_curse:{
     name:'망각의 기운',
