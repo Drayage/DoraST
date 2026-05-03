@@ -225,7 +225,19 @@ function render(){
     if(ct.id==='lookout'&&ct.explored){
       const hasKit=cards.some(c=>c.id==='flare_kit');
       const sigCnt=cards.filter(c=>c.id==='signal').length;
-      const coolLeft=3-(p.day-(p.lastOblivion||-99));
+      const N=cards.length;
+      // 신호탄 탐색: 5장 중 kit 1장 이상 뽑힐 확률 (초기하분포)
+      const kitN=cards.filter(c=>c.id==='flare_kit').length;
+      let flareProb=0;
+      if(N>0&&kitN>0){
+        let pNone=1;
+        for(let i=0;i<Math.min(5,N);i++){const r=(N-kitN)-i;if(r<=0){pNone=0;break;}pNone*=r/(N-i);}
+        flareProb=Math.round((1-pNone)*100);
+      }
+      // 구조신호 발사: 전체 N장 중 3장 모두 signal일 확률
+      let sigProb=0;
+      if(N>=3&&sigCnt>=3) sigProb=Math.round(sigCnt*(sigCnt-1)*(sigCnt-2)/(N*(N-1)*(N-2))*100);
+      const probCol=p=>p>=60?'var(--green)':p>=30?'var(--accent)':'var(--red)';
       specEl.style.display='';
       specEl.innerHTML=`<div style="font-size:9px;color:#aecbae;font-family:var(--font-m);margin-bottom:5px;">🗼 전망대 전용 행동</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
@@ -238,8 +250,9 @@ function render(){
             🆘 구조신호 발사<span class="apb" style="margin-left:4px;">AP5</span>
           </button>
         </div>
-        <div style="font-size:8px;color:var(--text3);font-family:var(--font-m);margin-top:4px;">
-          ${hasKit?'🧨 신호탄 키트 보유':'⚠️ 신호탄 키트 없음 (캠프에서 제작)'} · 구조신호 ${sigCnt}장 보유
+        <div style="font-size:8px;color:var(--text3);font-family:var(--font-m);margin-top:4px;display:flex;gap:8px;flex-wrap:wrap;">
+          <span>${hasKit?'🧨 키트 보유':'⚠️ 키트 없음'} · 탐색 성공률 <span style="color:${probCol(flareProb)};font-weight:700;">${flareProb}%</span></span>
+          <span>🎆 ${sigCnt}장 보유 · 발사 성공률 <span style="color:${probCol(sigProb)};font-weight:700;">${sigProb}%</span></span>
         </div>`;
     } else if(ct.id==='oblivion_lake'&&ct.explored){
       const coolDays=3-(p.day-(p.lastOblivion||-99));
