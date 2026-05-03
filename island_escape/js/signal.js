@@ -57,11 +57,9 @@ function doFlareSearch(){
 
   _openSfModal('🧨 신호탄 탐색',`덱 5장 — 🧨 키트가 나오면 구조신호 획득`);
 
-  // 키트 발견 전: 점진적 증가 / 발견 후: 즉시 빠르게
-  const base=360+prevCnt*90;
   _runFlipSeq(
     drawn,
-    (i,found)=>found>=1?130:base+i*70,
+    ()=>180,
     c=>c.id==='flare_kit'?'kit-highlight':'dimmed',
     ()=>{
       const hit=drawn.some(c=>c.id==='flare_kit');
@@ -101,9 +99,9 @@ function attemptSignalEscape(){
   if(!sigCnt){log('🎆 구조신호가 없다. 신호탄 탐색으로 먼저 획득해야 한다.','danger');return;}
   G.ap-=5;
 
-  const pool=[...G.deck,...G.disc];
-  const shuffled=shuffle([...pool]);
-  const drawn=shuffled.slice(0,Math.min(3,shuffled.length));
+  G.deck=shuffle([...G.deck,...G.disc]); G.disc=[];
+  const drawn=drawToHand(3);
+  G.disc.push(...drawn);
 
   _openSfModal('🆘 구조신호 발사','뽑은 3장이 모두 🎆이면 탈출 성공!');
 

@@ -1263,7 +1263,7 @@ const CARDS=[
   {id:'amnesia',     name:'망각',icon:'🌀',tag:'status',atk:-1,def:0,n:0,subTags:[],
    desc:'환각이 현실을 침식한다. 탐색 판정 시 정신력-3. 종말 단계에서 확률로 다시 출현한다.',
    passiveDesc:'망각: 탐색 판정 시 정신력-3'},
-  {id:'debris', name:'잔해', icon:'🪨', tag:'resource', atk:0, def:0, n:0, subTags:['무거움'],
+  {id:'debris', name:'잔해', icon:'🧱', tag:'resource', atk:0, def:0, n:0, subTags:['무거움'],
    desc:'파도에 쓸려온 쓸모없는 잔해. 덱을 차지할 뿐이다. 버려야 가볍다.'},
   {id:'good_sleep', name:'꿀잠', icon:'😪', tag:'resource', atk:0, def:0, n:0, dur:1, use:'good_sleep', subTags:[],
    desc:'숙면의 여운. 사용 시 HP+10, 정신력+8 회복. 내구도 1.'},
@@ -4298,11 +4298,9 @@ function doFlareSearch(){
 
   _openSfModal('🧨 신호탄 탐색',`덱 5장 — 🧨 키트가 나오면 구조신호 획득`);
 
-  // 키트 발견 전: 점진적 증가 / 발견 후: 즉시 빠르게
-  const base=360+prevCnt*90;
   _runFlipSeq(
     drawn,
-    (i,found)=>found>=1?130:base+i*70,
+    ()=>180,
     c=>c.id==='flare_kit'?'kit-highlight':'dimmed',
     ()=>{
       const hit=drawn.some(c=>c.id==='flare_kit');
@@ -4342,9 +4340,9 @@ function attemptSignalEscape(){
   if(!sigCnt){log('🎆 구조신호가 없다. 신호탄 탐색으로 먼저 획득해야 한다.','danger');return;}
   G.ap-=5;
 
-  const pool=[...G.deck,...G.disc];
-  const shuffled=shuffle([...pool]);
-  const drawn=shuffled.slice(0,Math.min(3,shuffled.length));
+  G.deck=shuffle([...G.deck,...G.disc]); G.disc=[];
+  const drawn=drawToHand(3);
+  G.disc.push(...drawn);
 
   _openSfModal('🆘 구조신호 발사','뽑은 3장이 모두 🎆이면 탈출 성공!');
 

@@ -136,7 +136,7 @@ const CARDS=[
   {id:'amnesia',     name:'망각',icon:'🌀',tag:'status',atk:-1,def:0,n:0,subTags:[],
    desc:'환각이 현실을 침식한다. 탐색 판정 시 정신력-3. 종말 단계에서 확률로 다시 출현한다.',
    passiveDesc:'망각: 탐색 판정 시 정신력-3'},
-  {id:'debris', name:'잔해', icon:'🪨', tag:'resource', atk:0, def:0, n:0, subTags:['무거움'],
+  {id:'debris', name:'잔해', icon:'🧱', tag:'resource', atk:0, def:0, n:0, subTags:['무거움'],
    desc:'파도에 쓸려온 쓸모없는 잔해. 덱을 차지할 뿐이다. 버려야 가볍다.'},
   {id:'good_sleep', name:'꿀잠', icon:'😪', tag:'resource', atk:0, def:0, n:0, dur:1, use:'good_sleep', subTags:[],
    desc:'숙면의 여운. 사용 시 HP+10, 정신력+8 회복. 내구도 1.'},
