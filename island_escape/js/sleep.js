@@ -218,7 +218,13 @@ function _afterDoom(early){
     showDoomLottery(); return;
   }
   if(Math.random()*100<calcSleepEvtChance(early)) showSleepEvt();
-  else { render(); saveGame(); }
+  else {
+    if(G.camps.includes(G.pos)){
+      addCard('good_sleep',1);
+      log('😪 캠프에서 숙면: 꿀잠 카드 추가','success');
+    }
+    render(); saveGame();
+  }
 }
 
 function _showDoomModal(title,story,detail,cb){
