@@ -95,6 +95,22 @@ function fmtP(p){
 function doJudgment(evt, ch){
   _pendingItems=[];
   if(!G.deck.length&&G.disc.length){G.deck=shuffle(G.disc);G.disc=[];}
+  // devourTag: 해당 태그 카드를 덱 맨 위로 이동 후 소멸
+  if(ch.devourTag&&G.deck.length){
+    const pool=[...G.deck,...G.disc];
+    const tagIdx=G.deck.findIndex(c=>c.tag===ch.devourTag);
+    if(tagIdx<0){
+      // 덱에 없으면 버림더미 포함해서 셔플
+      const allTagged=[...G.deck,...G.disc].filter(c=>c.tag===ch.devourTag);
+      if(allTagged.length){
+        G.deck=shuffle([...G.deck,...G.disc]); G.disc=[];
+        const ni=G.deck.findIndex(c=>c.tag===ch.devourTag);
+        if(ni>=0&&ni!==G.deck.length-1){const t=G.deck[G.deck.length-1];G.deck[G.deck.length-1]=G.deck[ni];G.deck[ni]=t;}
+      }
+    } else if(tagIdx!==G.deck.length-1){
+      const t=G.deck[G.deck.length-1];G.deck[G.deck.length-1]=G.deck[tagIdx];G.deck[tagIdx]=t;
+    }
+  }
   let top, compassExtra=null;
   const hasCompass=hasTool('compass');
   if(hasCompass&&G.deck.length>=2){
@@ -168,14 +184,16 @@ function doJudgment(evt, ch){
       if(compassExtra) bonLines.push(`🧭 나침반: ${compassExtra.icon}${compassExtra.name} 제외 → 유리한 카드 선택`);
       if(subOk&&!primaryOk) bonLines.push(`🏷️ #${ch.subReq} 보조 태그 매치 성공!`);
       if(ch.devourDrawn){
-        resEl.className='jdg-res fail'; resEl.textContent='🪦 소멸 완료';
-        if(top){
+        const tagMatch=!ch.devourTag||(top&&top.tag===ch.devourTag);
+        if(top&&tagMatch){
+          resEl.className='jdg-res fail'; resEl.textContent='🪦 소멸 완료';
           const di=G.disc.findIndex(c=>c.uid===top.uid);
           if(di>=0) G.disc.splice(di,1);
           lines.push(`🪦 ${top.icon}${top.name} 영구 소멸`);
           log(`🪦 파편 정리: ${top.icon}${top.name} 소멸`,'danger');
         } else {
-          lines.push('덱이 비어있음');
+          resEl.className='jdg-res ok'; resEl.textContent='✓ 자원 카드 없음';
+          lines.push(top?'자원 카드 없음':'덱이 비어있음');
         }
       } else if(isGreat){
         resEl.className='jdg-res great'; resEl.textContent='★ 대성공!';
