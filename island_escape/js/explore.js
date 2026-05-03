@@ -244,7 +244,10 @@ function applyR(r, lines){
     r.cards.forEach(c=>{
       const d=CARD_MAP[c.id];
       lines.push(`${d?.icon||''}${d?.name||c.id}×${c.n||1}`);
-      if(_pendingItems!=null){
+      if(c.force){
+        // 강제 추가: 팝업 없이 즉시 덱에 추가 (선택 불가)
+        addCard(c.id,c.n||1);
+      } else if(_pendingItems!=null){
         for(let i=0;i<(c.n||1);i++) _pendingItems.push({id:c.id,icon:d?.icon||'📦',name:d?.name||c.id,n:1});
       } else {
         addCard(c.id,c.n||1);

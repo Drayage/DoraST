@@ -1435,10 +1435,10 @@ const EVENTS={
     flavor:'해안에 밀려온 잡동사니가 쌓여 있다. 뒤지면 뭔가 나오겠지만, 손이 더러워진다.',
     choices:[
       {label:'목재 위주로 수거',icon:'🪵',req:null,
-       reward:{cards:[{id:'debris',n:1},{id:'wood',n:2}]},
+       reward:{cards:[{id:'debris',n:1,force:true},{id:'wood',n:2}]},
        desc:'무조건. 잔해×1 추가 + 목재×2 획득.'},
       {label:'고철 위주로 수거',icon:'⚙️',req:null,
-       reward:{cards:[{id:'debris',n:1},{id:'metal',n:1}]},
+       reward:{cards:[{id:'debris',n:1,force:true},{id:'metal',n:1}]},
        desc:'무조건. 잔해×1 추가 + 고철×1 획득.'},
       {label:'잔해를 정리한다',icon:'🧹',req:null,
        devourDrawn:true,devourTag:'resource',reward:{},
@@ -2760,7 +2760,10 @@ function applyR(r, lines){
     r.cards.forEach(c=>{
       const d=CARD_MAP[c.id];
       lines.push(`${d?.icon||''}${d?.name||c.id}×${c.n||1}`);
-      if(_pendingItems!=null){
+      if(c.force){
+        // 강제 추가: 팝업 없이 즉시 덱에 추가 (선택 불가)
+        addCard(c.id,c.n||1);
+      } else if(_pendingItems!=null){
         for(let i=0;i<(c.n||1);i++) _pendingItems.push({id:c.id,icon:d?.icon||'📦',name:d?.name||c.id,n:1});
       } else {
         addCard(c.id,c.n||1);

@@ -308,10 +308,10 @@ const EVENTS={
     flavor:'해안에 밀려온 잡동사니가 쌓여 있다. 뒤지면 뭔가 나오겠지만, 손이 더러워진다.',
     choices:[
       {label:'목재 위주로 수거',icon:'🪵',req:null,
-       reward:{cards:[{id:'debris',n:1},{id:'wood',n:2}]},
+       reward:{cards:[{id:'debris',n:1,force:true},{id:'wood',n:2}]},
        desc:'무조건. 잔해×1 추가 + 목재×2 획득.'},
       {label:'고철 위주로 수거',icon:'⚙️',req:null,
-       reward:{cards:[{id:'debris',n:1},{id:'metal',n:1}]},
+       reward:{cards:[{id:'debris',n:1,force:true},{id:'metal',n:1}]},
        desc:'무조건. 잔해×1 추가 + 고철×1 획득.'},
       {label:'잔해를 정리한다',icon:'🧹',req:null,
        devourDrawn:true,devourTag:'resource',reward:{},
