@@ -153,8 +153,8 @@ const CARDS=[
   {id:'stone', name:'돌', icon:'🪨', tag:'resource', atk:1, def:1, n:0, subTags:['무거움'],
    desc:'동굴·암석지에서 채집. 돌 무기 제작 재료.'},
   // 새 전투 카드
-  {id:'stone_axe', name:'돌도끼', icon:'🪓', tag:'combat', atk:6, def:2, n:0, subTags:['날카로움','무거움'],
-   desc:'ATK6 DEF2.'},
+  {id:'stone_hammer', name:'돌 망치', icon:'⚒️', tag:'combat', atk:6, def:2, n:0, subTags:['무거움'],
+   desc:'ATK6 DEF2. 육중한 돌 망치.'},
   {id:'war_club', name:'전쟁 몽둥이', icon:'🏏', tag:'combat', atk:7, def:0, n:0, cbtFx:'crush', subTags:['무거움'],
    desc:'crush: 공격 시 적 DEF 절반 무시. ATK7.'},
   {id:'bone_blade', name:'뼈칼', icon:'🦴', tag:'combat', atk:5, def:1, n:0, cbtFx:'bleed', subTags:['날카로움','뾰족함'],
@@ -167,9 +167,9 @@ const CARDS=[
    desc:'패시브: 전투 피해 경감 -3. DEF4.'},
   // 디버프 카드
   {id:'curse_blade', name:'저주의 칼', icon:'🌑', tag:'combat', atk:4, def:0, n:0, cbtFx:'weaken', subTags:['날카로움','뾰족함'],
-   desc:'weaken: 공격 시 적 ATK 영구 -4. ATK4.'},
+   desc:'weaken: 공격 시 적 ATK 영구 -4 (중첩 안됨). ATK4.'},
   {id:'shattering_blow', name:'파쇄 해머', icon:'🔨', tag:'combat', atk:3, def:0, n:0, cbtFx:'shatter', subTags:['무거움'],
-   desc:'shatter: 공격 시 적 DEF 영구 -6. ATK3.'},
+   desc:'shatter: 공격 시 적 DEF 영구 -6 (중첩 안됨). ATK3.'},
   // 사원 지도
   {id:'temple_map_piece', name:'사원지도 조각', icon:'🗺️', tag:'resource', atk:0, def:0, n:0, subTags:[],
    desc:'고대 사원 지도의 일부. 3장 모아 사원지도를 만들 수 있다.'},
@@ -447,7 +447,7 @@ const RECIPES=[
   {id:'r_fcloak',  cat:'전투',name:'깃털망토', icon:'🧣',result:'feather_cloak',  rn:1,ap:1,cost:[{id:'feather',n:2}],               desc:'패시브:도망비용HP-2. DEF2. 깃털×2.'},
   {id:'r_compass', cat:'탈출',name:'유물나침반',icon:'🧭',result:'compass',       rn:1,ap:1,cost:[{id:'shard',n:2}],                  desc:'즉시 탈출도+20%. 고대파편×2.'},
   {id:'r_trap',       cat:'전투',name:'함정',         icon:'🪤',result:'trap',          rn:1,ap:1,cost:[{id:'stone',n:1},{id:'wood',n:1},{id:'metal',n:1}],     desc:'기절: 배정 시 적 다음라운드 피해 0. ATK5. 돌+목재+고철.'},
-  {id:'r_stone_axe',  cat:'전투',name:'돌도끼',       icon:'🪓',result:'stone_axe',     rn:1,ap:1,cost:[{id:'stone',n:2},{id:'wood',n:1}],                      desc:'ATK6 DEF2. 돌×2 목재×1.'},
+  {id:'r_stone_hammer',cat:'전투',name:'돌 망치',      icon:'⚒️',result:'stone_hammer',  rn:1,ap:1,cost:[{id:'stone',n:2},{id:'wood',n:1}],                      desc:'ATK6 DEF2. 돌×2 목재×1.'},
   {id:'r_war_club',   cat:'전투',name:'전쟁 몽둥이',  icon:'🏏',result:'war_club',      rn:1,ap:1,cost:[{id:'stone',n:2},{id:'metal',n:1}],                     desc:'crush: DEF 절반 무시. ATK7. 돌×2 고철×1.'},
   {id:'r_bone_blade', cat:'전투',name:'뼈칼',         icon:'🦴',result:'bone_blade',    rn:1,ap:1,cost:[{id:'hide',n:1},{id:'stone',n:1}],                      desc:'bleed: 매라운드 누적피해. ATK5. 가죽×1 돌×1.'},
   {id:'r_w_shield',   cat:'전투',name:'나무 방패',    icon:'🛡️',result:'wooden_shield', rn:1,ap:1,cost:[{id:'stone',n:1},{id:'wood',n:2}],                      desc:'완전방어+5. DEF6. 돌×1 목재×2.'},

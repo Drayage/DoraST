@@ -10,13 +10,23 @@ function doTemple(){
   G.ap-=apCost;
 
   if(ph===0){
-    G.templeBoss=Math.random()<0.5?'boss_stone_idol':'boss_oblivion_herald';
+    if(!G.templeBoss) G.templeBoss=Math.random()<0.5?'boss_stone_idol':'boss_oblivion_herald';
     const evtId=G.templeBoss==='boss_stone_idol'?'temple_event_1a':'temple_event_1b';
     log(`🏛️ 사원 1페이즈 진입... (AP-${apCost})`,'');
-    showExploreChoice(EVENTS[evtId], ()=>_startTempleCombat('temple_shade',1));
+    if(!G.templeEventShown[0]){
+      G.templeEventShown[0]=true;
+      showExploreChoice(EVENTS[evtId], ()=>_startTempleCombat('temple_shade',1));
+    } else {
+      _startTempleCombat('temple_shade',1);
+    }
   } else if(ph===1){
     log(`🏛️ 사원 2페이즈 진입... (AP-${apCost})`,'');
-    showExploreChoice(EVENTS['temple_event_2'], ()=>_startTempleCombat('temple_guardian_knight',2));
+    if(!G.templeEventShown[1]){
+      G.templeEventShown[1]=true;
+      showExploreChoice(EVENTS['temple_event_2'], ()=>_startTempleCombat('temple_guardian_knight',2));
+    } else {
+      _startTempleCombat('temple_guardian_knight',2);
+    }
   } else if(ph===2){
     log(`🏛️ 사원 보스 대결 시작... (AP-${apCost})`,'danger');
     _startTempleCombat(G.templeBoss, 3);

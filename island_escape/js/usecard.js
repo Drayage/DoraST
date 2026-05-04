@@ -92,12 +92,13 @@ function ucUse(i){
     log('😪 꿀잠. HP+10, 정신력+8','success');
   } else if(card.use==='temple_map'){
     const ti=G.tiles.findIndex(t=>t.id==='temple');
-    if(ti>=0&&!G.tiles[ti].revealed){
+    if(ti>=0&&!G.templeRevealed){
+      G.templeRevealed=true;
       G.tiles[ti].revealed=true;
       resEl.textContent='🏛️ 사원지도 — 사원 위치가 밝혀졌다!';
       resEl.style.color='var(--accent)';
       log('🏛️ 사원의 위치가 지도에 표시됐다!','success');
-    } else if(ti>=0){
+    } else if(ti>=0&&G.templeRevealed){
       resEl.textContent='🏛️ 사원 위치는 이미 알려져 있다.';
       resEl.style.color='var(--text3)';
     } else {

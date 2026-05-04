@@ -71,6 +71,30 @@ function drawAmbushHand(){
   return [fist, ...drawToHand(4)];
 }
 
+// 수풀 기습 전용 — 조우 선택지 없이 바로 전투 시작
+function showThicketAmbush(evtId){
+  const enemy=ENEMIES[evtId];
+  if(!enemy){ startCombat(evtId,false,false); return; }
+  document.getElementById('enc-title').textContent=`🌿 기습! ${enemy.icon} ${enemy.name}`;
+  document.getElementById('enc-desc').textContent=`수풀에서 ${enemy.name}이(가) 갑자기 뛰쳐나왔다! ${enemy.encDesc||''}`;
+  const el=document.getElementById('enc-choices'); el.innerHTML='';
+  const div=document.createElement('div'); div.className='ex-choice fi';
+  div.innerHTML=`
+    <div class="ex-ci">⚔️</div>
+    <div>
+      <div class="ex-cn">전투 시작</div>
+      <div class="ex-cd">기습 당했다. 도망치거나 상황을 살필 틈이 없다.</div>
+      <div style="font-size:8px;margin-top:3px;color:var(--red);">✗ 적 선제 공격</div>
+    </div>`;
+  div.onclick=()=>{
+    document.getElementById('enc-mo').style.display='none';
+    log(`🌿 수풀 기습! ${enemy.name}와 전투 시작.`,'danger');
+    startCombat(evtId,false,false);
+  };
+  el.appendChild(div);
+  document.getElementById('enc-mo').style.display='flex';
+}
+
 // 전투 전 조우 모달
 function showEncounter(evtId){
   const enemy = ENEMIES[evtId];
@@ -417,13 +441,13 @@ function resolveCombat(){
       e._bleedStacks=(e._bleedStacks||0)+1;
       lines.push({t:`★ 뼈칼: bleed 누적 (${e._bleedStacks}스택 = 매라운드+${e._bleedStacks*2})`,cls:'good'});
     } else if(c.cbtFx==='weaken'&&CBT.atkZone.some(x=>x.uid===c.uid)){
-      const prevAtk=e.atk;
-      normalAtk+=c.atk; e.atk=Math.max(0,e.atk-4);
-      lines.push({t:`★ 저주의 칼: weaken — 적 ATK ${prevAtk}→${e.atk} (영구)`,cls:'good'});
+      normalAtk+=c.atk;
+      if(!e._weakenApplied){ e._weakenApplied=true; const prev=e.atk; e.atk=Math.max(0,e.atk-4); lines.push({t:`★ 저주의 칼: 적 ATK ${prev}→${e.atk} (영구, 중첩 안됨)`,cls:'good'}); }
+      else lines.push({t:`저주의 칼: 이미 적용됨 (중첩 안됨)`,cls:'neutral'});
     } else if(c.cbtFx==='shatter'&&CBT.atkZone.some(x=>x.uid===c.uid)){
-      const prevDef=e.def;
-      normalAtk+=c.atk; e.def=Math.max(0,e.def-6);
-      lines.push({t:`★ 파쇄 해머: shatter — 적 DEF ${prevDef}→${e.def} (영구)`,cls:'good'});
+      normalAtk+=c.atk;
+      if(!e._shatterApplied){ e._shatterApplied=true; const prev=e.def; e.def=Math.max(0,e.def-6); lines.push({t:`★ 파쇄 해머: 적 DEF ${prev}→${e.def} (영구, 중첩 안됨)`,cls:'good'}); }
+      else lines.push({t:`파쇄 해머: 이미 적용됨 (중첩 안됨)`,cls:'neutral'});
     } else {
       if(CBT.atkZone.some(x=>x.uid===c.uid)){
         const v=c.tag==='status'?c.atk:Math.max(0,c.atk);

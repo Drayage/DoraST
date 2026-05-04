@@ -78,14 +78,16 @@ function render(){
     sleepChanceEl.innerHTML=`취침 이벤트 확률: <span style="color:${col};font-weight:700;">${chance}%</span>${p.ap>=4?' (이른취침)':''}`;
   }
 
-  // 현재 위치 지형
+  // 현재 위치 지형 (사원은 지도 없으면 수풀로 위장)
   const ct=p.tiles[p.pos];
-  d.curTileIcon.textContent=ct.icon||'❓';
-  d.curTileName.textContent=ct.name||'?';
+  const _disguiseTemple=t=>(!p.templeRevealed&&t.id==='temple')?{...t,id:'_temple_hidden',cls:'t-thicket',icon:'🌿',name:'수풀',gather:[]}:t;
+  const dct=_disguiseTemple(ct);
+  d.curTileIcon.textContent=dct.icon||'❓';
+  d.curTileName.textContent=dct.name||'?';
   const bonus=ct.hasCamp?campBonus(ct.id):'';
   d.curTileStatus.textContent=ct.hasCamp?`🏕️ 캠프${bonus?` (${bonus})`:''}`:ct.explored?'✓ 탐색완료':'— 미탐색';
   // 수집 도구 + 수집 횟수 표시
-  const gatherParts=(ct.gather||[]).map(o=>{
+  const gatherParts=(dct.gather||[]).map(o=>{
     const key=`${p.pos}_${o.tool}`;
     const cnt=G.gatherCnt[key]||0;
     const icon=CARD_MAP[o.tool]?.icon||'';
@@ -108,14 +110,15 @@ function render(){
   // 맵
   const mapFrag=document.createDocumentFragment();
   p.tiles.forEach((t,i)=>{
+    const dt=_disguiseTemple(t); // 사원 위장 처리
     const el=document.createElement('div');
     el.className='tile'
-      +(t.revealed?` revealed ${t.cls}`:t.wasSeen?` seen-fog`:'fog')
+      +(t.revealed?` revealed ${dt.cls}`:t.wasSeen?` seen-fog`:'fog')
       +(i===p.pos?' player':'')
       +(t.hasCamp?' camp-t':'')
       +(t.revealed&&t.explored?' explored':'');
-    if(t.revealed) el.textContent=i===p.pos?'🧍':(t.hasCamp?'🏕️':t.icon);
-    el.addEventListener('mousemove', e=>showTileTT(e.clientX,e.clientY,t,i));
+    if(t.revealed) el.textContent=i===p.pos?'🧍':(t.hasCamp?'🏕️':dt.icon);
+    el.addEventListener('mousemove', e=>showTileTT(e.clientX,e.clientY,dt,i));
     el.addEventListener('mouseleave', hideTileTT);
     el.onclick=()=>clickTile(i);
     mapFrag.appendChild(el);
@@ -261,7 +264,7 @@ function render(){
           <span>${hasKit?'🧨 키트 보유':'⚠️ 키트 없음'} · 탐색 성공률 <span style="color:${probCol(flareProb)};font-weight:700;">${flareProb}%</span></span>
           <span>🎆 ${sigCnt}장 보유 · 발사 성공률 <span style="color:${probCol(sigProb)};font-weight:700;">${sigProb}%</span></span>
         </div>`;
-    } else if(ct.id==='temple'){
+    } else if(dct.id==='temple'){
       const ph=p.templePhase;
       const apArr=[2,2,3];
       const phLabel=['🏛️ 1페이즈 진입','🏛️ 2페이즈 진입','🏛️ 보스 대결'];

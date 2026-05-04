@@ -1296,8 +1296,8 @@ const CARDS=[
   {id:'stone', name:'돌', icon:'🪨', tag:'resource', atk:1, def:1, n:0, subTags:['무거움'],
    desc:'동굴·암석지에서 채집. 돌 무기 제작 재료.'},
   // 새 전투 카드
-  {id:'stone_axe', name:'돌도끼', icon:'🪓', tag:'combat', atk:6, def:2, n:0, subTags:['날카로움','무거움'],
-   desc:'ATK6 DEF2.'},
+  {id:'stone_hammer', name:'돌 망치', icon:'⚒️', tag:'combat', atk:6, def:2, n:0, subTags:['무거움'],
+   desc:'ATK6 DEF2. 육중한 돌 망치.'},
   {id:'war_club', name:'전쟁 몽둥이', icon:'🏏', tag:'combat', atk:7, def:0, n:0, cbtFx:'crush', subTags:['무거움'],
    desc:'crush: 공격 시 적 DEF 절반 무시. ATK7.'},
   {id:'bone_blade', name:'뼈칼', icon:'🦴', tag:'combat', atk:5, def:1, n:0, cbtFx:'bleed', subTags:['날카로움','뾰족함'],
@@ -1310,9 +1310,9 @@ const CARDS=[
    desc:'패시브: 전투 피해 경감 -3. DEF4.'},
   // 디버프 카드
   {id:'curse_blade', name:'저주의 칼', icon:'🌑', tag:'combat', atk:4, def:0, n:0, cbtFx:'weaken', subTags:['날카로움','뾰족함'],
-   desc:'weaken: 공격 시 적 ATK 영구 -4. ATK4.'},
+   desc:'weaken: 공격 시 적 ATK 영구 -4 (중첩 안됨). ATK4.'},
   {id:'shattering_blow', name:'파쇄 해머', icon:'🔨', tag:'combat', atk:3, def:0, n:0, cbtFx:'shatter', subTags:['무거움'],
-   desc:'shatter: 공격 시 적 DEF 영구 -6. ATK3.'},
+   desc:'shatter: 공격 시 적 DEF 영구 -6 (중첩 안됨). ATK3.'},
   // 사원 지도
   {id:'temple_map_piece', name:'사원지도 조각', icon:'🗺️', tag:'resource', atk:0, def:0, n:0, subTags:[],
    desc:'고대 사원 지도의 일부. 3장 모아 사원지도를 만들 수 있다.'},
@@ -1590,7 +1590,7 @@ const RECIPES=[
   {id:'r_fcloak',  cat:'전투',name:'깃털망토', icon:'🧣',result:'feather_cloak',  rn:1,ap:1,cost:[{id:'feather',n:2}],               desc:'패시브:도망비용HP-2. DEF2. 깃털×2.'},
   {id:'r_compass', cat:'탈출',name:'유물나침반',icon:'🧭',result:'compass',       rn:1,ap:1,cost:[{id:'shard',n:2}],                  desc:'즉시 탈출도+20%. 고대파편×2.'},
   {id:'r_trap',       cat:'전투',name:'함정',         icon:'🪤',result:'trap',          rn:1,ap:1,cost:[{id:'stone',n:1},{id:'wood',n:1},{id:'metal',n:1}],     desc:'기절: 배정 시 적 다음라운드 피해 0. ATK5. 돌+목재+고철.'},
-  {id:'r_stone_axe',  cat:'전투',name:'돌도끼',       icon:'🪓',result:'stone_axe',     rn:1,ap:1,cost:[{id:'stone',n:2},{id:'wood',n:1}],                      desc:'ATK6 DEF2. 돌×2 목재×1.'},
+  {id:'r_stone_hammer',cat:'전투',name:'돌 망치',      icon:'⚒️',result:'stone_hammer',  rn:1,ap:1,cost:[{id:'stone',n:2},{id:'wood',n:1}],                      desc:'ATK6 DEF2. 돌×2 목재×1.'},
   {id:'r_war_club',   cat:'전투',name:'전쟁 몽둥이',  icon:'🏏',result:'war_club',      rn:1,ap:1,cost:[{id:'stone',n:2},{id:'metal',n:1}],                     desc:'crush: DEF 절반 무시. ATK7. 돌×2 고철×1.'},
   {id:'r_bone_blade', cat:'전투',name:'뼈칼',         icon:'🦴',result:'bone_blade',    rn:1,ap:1,cost:[{id:'hide',n:1},{id:'stone',n:1}],                      desc:'bleed: 매라운드 누적피해. ATK5. 가죽×1 돌×1.'},
   {id:'r_w_shield',   cat:'전투',name:'나무 방패',    icon:'🛡️',result:'wooden_shield', rn:1,ap:1,cost:[{id:'stone',n:1},{id:'wood',n:2}],                      desc:'완전방어+5. DEF6. 돌×1 목재×2.'},
@@ -1737,6 +1737,7 @@ function initGame(){
     lastOblivion:-99, signalEscape:false,
     templePhase:0, templeEscape:false, templeBoss:null,
     _templeBonus:{atk:0,def:0}, templeMapDrops:{},
+    templeRevealed:false, templeEventShown:{},
     islandId,
   };
   _pendingItems=null; _itemCb=null; _pendingItemCards=null; _ucHand=[];
@@ -2667,10 +2668,8 @@ function clickTile(i){
     G.tiles[j].revealed=true;
     if(!wasRevealed && G.tiles[j].id==='thicket' && !G.tiles[j].explored){
       G.tiles[j].explored=true;
-      setTimeout(()=>{
-        log('🌿 수풀에서 무언가 뛰쳐나온다!','danger');
-        showEncounter(Math.random()<0.6?'cbt_boar':'cbt_snake');
-      },300);
+      const ambEvt=Math.random()<0.6?'cbt_boar':'cbt_snake';
+      setTimeout(()=>showThicketAmbush(ambEvt),300);
     }
   });
   log(`📍 ${t.name}으로 이동 (${cost}칸·AP-${cost})`, '');
@@ -3350,12 +3349,13 @@ function ucUse(i){
     log('😪 꿀잠. HP+10, 정신력+8','success');
   } else if(card.use==='temple_map'){
     const ti=G.tiles.findIndex(t=>t.id==='temple');
-    if(ti>=0&&!G.tiles[ti].revealed){
+    if(ti>=0&&!G.templeRevealed){
+      G.templeRevealed=true;
       G.tiles[ti].revealed=true;
       resEl.textContent='🏛️ 사원지도 — 사원 위치가 밝혀졌다!';
       resEl.style.color='var(--accent)';
       log('🏛️ 사원의 위치가 지도에 표시됐다!','success');
-    } else if(ti>=0){
+    } else if(ti>=0&&G.templeRevealed){
       resEl.textContent='🏛️ 사원 위치는 이미 알려져 있다.';
       resEl.style.color='var(--text3)';
     } else {
@@ -3932,6 +3932,30 @@ function drawAmbushHand(){
   return [fist, ...drawToHand(4)];
 }
 
+// 수풀 기습 전용 — 조우 선택지 없이 바로 전투 시작
+function showThicketAmbush(evtId){
+  const enemy=ENEMIES[evtId];
+  if(!enemy){ startCombat(evtId,false,false); return; }
+  document.getElementById('enc-title').textContent=`🌿 기습! ${enemy.icon} ${enemy.name}`;
+  document.getElementById('enc-desc').textContent=`수풀에서 ${enemy.name}이(가) 갑자기 뛰쳐나왔다! ${enemy.encDesc||''}`;
+  const el=document.getElementById('enc-choices'); el.innerHTML='';
+  const div=document.createElement('div'); div.className='ex-choice fi';
+  div.innerHTML=`
+    <div class="ex-ci">⚔️</div>
+    <div>
+      <div class="ex-cn">전투 시작</div>
+      <div class="ex-cd">기습 당했다. 도망치거나 상황을 살필 틈이 없다.</div>
+      <div style="font-size:8px;margin-top:3px;color:var(--red);">✗ 적 선제 공격</div>
+    </div>`;
+  div.onclick=()=>{
+    document.getElementById('enc-mo').style.display='none';
+    log(`🌿 수풀 기습! ${enemy.name}와 전투 시작.`,'danger');
+    startCombat(evtId,false,false);
+  };
+  el.appendChild(div);
+  document.getElementById('enc-mo').style.display='flex';
+}
+
 // 전투 전 조우 모달
 function showEncounter(evtId){
   const enemy = ENEMIES[evtId];
@@ -4278,13 +4302,13 @@ function resolveCombat(){
       e._bleedStacks=(e._bleedStacks||0)+1;
       lines.push({t:`★ 뼈칼: bleed 누적 (${e._bleedStacks}스택 = 매라운드+${e._bleedStacks*2})`,cls:'good'});
     } else if(c.cbtFx==='weaken'&&CBT.atkZone.some(x=>x.uid===c.uid)){
-      const prevAtk=e.atk;
-      normalAtk+=c.atk; e.atk=Math.max(0,e.atk-4);
-      lines.push({t:`★ 저주의 칼: weaken — 적 ATK ${prevAtk}→${e.atk} (영구)`,cls:'good'});
+      normalAtk+=c.atk;
+      if(!e._weakenApplied){ e._weakenApplied=true; const prev=e.atk; e.atk=Math.max(0,e.atk-4); lines.push({t:`★ 저주의 칼: 적 ATK ${prev}→${e.atk} (영구, 중첩 안됨)`,cls:'good'}); }
+      else lines.push({t:`저주의 칼: 이미 적용됨 (중첩 안됨)`,cls:'neutral'});
     } else if(c.cbtFx==='shatter'&&CBT.atkZone.some(x=>x.uid===c.uid)){
-      const prevDef=e.def;
-      normalAtk+=c.atk; e.def=Math.max(0,e.def-6);
-      lines.push({t:`★ 파쇄 해머: shatter — 적 DEF ${prevDef}→${e.def} (영구)`,cls:'good'});
+      normalAtk+=c.atk;
+      if(!e._shatterApplied){ e._shatterApplied=true; const prev=e.def; e.def=Math.max(0,e.def-6); lines.push({t:`★ 파쇄 해머: 적 DEF ${prev}→${e.def} (영구, 중첩 안됨)`,cls:'good'}); }
+      else lines.push({t:`파쇄 해머: 이미 적용됨 (중첩 안됨)`,cls:'neutral'});
     } else {
       if(CBT.atkZone.some(x=>x.uid===c.uid)){
         const v=c.tag==='status'?c.atk:Math.max(0,c.atk);
@@ -4785,13 +4809,23 @@ function doTemple(){
   G.ap-=apCost;
 
   if(ph===0){
-    G.templeBoss=Math.random()<0.5?'boss_stone_idol':'boss_oblivion_herald';
+    if(!G.templeBoss) G.templeBoss=Math.random()<0.5?'boss_stone_idol':'boss_oblivion_herald';
     const evtId=G.templeBoss==='boss_stone_idol'?'temple_event_1a':'temple_event_1b';
     log(`🏛️ 사원 1페이즈 진입... (AP-${apCost})`,'');
-    showExploreChoice(EVENTS[evtId], ()=>_startTempleCombat('temple_shade',1));
+    if(!G.templeEventShown[0]){
+      G.templeEventShown[0]=true;
+      showExploreChoice(EVENTS[evtId], ()=>_startTempleCombat('temple_shade',1));
+    } else {
+      _startTempleCombat('temple_shade',1);
+    }
   } else if(ph===1){
     log(`🏛️ 사원 2페이즈 진입... (AP-${apCost})`,'');
-    showExploreChoice(EVENTS['temple_event_2'], ()=>_startTempleCombat('temple_guardian_knight',2));
+    if(!G.templeEventShown[1]){
+      G.templeEventShown[1]=true;
+      showExploreChoice(EVENTS['temple_event_2'], ()=>_startTempleCombat('temple_guardian_knight',2));
+    } else {
+      _startTempleCombat('temple_guardian_knight',2);
+    }
   } else if(ph===2){
     log(`🏛️ 사원 보스 대결 시작... (AP-${apCost})`,'danger');
     _startTempleCombat(G.templeBoss, 3);
@@ -4889,14 +4923,16 @@ function render(){
     sleepChanceEl.innerHTML=`취침 이벤트 확률: <span style="color:${col};font-weight:700;">${chance}%</span>${p.ap>=4?' (이른취침)':''}`;
   }
 
-  // 현재 위치 지형
+  // 현재 위치 지형 (사원은 지도 없으면 수풀로 위장)
   const ct=p.tiles[p.pos];
-  d.curTileIcon.textContent=ct.icon||'❓';
-  d.curTileName.textContent=ct.name||'?';
+  const _disguiseTemple=t=>(!p.templeRevealed&&t.id==='temple')?{...t,id:'_temple_hidden',cls:'t-thicket',icon:'🌿',name:'수풀',gather:[]}:t;
+  const dct=_disguiseTemple(ct);
+  d.curTileIcon.textContent=dct.icon||'❓';
+  d.curTileName.textContent=dct.name||'?';
   const bonus=ct.hasCamp?campBonus(ct.id):'';
   d.curTileStatus.textContent=ct.hasCamp?`🏕️ 캠프${bonus?` (${bonus})`:''}`:ct.explored?'✓ 탐색완료':'— 미탐색';
   // 수집 도구 + 수집 횟수 표시
-  const gatherParts=(ct.gather||[]).map(o=>{
+  const gatherParts=(dct.gather||[]).map(o=>{
     const key=`${p.pos}_${o.tool}`;
     const cnt=G.gatherCnt[key]||0;
     const icon=CARD_MAP[o.tool]?.icon||'';
@@ -4919,14 +4955,15 @@ function render(){
   // 맵
   const mapFrag=document.createDocumentFragment();
   p.tiles.forEach((t,i)=>{
+    const dt=_disguiseTemple(t); // 사원 위장 처리
     const el=document.createElement('div');
     el.className='tile'
-      +(t.revealed?` revealed ${t.cls}`:t.wasSeen?` seen-fog`:'fog')
+      +(t.revealed?` revealed ${dt.cls}`:t.wasSeen?` seen-fog`:'fog')
       +(i===p.pos?' player':'')
       +(t.hasCamp?' camp-t':'')
       +(t.revealed&&t.explored?' explored':'');
-    if(t.revealed) el.textContent=i===p.pos?'🧍':(t.hasCamp?'🏕️':t.icon);
-    el.addEventListener('mousemove', e=>showTileTT(e.clientX,e.clientY,t,i));
+    if(t.revealed) el.textContent=i===p.pos?'🧍':(t.hasCamp?'🏕️':dt.icon);
+    el.addEventListener('mousemove', e=>showTileTT(e.clientX,e.clientY,dt,i));
     el.addEventListener('mouseleave', hideTileTT);
     el.onclick=()=>clickTile(i);
     mapFrag.appendChild(el);
@@ -5072,7 +5109,7 @@ function render(){
           <span>${hasKit?'🧨 키트 보유':'⚠️ 키트 없음'} · 탐색 성공률 <span style="color:${probCol(flareProb)};font-weight:700;">${flareProb}%</span></span>
           <span>🎆 ${sigCnt}장 보유 · 발사 성공률 <span style="color:${probCol(sigProb)};font-weight:700;">${sigProb}%</span></span>
         </div>`;
-    } else if(ct.id==='temple'){
+    } else if(dct.id==='temple'){
       const ph=p.templePhase;
       const apArr=[2,2,3];
       const phLabel=['🏛️ 1페이즈 진입','🏛️ 2페이즈 진입','🏛️ 보스 대결'];

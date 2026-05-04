@@ -112,10 +112,8 @@ function clickTile(i){
     G.tiles[j].revealed=true;
     if(!wasRevealed && G.tiles[j].id==='thicket' && !G.tiles[j].explored){
       G.tiles[j].explored=true;
-      setTimeout(()=>{
-        log('🌿 수풀에서 무언가 뛰쳐나온다!','danger');
-        showEncounter(Math.random()<0.6?'cbt_boar':'cbt_snake');
-      },300);
+      const ambEvt=Math.random()<0.6?'cbt_boar':'cbt_snake';
+      setTimeout(()=>showThicketAmbush(ambEvt),300);
     }
   });
   log(`📍 ${t.name}으로 이동 (${cost}칸·AP-${cost})`, '');

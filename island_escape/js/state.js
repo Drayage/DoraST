@@ -108,6 +108,7 @@ function initGame(){
     lastOblivion:-99, signalEscape:false,
     templePhase:0, templeEscape:false, templeBoss:null,
     _templeBonus:{atk:0,def:0}, templeMapDrops:{},
+    templeRevealed:false, templeEventShown:{},
     islandId,
   };
   _pendingItems=null; _itemCb=null; _pendingItemCards=null; _ucHand=[];
