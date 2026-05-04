@@ -122,21 +122,21 @@ function doJudgment(evt, ch){
       const t=G.deck[G.deck.length-1];G.deck[G.deck.length-1]=G.deck[tagIdx];G.deck[tagIdx]=t;
     }
   }
-  let top, compassExtra=null;
+  let top;
   const hasCompass=hasTool('compass');
-  if(hasCompass&&G.deck.length>=2){
-    const c1=G.deck[G.deck.length-1], c2=G.deck[G.deck.length-2];
-    const score=c=>!c?-1:ch.greatCard&&c.id===ch.greatCard?3:ch.req&&c.tag===ch.req?2:ch.subReq&&(c.subTags||[]).includes(ch.subReq)?1:!ch.req&&!ch.subReq?1:0;
-    const useSecond=score(c2)>score(c1);
-    top=useSecond?c2:c1; compassExtra=useSecond?c1:c2;
-    G.disc.push(G.deck.pop()); G.disc.push(G.deck.pop());
-  } else {
-    top=G.deck.length?G.deck[G.deck.length-1]:null;
-    if(top) G.disc.push(G.deck.pop());
-  }
+  const hasSk_ex_s1=allCards().some(c=>c.id==='sk_ex_s1');
+  const numDraw=1+(hasCompass?1:0)+(hasSk_ex_s1?1:0);
+  const _score=c=>!c?-1:ch.greatCard&&c.id===ch.greatCard?3:ch.req&&c.tag===ch.req?2:ch.subReq&&(c.subTags||[]).includes(ch.subReq)?1:!ch.req&&!ch.subReq?1:0;
+  const drawn=[];
+  for(let _di=0;_di<Math.min(numDraw,G.deck.length);_di++) drawn.push(G.deck[G.deck.length-1-_di]);
+  let bestIdx=0;
+  for(let _di=1;_di<drawn.length;_di++){if(_score(drawn[_di])>_score(drawn[bestIdx]))bestIdx=_di;}
+  top=drawn[bestIdx]||null;
+  for(let _di=0;_di<drawn.length;_di++) G.disc.push(G.deck.pop());
+  const _compassExtras=drawn.filter((_,_di)=>_di!==bestIdx);
   const primaryOk=ch.req?(top&&top.tag===ch.req):(!ch.subReq);
   const subOk=!!(ch.subReq&&top&&(top.subTags||[]).includes(ch.subReq));
-  const success=primaryOk||subOk;
+  let success=primaryOk||subOk;
   const isGreat=!!(ch.greatCard&&top&&top.id===ch.greatCard);
   const escGain=Math.max(ch.reward?.escape||0, ch.greatBonus?.escape||0);
   const escLoss=Math.max(ch.failPen?.escape||0, 0);
@@ -197,7 +197,12 @@ function doJudgment(evt, ch){
       if(!success&&allCards().some(c=>c.id==='sk_ex_g')){ success=true; _skillForceSuccess=true; }
       // 브론즈: 실패 시 10% 추가 기회
       if(!success&&!_skillForceSuccess&&allCards().some(c=>c.id==='sk_ex_b')&&Math.random()<0.1){ success=true; bonLines.push('🔍 날카로운 눈: 실패 뒤집기 성공!'); }
-      if(compassExtra) bonLines.push(`🧭 나침반: ${compassExtra.icon}${compassExtra.name} 제외 → 유리한 카드 선택`);
+      if(_compassExtras.length){
+        const extTxt=_compassExtras.map(c=>c.icon+c.name).join(', ');
+        if(hasCompass&&hasSk_ex_s1) bonLines.push(`🧭🕯️ 나침반+경험의 빛: ${numDraw}장 중 최선 선택 (버림: ${extTxt})`);
+        else if(hasCompass) bonLines.push(`🧭 나침반: 2장 중 유리한 카드 선택 (버림: ${extTxt})`);
+        else bonLines.push(`🕯️ 경험의 빛: 2장 중 유리한 카드 선택 (버림: ${extTxt})`);
+      }
       if(subOk&&!primaryOk) bonLines.push(`🏷️ #${ch.subReq} 보조 태그 매치 성공!`);
       if(ch.devourDrawn){
         const tagMatch=!ch.devourTag||(top&&top.tag===ch.devourTag);
@@ -215,8 +220,6 @@ function doJudgment(evt, ch){
         resEl.className='jdg-res great'; resEl.textContent='★ 대성공!';
         applyR(ch.reward,lines); applyR(ch.greatBonus,lines);
         bonLines.push(`★ ${CARD_MAP[ch.greatCard]?.name||ch.greatCard} 대성공 발동!`);
-        // 황금 손: 카드 보상 시 +1장
-        if(ch.reward?.card&&allCards().some(c=>c.id==='sk_ga_g')){addCard(ch.reward.card,1);bonLines.push(`💰 황금 손: ${CARD_MAP[ch.reward.card]?.name||ch.reward.card}×1 추가`);}
       } else if(success){
         resEl.className='jdg-res ok'; resEl.textContent='✓ 성공!';
         applyR(ch.reward,lines);
@@ -224,13 +227,6 @@ function doJudgment(evt, ch){
           if(!G.deck.length&&G.disc.length){G.deck=shuffle(G.disc);G.disc=[];}
           if(G.deck.length){const b=G.deck.pop();G.disc.push(b);bonLines.push(`🕯️ 횃불 패시브: ${b.icon}${b.name} 추가`);}
         }
-        // 경험의 빛: tool 성공 시 추가 드로우
-        if(ch.req==='tool'&&allCards().some(c=>c.id==='sk_ex_s1')){
-          if(!G.deck.length&&G.disc.length){G.deck=shuffle(G.disc);G.disc=[];}
-          if(G.deck.length){const b=G.deck.pop();G.disc.push(b);bonLines.push(`🕯️ 경험의 빛: ${b.icon}${b.name} 추가`);}
-        }
-        // 황금 손: 카드 보상 시 +1장
-        if(ch.reward?.card&&allCards().some(c=>c.id==='sk_ga_g')){addCard(ch.reward.card,1);bonLines.push(`💰 황금 손: ${CARD_MAP[ch.reward.card]?.name||ch.reward.card}×1 추가`);}
       } else {
         resEl.className='jdg-res fail'; resEl.textContent='✗ 실패...';
         if(ch.failPen) applyPen(ch.failPen,lines); else lines.push('별다른 피해 없음');

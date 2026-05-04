@@ -104,13 +104,14 @@ function clickTile(i){
   const t=G.tiles[i];
   if(!t.revealed||i===G.pos) return;
   const baseCost=tileDist(G.pos, i);
-  // 스킬 패시브: 이동 AP 할인 (gold -2, bronze -1 중복 가능)
-  const mvDisc=(allCards().some(c=>c.id==='sk_mv_g')?2:0)+(allCards().some(c=>c.id==='sk_mv_b')?1:0);
-  const cost=Math.max(1, baseCost-mvDisc);
+  const cost=baseCost;
   if(G.ap<cost){log(`AP부족 (이동${baseCost}칸=AP${cost})`, ''); render(); return;}
   G.tiles[G.pos].hasPlayer=false;
   const wasExplored=t.explored;
   G.pos=i; t.hasPlayer=true; G.ap-=cost; G.tilesMoved+=baseCost;
+  // 스킬 패시브: 이동 AP 환급 확률
+  if(allCards().some(c=>c.id==='sk_mv_g')&&Math.random()<0.5){ G.ap=Math.min(G.maxAP+4,G.ap+cost); log(`🦅 자유로운 영혼: 이동 AP${cost} 환급!`,'success'); }
+  else if(allCards().some(c=>c.id==='sk_mv_b')&&Math.random()<0.1){ G.ap=Math.min(G.maxAP+4,G.ap+cost); log(`🥾 가벼운 발: 이동 AP${cost} 환급!`,'success'); }
   // 스킬 패시브: 이동 후 효과
   if(allCards().some(c=>c.id==='sk_mv_s1')) G.hp=Math.min(100,G.hp+1);
   if(allCards().some(c=>c.id==='sk_mv_s2')) G.san=Math.min(100,G.san+1);

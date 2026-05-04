@@ -70,11 +70,6 @@ function doGather(opt, key, rate){
     if(allCards().some(c=>c.id==='sk_ga_s1')) n+=1;
     const d=CARD_MAP[opt.res];
     const items=[{id:opt.res,icon:d?.icon||'📦',name:d?.name||opt.res,n}];
-    // 황금 손: 수집 카드 +1
-    if(allCards().some(c=>c.id==='sk_ga_g')){
-      items.push({id:opt.res,icon:d?.icon||'📦',name:d?.name||opt.res,n:1});
-      log(`💰 황금 손: ${d?.name||opt.res}×1 추가`,'success');
-    }
     log(`🎒 ${opt.label} 성공! ${d?.icon||''}${d?.name||opt.res}×${n} (AP-3)`,'gather');
     showItemPopup(items,`🎒 ${opt.label} 성공!`,()=>{
       checkSurvival(); render(); saveGame();

@@ -140,9 +140,10 @@ function doCraft(id){
   G.ap-=craftAp;
   // 고철 절약 (재료 절약 스킬)
   const metalSave=allCards().some(c=>c.id==='sk_cr_s1')?1:0;
+  const _consumed=[];
   rec.cost.forEach(c=>{
     const n=c.id==='metal'?Math.max(0,c.n-metalSave):c.n;
-    if(n>0) rmFromDeck(c.id,n);
+    if(n>0){ rmFromDeck(c.id,n); _consumed.push(c.id); }
   });
 
   if(rec.raftLottery){
@@ -154,10 +155,12 @@ function doCraft(id){
   addCard(rec.result, rec.rn);
   if(!G.actionCnt) G.actionCnt={move:0,explore:0,gather:0,camp:0,craft:0,carduse:0,sleep:0,combat:0};
   G.actionCnt.craft=(G.actionCnt.craft||0)+1;
-  // 재활용: 버림더미 자원 카드 1장 덱으로 복귀
-  if(allCards().some(c=>c.id==='sk_cr_s2')){
-    const ri=G.disc.findIndex(c=>c.tag==='resource');
-    if(ri>=0){const rc=G.disc.splice(ri,1)[0];G.deck.push(rc);log(`🔄 재활용: ${rc.icon}${rc.name} 덱 복귀`,'success');}
+  // 재활용: 소비된 재료 중 1종류 1장 돌려받음
+  if(_consumed.length&&allCards().some(c=>c.id==='sk_cr_s2')){
+    const rid=_consumed[Math.floor(Math.random()*_consumed.length)];
+    addCard(rid,1);
+    const rd=CARD_MAP[rid];
+    log(`🔄 재활용: ${rd?.icon||''}${rd?.name||rid}×1 돌려받음`,'success');
   }
   const d=CARDS.find(c=>c.id===rec.result);
   log(`🔨 ${rec.name}. ${d?.icon||''}${d?.name||''}×${rec.rn} (AP-${craftAp})`,'success');

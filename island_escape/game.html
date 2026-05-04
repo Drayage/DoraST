@@ -1345,8 +1345,8 @@ const CARDS=[
   // ── 스킬 카드 (40장, tag:'skill', n:0 — 덱 초기 미포함) ──
   // 이동 (move)
   {id:'sk_mv_b', name:'가벼운 발', icon:'🥾', tag:'skill', tier:'bronze', atk:0, def:0, n:0,
-   passiveDesc:'이동 AP -1 (최소 1)',
-   desc:'패시브: 이동 시 AP 소비 -1.'},
+   passiveDesc:'이동 시 10% 확률로 이동 AP 전액 환급',
+   desc:'패시브: 이동할 때마다 10% 확률로 소비한 AP를 돌려받는다.'},
   {id:'sk_mv_s1', name:'바람의 걸음', icon:'💨', tag:'skill', tier:'silver', atk:0, def:0, n:0,
    passiveDesc:'이동 시 HP +1 회복',
    desc:'패시브: 이동할 때마다 HP +1 회복.'},
@@ -1357,15 +1357,15 @@ const CARDS=[
    passiveDesc:'탐색 완료 타일 이동 시 AP +1 환급',
    desc:'패시브: 이미 탐색한 타일로 이동하면 AP +1 환급.'},
   {id:'sk_mv_g', name:'자유로운 영혼', icon:'🦅', tag:'skill', tier:'gold', atk:0, def:0, n:0,
-   passiveDesc:'이동 AP -2 (최소 1)',
-   desc:'패시브: 이동 시 AP 소비 -2.'},
+   passiveDesc:'이동 시 50% 확률로 이동 AP 전액 환급',
+   desc:'패시브: 이동할 때마다 50% 확률로 소비한 AP를 돌려받는다.'},
   // 탐색 (explore)
   {id:'sk_ex_b', name:'날카로운 눈', icon:'🔍', tag:'skill', tier:'bronze', atk:0, def:0, n:0,
    passiveDesc:'탐색 실패 시 10% 확률로 성공 처리',
    desc:'패시브: 탐색 판정 실패 시 10% 추가 성공 기회.'},
   {id:'sk_ex_s1', name:'경험의 빛', icon:'🕯️', tag:'skill', tier:'silver', atk:0, def:0, n:0,
-   passiveDesc:'도구 탐색 성공 시 추가 카드 1장 드로우',
-   desc:'패시브: 도구 판정 탐색 성공 시 추가 카드 1장 획득.'},
+   passiveDesc:'탐색 시 2장 드로우 후 유리한 것 선택 (나침반 보유 시 3장)',
+   desc:'패시브: 탐색 판정 시 카드 2장을 드로우해 유리한 카드를 선택. 나침반과 중첩 시 3장.'},
   {id:'sk_ex_s2', name:'꼼꼼한 탐색가', icon:'🎯', tag:'skill', tier:'silver', atk:0, def:0, n:0,
    passiveDesc:'탐색 판정 실패 시 AP 1 환급',
    desc:'패시브: 탐색 실패 시 AP 1 돌려받음.'},
@@ -1389,24 +1389,24 @@ const CARDS=[
    passiveDesc:'사용: 현재 타일 즉시 수집 1회 (AP1)',
    desc:'사용: 현재 위치에서 AP 1 소비로 즉시 수집 1회.', use:'sk_ga_spot'},
   {id:'sk_ga_g', name:'황금 손', icon:'💰', tag:'skill', tier:'gold', atk:0, def:0, n:0,
-   passiveDesc:'수집·탐색 카드 보상 획득 시 +1장 추가',
-   desc:'패시브: 수집 또는 탐색으로 카드를 얻을 때마다 같은 카드 1장 추가.'},
+   passiveDesc:'모든 카드 획득 2배 (상태이상 포함 — 양날의 검)',
+   desc:'패시브: 모든 addCard 호출로 얻는 카드가 2배. 상태이상·잔해도 포함되는 양날의 검.'},
   // 캠프건설 (camp)
   {id:'sk_cp_b', name:'재빠른 건설', icon:'🏕️', tag:'skill', tier:'bronze', atk:0, def:0, n:0,
-   passiveDesc:'캠프 건설 AP -2 (8→6)',
-   desc:'패시브: 캠프 건설 비용 8 → 6 AP.'},
+   passiveDesc:'캠프 건설 AP 8→7',
+   desc:'패시브: 캠프 건설 비용 8 → 7 AP.'},
   {id:'sk_cp_s1', name:'편안한 밤', icon:'🌙', tag:'skill', tier:'silver', atk:0, def:0, n:0,
    passiveDesc:'캠프 위치 취침 HP 추가 +5',
    desc:'패시브: 캠프에서 취침 시 HP 회복량 +5.'},
   {id:'sk_cp_s2', name:'안전한 야영지', icon:'🛡️', tag:'skill', tier:'silver', atk:0, def:0, n:0,
-   passiveDesc:'캠프 위치 취침 이벤트 확률 -10%',
-   desc:'패시브: 캠프에서 취침 시 이벤트 발생 확률 -10%.'},
+   passiveDesc:'캠프 위치 취침 이벤트 확률 0% (완전 면제)',
+   desc:'패시브: 캠프에서 취침 시 이벤트가 절대 발생하지 않는다.'},
   {id:'sk_cp_s3', name:'모닥불의 온기', icon:'🔥', tag:'skill', tier:'silver', atk:0, def:0, n:0,
-   passiveDesc:'캠프 취침 시 꿀잠 카드 1장 자동 생성',
-   desc:'패시브: 캠프에서 취침할 때 꿀잠 카드 1장을 덱에 추가.'},
+   passiveDesc:'꿀잠 카드 사용 효과 2배 (HP+20, 정신력+16)',
+   desc:'패시브: 꿀잠 카드를 사용할 때 회복량이 2배로 증가한다.'},
   {id:'sk_cp_g', name:'야영의 달인', icon:'🏰', tag:'skill', tier:'gold', atk:0, def:0, n:0,
-   passiveDesc:'캠프 건설 AP 비용 0',
-   desc:'패시브: 캠프 건설 비용 완전 무료.'},
+   passiveDesc:'캠프 지형 보너스 2배 (cave SAN+6, forest 열매×2, shore 이슬×2)',
+   desc:'패시브: 취침 시 캠프 지형 보너스가 2배로 증가한다. (폐허 페널티도 2배)'},
   // 제작 (craft)
   {id:'sk_cr_b', name:'숙련공', icon:'⚒️', tag:'skill', tier:'bronze', atk:0, def:0, n:0,
    passiveDesc:'제작 AP -1 (최소 1)',
@@ -1415,8 +1415,8 @@ const CARDS=[
    passiveDesc:'제작 시 고철 소비 -1 (최소 0)',
    desc:'패시브: 고철이 포함된 레시피 제작 시 고철 소비 1 감소.'},
   {id:'sk_cr_s2', name:'재활용', icon:'🔄', tag:'skill', tier:'silver', atk:0, def:0, n:0,
-   passiveDesc:'제작 완료 후 버림더미 자원 카드 1장 덱으로 복귀',
-   desc:'패시브: 제작 완료 후 버림더미의 자원 카드 1장을 덱으로 회수.'},
+   passiveDesc:'제작 완료 후 소비된 재료 중 1종류 1장 돌려받음',
+   desc:'패시브: 제작 완료 후 소비된 재료 중 무작위 1종류 1장을 덱에 다시 추가.'},
   {id:'sk_cr_s3', name:'이동 제작소', icon:'🗂️', tag:'skill', tier:'silver', atk:0, def:0, n:0,
    passiveDesc:'사용: 캠프 없이 제작 1회 가능',
    desc:'사용: 다음 제작 1회를 캠프 외 어느 위치에서나 가능.', use:'sk_cr_anywhere'},
@@ -1424,12 +1424,9 @@ const CARDS=[
    passiveDesc:'모든 제작 AP 비용 0',
    desc:'패시브: 모든 제작이 완전 무료.'},
   // 카드사용 (carduse)
-  {id:'sk_cu_b', name:'드로우 마스터', icon:'🃏', tag:'skill', tier:'bronze', atk:0, def:0, n:0,
-   passiveDesc:'카드사용 드로우 +1장',
-   desc:'패시브: 카드사용 시 드로우 수 +1.'},
   {id:'sk_cu_s1', name:'손놀림', icon:'🔀', tag:'skill', tier:'silver', atk:0, def:0, n:0,
-   passiveDesc:'카드사용 종료 시 버림더미 맨 위 1장 덱으로 복귀',
-   desc:'패시브: 카드사용 창 닫을 때 버림더미 맨 위 카드 1장을 덱으로 복귀.'},
+   passiveDesc:'카드사용 오픈 시 드로우 +3장',
+   desc:'패시브: 카드사용 창을 열 때 추가로 3장을 더 드로우한다.'},
   {id:'sk_cu_s2', name:'음식 전문가', icon:'🍴', tag:'skill', tier:'silver', atk:0, def:0, n:0,
    passiveDesc:'식량·물 사용 효과 +8',
    desc:'패시브: 식량·물 카드 사용 시 회복량 +8.'},
@@ -1437,8 +1434,8 @@ const CARDS=[
    passiveDesc:'사용: 덱 위 3장 확인 후 1장 선택 드로우',
    desc:'사용: 덱 맨 위 3장을 보고 1장을 손패에 추가, 나머지는 버림.', use:'sk_cu_peek'},
   {id:'sk_cu_g', name:'신속한 손', icon:'⚡', tag:'skill', tier:'gold', atk:0, def:0, n:0,
-   passiveDesc:'카드사용 AP 비용 0',
-   desc:'패시브: 카드사용 창 열기 AP 비용 없음.'},
+   passiveDesc:'[사용] 손패의 카드 무작위 1장 소멸',
+   desc:'사용: 현재 손패에서 무작위 카드 1장을 영구 소멸시킨다. 덱 정화 효과.', use:'sk_cu_discard'},
   // 취침 (sleep)
   {id:'sk_sl_b', name:'가벼운 잠', icon:'😴', tag:'skill', tier:'bronze', atk:0, def:0, n:0,
    passiveDesc:'취침 이벤트 확률 -15%',
@@ -1449,28 +1446,28 @@ const CARDS=[
   {id:'sk_sl_s2', name:'명상', icon:'🧘', tag:'skill', tier:'silver', atk:0, def:0, n:0,
    passiveDesc:'취침 정신력 회복 +8',
    desc:'패시브: 취침 시 정신력 회복량 +8.'},
-  {id:'sk_sl_s3', name:'낮잠', icon:'💤', tag:'skill', tier:'silver', atk:0, def:0, n:0, dur:1,
-   passiveDesc:'사용: HP +8, 정신력 +4 즉시 회복 (1회용)',
-   desc:'사용: HP +8, 정신력 +4 즉시 회복. 1회용.', use:'sk_sl_nap'},
+  {id:'sk_sl_s3', name:'꿈에서 깨다', icon:'⏰', tag:'skill', tier:'silver', atk:0, def:0, n:0, dur:1,
+   passiveDesc:'[사용·1회용] AP +10 즉시 회복',
+   desc:'사용: AP +10 즉시 회복. 1회용.', use:'sk_sl_wake'},
   {id:'sk_sl_g', name:'완벽한 수면', icon:'✨', tag:'skill', tier:'gold', atk:0, def:0, n:0,
    passiveDesc:'취침 이벤트 완전 면역 + 꿀잠 카드 자동 생성',
    desc:'패시브: 취침 이벤트 없음 + 매 취침마다 꿀잠 카드 1장 자동 추가.'},
   // 전투 (combat)
-  {id:'sk_cb_b', name:'전투 감각', icon:'⚔️', tag:'skill', tier:'bronze', atk:0, def:0, n:0,
-   passiveDesc:'전투 드로우 +1장 (5→6장)',
-   desc:'패시브: 전투 시작 시 카드 1장을 더 드로우.'},
-  {id:'sk_cb_s1', name:'단련된 몸', icon:'🦾', tag:'skill', tier:'silver', atk:0, def:0, n:0,
+  {id:'sk_cb_b', name:'단련된 몸', icon:'🦾', tag:'skill', tier:'bronze', atk:0, def:0, n:0,
    passiveDesc:'전투 피해 -1 (항상)',
    desc:'패시브: 전투에서 받는 피해 -1.'},
+  {id:'sk_cb_s1', name:'전투 감각', icon:'⚔️', tag:'skill', tier:'silver', atk:0, def:0, n:0,
+   passiveDesc:'전투 드로우 +1장 (5→6장)',
+   desc:'패시브: 전투 시작 시 카드 1장을 더 드로우.'},
   {id:'sk_cb_s2', name:'사냥의 기쁨', icon:'🩸', tag:'skill', tier:'silver', atk:0, def:0, n:0,
    passiveDesc:'전투 승리 시 HP +8 회복',
    desc:'패시브: 적을 처치하면 HP +8 회복.'},
   {id:'sk_cb_s3', name:'급소 파악', icon:'🎯', tag:'skill', tier:'silver', atk:0, def:0, n:0,
    passiveDesc:'전투 시작 시 적 DEF -2',
    desc:'패시브: 전투 시작 시 적의 방어력을 2 감소.'},
-  {id:'sk_cb_g', name:'공허의 칼날', icon:'🌪️', tag:'skill', tier:'gold', atk:0, def:0, n:0,
-   passiveDesc:'전투 승리 시 덱·버림의 잔해/상태이상 1장 자동 소멸',
-   desc:'패시브: 전투 승리 시 잔해 또는 상태이상 카드 1장 자동 제거.'},
+  {id:'sk_cb_g', name:'힘을 담은 일격', icon:'💥', tag:'skill', tier:'gold', atk:0, def:0, n:0,
+   passiveDesc:'[사용] 전투 핸드에서 즉발: 적 HP-10 + 스턴 (보스 35%)',
+   desc:'사용: 전투 핸드에서 즉시 발동. 적 HP-10, 스턴 1라운드 (보스는 35% 확률).', use:'sk_cb_strike'},
 ];
 
 const ENEMIES={
@@ -1766,14 +1763,14 @@ const CARD_MAP = Object.fromEntries(CARDS.map(c=>[c.id,c]));
 
 // ── 스킬 시스템 상수 ──
 const SKILL_THRESHOLDS = {
-  move:    80,   // G.tilesMoved
+  move:    70,   // G.tilesMoved
   explore: 20,
   gather:  15,
-  camp:     3,
-  craft:   15,
-  carduse: 30,
+  camp:     6,
+  craft:   20,
+  carduse: 40,
   sleep:   25,
-  combat:   8,
+  combat:   6,
 };
 const SKILL_POOL = {
   move:    ['sk_mv_b','sk_mv_s1','sk_mv_s2','sk_mv_s3','sk_mv_g'],
@@ -1781,7 +1778,7 @@ const SKILL_POOL = {
   gather:  ['sk_ga_b','sk_ga_s1','sk_ga_s2','sk_ga_s3','sk_ga_g'],
   camp:    ['sk_cp_b','sk_cp_s1','sk_cp_s2','sk_cp_s3','sk_cp_g'],
   craft:   ['sk_cr_b','sk_cr_s1','sk_cr_s2','sk_cr_s3','sk_cr_g'],
-  carduse: ['sk_cu_b','sk_cu_s1','sk_cu_s2','sk_cu_s3','sk_cu_g'],
+  carduse: ['action','sk_cu_s1','sk_cu_s2','sk_cu_s3','sk_cu_g'],
   sleep:   ['sk_sl_b','sk_sl_s1','sk_sl_s2','sk_sl_s3','sk_sl_g'],
   combat:  ['sk_cb_b','sk_cb_s1','sk_cb_s2','sk_cb_s3','sk_cb_g'],
 };
@@ -1918,7 +1915,8 @@ function initGame(){
     templeRevealed:false, templeEventShown:{},
     actionCnt:{move:0,explore:0,gather:0,camp:0,craft:0,carduse:0,sleep:0,combat:0},
     pendingSkillType:null,
-    skillEvtCount:{},
+    skillEvtTotal:0,
+    skillEvtTriggered:{},
     skillCraftBypass:false,
     islandId,
   };
@@ -1997,8 +1995,10 @@ function log(msg, type){
 }
 
 function addCard(id, n){
-  const def=CARD_MAP[id]; if(!def) return;   // O(1) 조회
-  for(let i=0;i<n;i++){
+  const def=CARD_MAP[id]; if(!def) return;
+  // 황금 손: 스킬 카드 제외한 모든 카드 획득 2배 (양날의 검)
+  const realN=(G&&G.deck&&def.tag!=='skill'&&allCards().some(c=>c.id==='sk_ga_g'))?n*2:n;
+  for(let i=0;i<realN;i++){
     const card={...def, uid:uid()};
     if(def.dur) card.curDur=def.dur;
     G.disc.push(card);
@@ -2171,25 +2171,26 @@ function showIslandIntro(){
 
 function _checkSkillUnlock(){
   if(G.pendingSkillType) return;
+  if((G.skillEvtTotal||0)>=2) return; // 게임 전체 최대 2회
   const types=['move','explore','gather','camp','craft','carduse','sleep','combat'];
   for(const t of types){
-    const n = t==='move' ? (G.tilesMoved||0) : (G.actionCnt?.[t]||0);
-    const cnt = (G.skillEvtCount?.[t]||0);
-    if(cnt >= 2) continue;
-    const threshold = SKILL_THRESHOLDS[t] * (cnt + 1);
-    if(n >= threshold){
-      G.pendingSkillType = t;
+    if(G.skillEvtTriggered?.[t]) continue; // 이미 이 타입에서 수락함
+    const n=t==='move'?(G.tilesMoved||0):(G.actionCnt?.[t]||0);
+    if(n>=SKILL_THRESHOLDS[t]){
+      G.pendingSkillType=t;
       break;
     }
   }
 }
 
 function _drawSkillCard(pool, exclude){
-  const avail = pool.filter(id => !exclude.includes(id));
-  const weighted = [];
-  avail.forEach(id => {
-    const c = CARD_MAP[id]; if(!c) return;
-    const w = SKILL_TIER_WEIGHTS[c.tier||'silver'] || 1;
+  const avail=pool.filter(id=>!exclude.includes(id));
+  const weighted=[];
+  avail.forEach(id=>{
+    const c=CARD_MAP[id];
+    // 'action' 카드는 tier 없음 → bronze 가중치(4)
+    const tier=c?c.tier:'bronze';
+    const w=SKILL_TIER_WEIGHTS[tier||'bronze']||4;
     for(let i=0;i<w;i++) weighted.push(id);
   });
   if(!weighted.length) return null;
@@ -2197,66 +2198,72 @@ function _drawSkillCard(pool, exclude){
 }
 
 function showSkillEvent(cb){
-  const type = G.pendingSkillType; G.pendingSkillType = null;
-  const typeNames = {move:'이동',explore:'탐색',gather:'수집',camp:'캠프건설',
-                     craft:'제작',carduse:'카드사용',sleep:'취침',combat:'전투'};
-  const pool = SKILL_POOL[type] || [];
-  const pick1 = _drawSkillCard(pool, []);
-  const pick2 = _drawSkillCard(pool, pick1 ? [pick1] : []);
-  const otherPool = Object.entries(SKILL_POOL).filter(([k])=>k!==type).flatMap(([,v])=>v);
-  const pick3 = _drawSkillCard(otherPool, []);
+  const type=G.pendingSkillType; G.pendingSkillType=null;
+  const typeNames={move:'이동',explore:'탐색',gather:'수집',camp:'캠프건설',
+                   craft:'제작',carduse:'카드사용',sleep:'취침',combat:'전투'};
+  const pool=SKILL_POOL[type]||[];
+  const pick1=_drawSkillCard(pool,[]);
+  const pick2=_drawSkillCard(pool,pick1?[pick1]:[]);
+  const otherPool=Object.entries(SKILL_POOL).filter(([k])=>k!==type).flatMap(([,v])=>v);
+  const pick3=_drawSkillCard(otherPool,[]);
 
-  const el = document.getElementById('skill-choices'); el.innerHTML = '';
-  [pick1, pick2].filter(Boolean).forEach(id => {
-    const c = CARD_MAP[id]; if(!c) return;
-    const tierLabel = {bronze:'🥉브론즈', silver:'🥈실버', gold:'🥇골드'}[c.tier] || '';
-    const div = document.createElement('div');
-    div.className = `skill-choice sk-tier-${c.tier}`;
-    div.innerHTML = `<div style="font-size:26px;">${c.icon}</div>
-      <div class="sk-name">${c.name}</div>
+  const el=document.getElementById('skill-choices'); el.innerHTML='';
+  [pick1,pick2].filter(Boolean).forEach(id=>{
+    const c=CARD_MAP[id];
+    const isAction=(!c||c.tag==='action');
+    const tierLabel=isAction?'🏃행동카드':{bronze:'🥉브론즈',silver:'🥈실버',gold:'🥇골드'}[c?.tier]||'';
+    const icon=c?c.icon:'🏃';
+    const name=c?c.name:'달리기';
+    const descTxt=isAction?'즉시 사용: 카드 2장 드로우':(c?.passiveDesc||c?.desc||'');
+    const div=document.createElement('div');
+    div.className=`skill-choice${isAction?' sk-tier-bronze':` sk-tier-${c?.tier||'silver'}`}`;
+    div.innerHTML=`<div style="font-size:26px;">${icon}</div>
+      <div class="sk-name">${name}</div>
       <div class="sk-tier-label">${tierLabel}</div>
-      <div class="sk-desc">${c.passiveDesc || c.desc || ''}</div>`;
-    div.onclick = () => _selectSkill(type, id, false, cb);
+      <div class="sk-desc">${descTxt}</div>`;
+    div.onclick=()=>_selectSkill(type,id,false,cb);
     el.appendChild(div);
   });
   if(pick3){
-    const div = document.createElement('div');
-    div.className = 'skill-choice sk-hidden';
-    div.innerHTML = `<div style="font-size:26px;">🎲</div>
+    const div=document.createElement('div');
+    div.className='skill-choice sk-hidden';
+    div.innerHTML=`<div style="font-size:26px;">🎲</div>
       <div class="sk-name">미확인 스킬</div>
       <div class="sk-tier-label">랜덤</div>
       <div class="sk-desc">선택 후 공개됩니다.</div>`;
-    div.onclick = () => _selectSkill(type, pick3, true, cb);
+    div.onclick=()=>_selectSkill(type,pick3,true,cb);
     el.appendChild(div);
   }
-  const cnt = (G.skillEvtCount?.[type] || 0);
-  document.getElementById('skill-type-label').textContent =
-    `✨ ${typeNames[type]||type} 스킬 획득! (${cnt+1}/2회)`;
-  const skipBtn = document.getElementById('skill-skip');
-  if(skipBtn) skipBtn.onclick = () => _skipSkillEvent(type, cb);
-  document.getElementById('skill-mo').style.display = 'flex';
+  const total=(G.skillEvtTotal||0);
+  document.getElementById('skill-type-label').textContent=
+    `✨ ${typeNames[type]||type} 스킬 획득! (게임 ${total+1}/2회)`;
+  const skipBtn=document.getElementById('skill-skip');
+  if(skipBtn) skipBtn.onclick=()=>_skipSkillEvent(type,cb);
+  document.getElementById('skill-mo').style.display='flex';
 }
 
-function _selectSkill(type, id, wasHidden, cb){
-  document.getElementById('skill-mo').style.display = 'none';
-  const c = CARD_MAP[id]; if(!c) return;
-  addCard(id, 1);
-  if(!G.skillEvtCount) G.skillEvtCount = {};
-  G.skillEvtCount[type] = (G.skillEvtCount[type] || 0) + 1;
-  const tl = {bronze:'🥉브론즈', silver:'🥈실버', gold:'🥇골드'}[c.tier] || '';
-  log(`✨ 스킬 획득: ${c.icon}${c.name} (${tl})${wasHidden?' [랜덤]':''}`, 'success');
+function _selectSkill(type,id,wasHidden,cb){
+  document.getElementById('skill-mo').style.display='none';
+  const c=CARD_MAP[id];
+  addCard(id,1);
+  if(!G.skillEvtTriggered) G.skillEvtTriggered={};
+  G.skillEvtTriggered[type]=true;
+  G.skillEvtTotal=(G.skillEvtTotal||0)+1;
+  const tl=c?.tag==='action'?'행동카드':{bronze:'🥉브론즈',silver:'🥈실버',gold:'🥇골드'}[c?.tier]||'';
+  log(`✨ 스킬 획득: ${c?.icon||'🏃'}${c?.name||id} (${tl})${wasHidden?' [랜덤]':''}`, 'success');
   checkSurvival(); render(); saveGame();
-  if(cb) setTimeout(cb, 100);
+  if(cb) setTimeout(cb,100);
 }
 
-function _skipSkillEvent(type, cb){
-  document.getElementById('skill-mo').style.display = 'none';
-  const base = SKILL_THRESHOLDS[type] || 1;
-  if(type === 'move') G.tilesMoved = Math.max(0, (G.tilesMoved||0) - base);
-  else if(G.actionCnt) G.actionCnt[type] = Math.max(0, (G.actionCnt[type]||0) - base);
+function _skipSkillEvent(type,cb){
+  document.getElementById('skill-mo').style.display='none';
+  const base=SKILL_THRESHOLDS[type]||1;
+  if(type==='move') G.tilesMoved=Math.max(0,(G.tilesMoved||0)-base);
+  else if(G.actionCnt) G.actionCnt[type]=Math.max(0,(G.actionCnt[type]||0)-base);
+  // skillEvtTotal과 skillEvtTriggered 변경 없음 → 다시 임계치 도달하면 재발동
   log(`⏭️ 스킬 이벤트 건너뜀 — ${base}회 더 쌓이면 다시 발동`, '');
   render(); saveGame();
-  if(cb) setTimeout(cb, 100);
+  if(cb) setTimeout(cb,100);
 }
 
 </script></script>
@@ -2936,13 +2943,14 @@ function clickTile(i){
   const t=G.tiles[i];
   if(!t.revealed||i===G.pos) return;
   const baseCost=tileDist(G.pos, i);
-  // 스킬 패시브: 이동 AP 할인 (gold -2, bronze -1 중복 가능)
-  const mvDisc=(allCards().some(c=>c.id==='sk_mv_g')?2:0)+(allCards().some(c=>c.id==='sk_mv_b')?1:0);
-  const cost=Math.max(1, baseCost-mvDisc);
+  const cost=baseCost;
   if(G.ap<cost){log(`AP부족 (이동${baseCost}칸=AP${cost})`, ''); render(); return;}
   G.tiles[G.pos].hasPlayer=false;
   const wasExplored=t.explored;
   G.pos=i; t.hasPlayer=true; G.ap-=cost; G.tilesMoved+=baseCost;
+  // 스킬 패시브: 이동 AP 환급 확률
+  if(allCards().some(c=>c.id==='sk_mv_g')&&Math.random()<0.5){ G.ap=Math.min(G.maxAP+4,G.ap+cost); log(`🦅 자유로운 영혼: 이동 AP${cost} 환급!`,'success'); }
+  else if(allCards().some(c=>c.id==='sk_mv_b')&&Math.random()<0.1){ G.ap=Math.min(G.maxAP+4,G.ap+cost); log(`🥾 가벼운 발: 이동 AP${cost} 환급!`,'success'); }
   // 스킬 패시브: 이동 후 효과
   if(allCards().some(c=>c.id==='sk_mv_s1')) G.hp=Math.min(100,G.hp+1);
   if(allCards().some(c=>c.id==='sk_mv_s2')) G.san=Math.min(100,G.san+1);
@@ -3086,21 +3094,21 @@ function doJudgment(evt, ch){
       const t=G.deck[G.deck.length-1];G.deck[G.deck.length-1]=G.deck[tagIdx];G.deck[tagIdx]=t;
     }
   }
-  let top, compassExtra=null;
+  let top;
   const hasCompass=hasTool('compass');
-  if(hasCompass&&G.deck.length>=2){
-    const c1=G.deck[G.deck.length-1], c2=G.deck[G.deck.length-2];
-    const score=c=>!c?-1:ch.greatCard&&c.id===ch.greatCard?3:ch.req&&c.tag===ch.req?2:ch.subReq&&(c.subTags||[]).includes(ch.subReq)?1:!ch.req&&!ch.subReq?1:0;
-    const useSecond=score(c2)>score(c1);
-    top=useSecond?c2:c1; compassExtra=useSecond?c1:c2;
-    G.disc.push(G.deck.pop()); G.disc.push(G.deck.pop());
-  } else {
-    top=G.deck.length?G.deck[G.deck.length-1]:null;
-    if(top) G.disc.push(G.deck.pop());
-  }
+  const hasSk_ex_s1=allCards().some(c=>c.id==='sk_ex_s1');
+  const numDraw=1+(hasCompass?1:0)+(hasSk_ex_s1?1:0);
+  const _score=c=>!c?-1:ch.greatCard&&c.id===ch.greatCard?3:ch.req&&c.tag===ch.req?2:ch.subReq&&(c.subTags||[]).includes(ch.subReq)?1:!ch.req&&!ch.subReq?1:0;
+  const drawn=[];
+  for(let _di=0;_di<Math.min(numDraw,G.deck.length);_di++) drawn.push(G.deck[G.deck.length-1-_di]);
+  let bestIdx=0;
+  for(let _di=1;_di<drawn.length;_di++){if(_score(drawn[_di])>_score(drawn[bestIdx]))bestIdx=_di;}
+  top=drawn[bestIdx]||null;
+  for(let _di=0;_di<drawn.length;_di++) G.disc.push(G.deck.pop());
+  const _compassExtras=drawn.filter((_,_di)=>_di!==bestIdx);
   const primaryOk=ch.req?(top&&top.tag===ch.req):(!ch.subReq);
   const subOk=!!(ch.subReq&&top&&(top.subTags||[]).includes(ch.subReq));
-  const success=primaryOk||subOk;
+  let success=primaryOk||subOk;
   const isGreat=!!(ch.greatCard&&top&&top.id===ch.greatCard);
   const escGain=Math.max(ch.reward?.escape||0, ch.greatBonus?.escape||0);
   const escLoss=Math.max(ch.failPen?.escape||0, 0);
@@ -3161,7 +3169,12 @@ function doJudgment(evt, ch){
       if(!success&&allCards().some(c=>c.id==='sk_ex_g')){ success=true; _skillForceSuccess=true; }
       // 브론즈: 실패 시 10% 추가 기회
       if(!success&&!_skillForceSuccess&&allCards().some(c=>c.id==='sk_ex_b')&&Math.random()<0.1){ success=true; bonLines.push('🔍 날카로운 눈: 실패 뒤집기 성공!'); }
-      if(compassExtra) bonLines.push(`🧭 나침반: ${compassExtra.icon}${compassExtra.name} 제외 → 유리한 카드 선택`);
+      if(_compassExtras.length){
+        const extTxt=_compassExtras.map(c=>c.icon+c.name).join(', ');
+        if(hasCompass&&hasSk_ex_s1) bonLines.push(`🧭🕯️ 나침반+경험의 빛: ${numDraw}장 중 최선 선택 (버림: ${extTxt})`);
+        else if(hasCompass) bonLines.push(`🧭 나침반: 2장 중 유리한 카드 선택 (버림: ${extTxt})`);
+        else bonLines.push(`🕯️ 경험의 빛: 2장 중 유리한 카드 선택 (버림: ${extTxt})`);
+      }
       if(subOk&&!primaryOk) bonLines.push(`🏷️ #${ch.subReq} 보조 태그 매치 성공!`);
       if(ch.devourDrawn){
         const tagMatch=!ch.devourTag||(top&&top.tag===ch.devourTag);
@@ -3179,8 +3192,6 @@ function doJudgment(evt, ch){
         resEl.className='jdg-res great'; resEl.textContent='★ 대성공!';
         applyR(ch.reward,lines); applyR(ch.greatBonus,lines);
         bonLines.push(`★ ${CARD_MAP[ch.greatCard]?.name||ch.greatCard} 대성공 발동!`);
-        // 황금 손: 카드 보상 시 +1장
-        if(ch.reward?.card&&allCards().some(c=>c.id==='sk_ga_g')){addCard(ch.reward.card,1);bonLines.push(`💰 황금 손: ${CARD_MAP[ch.reward.card]?.name||ch.reward.card}×1 추가`);}
       } else if(success){
         resEl.className='jdg-res ok'; resEl.textContent='✓ 성공!';
         applyR(ch.reward,lines);
@@ -3188,13 +3199,6 @@ function doJudgment(evt, ch){
           if(!G.deck.length&&G.disc.length){G.deck=shuffle(G.disc);G.disc=[];}
           if(G.deck.length){const b=G.deck.pop();G.disc.push(b);bonLines.push(`🕯️ 횃불 패시브: ${b.icon}${b.name} 추가`);}
         }
-        // 경험의 빛: tool 성공 시 추가 드로우
-        if(ch.req==='tool'&&allCards().some(c=>c.id==='sk_ex_s1')){
-          if(!G.deck.length&&G.disc.length){G.deck=shuffle(G.disc);G.disc=[];}
-          if(G.deck.length){const b=G.deck.pop();G.disc.push(b);bonLines.push(`🕯️ 경험의 빛: ${b.icon}${b.name} 추가`);}
-        }
-        // 황금 손: 카드 보상 시 +1장
-        if(ch.reward?.card&&allCards().some(c=>c.id==='sk_ga_g')){addCard(ch.reward.card,1);bonLines.push(`💰 황금 손: ${CARD_MAP[ch.reward.card]?.name||ch.reward.card}×1 추가`);}
       } else {
         resEl.className='jdg-res fail'; resEl.textContent='✗ 실패...';
         if(ch.failPen) applyPen(ch.failPen,lines); else lines.push('별다른 피해 없음');
@@ -3390,11 +3394,6 @@ function doGather(opt, key, rate){
     if(allCards().some(c=>c.id==='sk_ga_s1')) n+=1;
     const d=CARD_MAP[opt.res];
     const items=[{id:opt.res,icon:d?.icon||'📦',name:d?.name||opt.res,n}];
-    // 황금 손: 수집 카드 +1
-    if(allCards().some(c=>c.id==='sk_ga_g')){
-      items.push({id:opt.res,icon:d?.icon||'📦',name:d?.name||opt.res,n:1});
-      log(`💰 황금 손: ${d?.name||opt.res}×1 추가`,'success');
-    }
     log(`🎒 ${opt.label} 성공! ${d?.icon||''}${d?.name||opt.res}×${n} (AP-3)`,'gather');
     showItemPopup(items,`🎒 ${opt.label} 성공!`,()=>{
       checkSurvival(); render(); saveGame();
@@ -3415,7 +3414,7 @@ function doGather(opt, key, rate){
 function doCamp(){
   if(G.over) return;
   // 스킬 패시브: 캠프 AP 비용
-  const campCost=allCards().some(c=>c.id==='sk_cp_g')?0:allCards().some(c=>c.id==='sk_cp_b')?6:8;
+  const campCost=allCards().some(c=>c.id==='sk_cp_b')?7:8;
   if(G.ap<campCost){log(`AP부족 (캠프:AP${campCost})`,'danger');render();return;}
   if(G.tiles[G.pos].hasCamp){log('이미 캠프가 있다.','');return;}
   G.tiles[G.pos].hasCamp=true; G.camps.push(G.pos); G.ap-=campCost;
@@ -3571,9 +3570,10 @@ function doCraft(id){
   G.ap-=craftAp;
   // 고철 절약 (재료 절약 스킬)
   const metalSave=allCards().some(c=>c.id==='sk_cr_s1')?1:0;
+  const _consumed=[];
   rec.cost.forEach(c=>{
     const n=c.id==='metal'?Math.max(0,c.n-metalSave):c.n;
-    if(n>0) rmFromDeck(c.id,n);
+    if(n>0){ rmFromDeck(c.id,n); _consumed.push(c.id); }
   });
 
   if(rec.raftLottery){
@@ -3585,10 +3585,12 @@ function doCraft(id){
   addCard(rec.result, rec.rn);
   if(!G.actionCnt) G.actionCnt={move:0,explore:0,gather:0,camp:0,craft:0,carduse:0,sleep:0,combat:0};
   G.actionCnt.craft=(G.actionCnt.craft||0)+1;
-  // 재활용: 버림더미 자원 카드 1장 덱으로 복귀
-  if(allCards().some(c=>c.id==='sk_cr_s2')){
-    const ri=G.disc.findIndex(c=>c.tag==='resource');
-    if(ri>=0){const rc=G.disc.splice(ri,1)[0];G.deck.push(rc);log(`🔄 재활용: ${rc.icon}${rc.name} 덱 복귀`,'success');}
+  // 재활용: 소비된 재료 중 1종류 1장 돌려받음
+  if(_consumed.length&&allCards().some(c=>c.id==='sk_cr_s2')){
+    const rid=_consumed[Math.floor(Math.random()*_consumed.length)];
+    addCard(rid,1);
+    const rd=CARD_MAP[rid];
+    log(`🔄 재활용: ${rd?.icon||''}${rd?.name||rid}×1 돌려받음`,'success');
   }
   const d=CARDS.find(c=>c.id===rec.result);
   log(`🔨 ${rec.name}. ${d?.icon||''}${d?.name||''}×${rec.rn} (AP-${craftAp})`,'success');
@@ -3611,19 +3613,18 @@ let _prevUcHandUIDs=new Set();
 
 function openUseCard(){
   if(G.over) return;
-  const cardUseCost=allCards().some(c=>c.id==='sk_cu_g')?0:1;
-  if(G.ap<cardUseCost){log('AP부족 (카드사용:AP1)','danger');render();return;}
-  G.ap-=cardUseCost;
+  if(G.ap<1){log('AP부족 (카드사용:AP1)','danger');render();return;}
+  G.ap-=1;
   if(!G.actionCnt) G.actionCnt={move:0,explore:0,gather:0,camp:0,craft:0,carduse:0,sleep:0,combat:0};
   G.actionCnt.carduse=(G.actionCnt.carduse||0)+1;
   const ropeCnt=allCards().filter(c=>c.id==='rope').length;
   const beachCampCnt=G.camps.filter(cp=>G.tiles[cp].id==='beach').length;
-  const skillDrawBonus=allCards().filter(c=>c.id==='sk_cu_b').length;
+  const skillDrawBonus=allCards().some(c=>c.id==='sk_cu_s1')?3:0;
   const drawN=5+ropeCnt+beachCampCnt+skillDrawBonus;
   _ucHand=drawToHand(drawN);
   if(!_ucHand.length){log('덱이 비어있다.','danger');G.ap+=1;render();return;}
   _prevUcHandUIDs=new Set();
-  const bonusDesc=(ropeCnt?` (🪢밧줄+${ropeCnt})`:'')+(beachCampCnt?` (🏖️해변캠프+${beachCampCnt})`:'')+(skillDrawBonus?` (🃏드로우마스터+${skillDrawBonus})`:'');
+  const bonusDesc=(ropeCnt?` (🪢밧줄+${ropeCnt})`:'')+(beachCampCnt?` (🏖️해변캠프+${beachCampCnt})`:'')+(skillDrawBonus?` (🔀손놀림+${skillDrawBonus})`:'');
   document.getElementById('uc-sub').textContent=`${_ucHand.length}장 드로우${bonusDesc} — 사용할 카드 선택`;
   document.getElementById('uc-result').textContent='';
   document.getElementById('uc-mo').style.display='flex';
@@ -3638,7 +3639,8 @@ function renderUcCards(){
     const usable=(!!card.use||card.tag==='action')&&card.id!=='flare_kit'&&card.id!=='signal';
     const kBoost=hasTool('knife')?8:0;
     const durStr=card.dur?`<div style="font-size:8px;color:var(--accent);font-family:var(--font-m);">🔋${card.curDur||card.dur}/${card.dur}</div>`:'';
-    const useLabels={eat:`🍗허기+${22+kBoost}`,drink:'💧갈증+28',heal:'🌿HP+10',good_sleep:'😪HP+10·정신력+8',temple_map:'🏛️사원 위치 표시',_action:'🏃2장 드로우',sk_ex_reexplore:'📖재탐색 활성화',sk_ga_spot:'🎒현장채집(AP1)',sk_cr_anywhere:'🗂️이동 제작소',sk_cu_peek:'👁️덱 미리보기',sk_sl_nap:'💤낮잠(HP+8+정신력+4)'};
+    const gsHp=allCards().some(c=>c.id==='sk_cp_s3')?20:10, gsSan=allCards().some(c=>c.id==='sk_cp_s3')?16:8;
+    const useLabels={eat:`🍗허기+${22+kBoost}`,drink:'💧갈증+28',heal:'🌿HP+10',good_sleep:`😪HP+${gsHp}·정신력+${gsSan}`,temple_map:'🏛️사원 위치 표시',_action:'🏃2장 드로우',sk_ex_reexplore:'📖재탐색 활성화',sk_ga_spot:'🎒현장채집(AP1)',sk_cr_anywhere:'🗂️이동 제작소',sk_cu_peek:'👁️덱 미리보기',sk_cu_discard:'🌀손 카드 1장 소멸',sk_sl_wake:'⏰AP+10(1회용)',sk_cb_strike:'💥전투에서만 사용 가능'};
     const div=document.createElement('div');
     div.style.cssText=`background:var(--bg3);border:1px solid ${usable?'var(--green2)':'var(--border)'};border-radius:9px;padding:10px 8px;width:90px;text-align:center;cursor:${usable?'pointer':'default'};opacity:${usable?1:0.5};transition:all .12s;`;
     if(!_prevUcHandUIDs.has(card.uid)){
@@ -3697,11 +3699,13 @@ function ucUse(i){
     resEl.style.color='var(--green)';
     log('🌿 약초. HP+10','success');
   } else if(card.use==='good_sleep'){
-    G.hp=Math.min(100,G.hp+10);
-    G.san=Math.min(100,G.san+8);
-    resEl.textContent='😪 꿀잠 — HP+10, 정신력+8';
+    const cpS3=allCards().some(c=>c.id==='sk_cp_s3');
+    const gsHp=cpS3?20:10, gsSan=cpS3?16:8;
+    G.hp=Math.min(100,G.hp+gsHp);
+    G.san=Math.min(100,G.san+gsSan);
+    resEl.textContent=`😪 꿀잠 — HP+${gsHp}, 정신력+${gsSan}${cpS3?' (🔥2배)':''}`;
     resEl.style.color='var(--green)';
-    log('😪 꿀잠. HP+10, 정신력+8','success');
+    log(`😪 꿀잠. HP+${gsHp}, 정신력+${gsSan}`,'success');
   } else if(card.use==='temple_map'){
     const ti=G.tiles.findIndex(t=>t.id==='temple');
     if(ti>=0&&!G.templeRevealed){
@@ -3751,11 +3755,24 @@ function ucUse(i){
     resEl.style.color='var(--accent)';
     _showPeekChoices(peekCards);
     return;
-  } else if(card.use==='sk_sl_nap'){
-    G.hp=Math.min(100,G.hp+8); G.san=Math.min(100,G.san+4);
-    resEl.textContent='💤 낮잠: HP+8, 정신력+4 회복';
+  } else if(card.use==='sk_cu_discard'){
+    if(!_ucHand.length){resEl.textContent='손패에 카드가 없다.';resEl.style.color='var(--text3)';return;}
+    const tgtIdx=Math.floor(Math.random()*_ucHand.length);
+    const tgt=_ucHand[tgtIdx];
+    _ucHand.splice(tgtIdx,1);
+    resEl.textContent=`🌀 소멸: ${tgt.icon}${tgt.name}`;
+    resEl.style.color='var(--accent)';
+    log(`🌀 신속한 손: ${tgt.icon}${tgt.name} 소멸`,'success');
+    renderUcCards(); checkSurvival(); render(); return;
+  } else if(card.use==='sk_sl_wake'||card.use==='sk_sl_nap'){
+    G.ap=Math.min(G.maxAP+4,G.ap+10);
+    resEl.textContent='⏰ 꿈에서 깨다: AP+10 회복';
     resEl.style.color='var(--green)';
-    log('💤 낮잠. HP+8 정신력+4','success');
+    log('⏰ 꿈에서 깨다. AP+10','success');
+  } else if(card.use==='sk_cb_strike'){
+    resEl.textContent='💥 힘을 담은 일격은 전투 핸드에서만 사용 가능합니다.';
+    resEl.style.color='var(--red)';
+    return;
   }
   if(card.dur){
     card.curDur=(card.curDur||card.dur)-1;
@@ -3775,11 +3792,6 @@ function ucUse(i){
 function closeUseCard(){
   G.disc.push(..._ucHand); _ucHand=[];
   _prevUcHandUIDs=new Set();
-  // 손놀림: 버림더미 맨 위 1장 덱 복귀
-  if(allCards().some(c=>c.id==='sk_cu_s1')&&G.disc.length){
-    const top=G.disc.pop(); G.deck.push(top);
-    log(`🔀 손놀림: ${top.icon}${top.name} 덱 복귀`,'');
-  }
   document.getElementById('uc-mo').style.display='none';
   document.getElementById('tt').style.display='none';
   render();
@@ -3924,12 +3936,13 @@ function doSleep(){
   let ruinsBonusAP=0;
   const campCount={cave:0,forest:0,shore:0,ruins:0};
   const inCampNow=G.camps.includes(G.pos);
+  const campDouble=allCards().some(c=>c.id==='sk_cp_g');
   G.camps.forEach(cp=>{
     const t=G.tiles[cp];
-    if(t.id==='cave')   { sanR+=3; campCount.cave++; }
-    if(t.id==='forest') { addCard('berry',1); campCount.forest++; }
-    if(t.id==='shore')  { addCard('dew',1);   campCount.shore++; }
-    if(t.id==='ruins')  { ruinsBonusAP+=1; G.san=Math.max(0,G.san-2); campCount.ruins++; }
+    if(t.id==='cave')   { sanR+=campDouble?6:3; campCount.cave++; }
+    if(t.id==='forest') { addCard('berry',campDouble?2:1); campCount.forest++; }
+    if(t.id==='shore')  { addCard('dew',campDouble?2:1); campCount.shore++; }
+    if(t.id==='ruins')  { ruinsBonusAP+=campDouble?2:1; G.san=Math.max(0,G.san-(campDouble?4:2)); campCount.ruins++; }
   });
   // 스킬 패시브: 취침 HP/SAN 보너스
   if(allCards().some(c=>c.id==='sk_sl_s1')) hpR+=8;
@@ -4100,7 +4113,7 @@ function calcSleepEvtChance(early){
   // 스킬 패시브
   if(allCards().some(c=>c.id==='sk_sl_b')) c-=15;
   const inCamp=G.camps.includes(G.pos);
-  if(inCamp&&allCards().some(c=>c.id==='sk_cp_s2')) c-=10;
+  if(inCamp&&allCards().some(c=>c.id==='sk_cp_s2')) return 0;
   return Math.min(Math.max(c,0),80);
 }
 
@@ -4318,7 +4331,7 @@ function closeSleepEvt(){
 let _prevCbtHandUIDs=new Set();
 
 function drawCombatHand(){
-  const n=5+(allCards().some(c=>c.id==='sk_cb_b')?1:0);
+  const n=5+(allCards().some(c=>c.id==='sk_cb_s1')?1:0);
   return drawToHand(n);
 }
 
@@ -4588,6 +4601,19 @@ function cbtCardClick(i){
     log(`🏃 ${c.name}: ${CBT.hand.length-before}장 드로우`,'success');
     renderCombat(); return;
   }
+  // 힘을 담은 일격: 즉발 스킬
+  if(c.tag==='skill'&&c.use==='sk_cb_strike'){
+    CBT.atkZone=CBT.atkZone.filter(x=>x.uid!==c.uid);
+    CBT.defZone=CBT.defZone.filter(x=>x.uid!==c.uid);
+    CBT.hand.splice(i,1);
+    G.disc.push({...c});
+    const e=CBT.enemy;
+    const stunOk=e.bossType?Math.random()<0.35:true;
+    e.curHp=Math.max(0,e.curHp-10);
+    if(stunOk) CBT.stunned=true;
+    log(`💥 힘을 담은 일격: 적 HP-10${stunOk?' + 스턴!':' (보스 기절 저항)'}`, 'success');
+    renderCombat(); return;
+  }
   const inA=CBT.atkZone.some(x=>x.uid===c.uid);
   const inD=CBT.defZone.some(x=>x.uid===c.uid);
   if(inA||inD){
@@ -4816,7 +4842,7 @@ function resolveCombat(){
   if(!willKillEnemy && hasArmor && dmgP>0){ dmgP=Math.max(0,dmgP-2); lines.push({t:`🧥 가죽갑옷: 피해-2`,cls:'good'}); }
   if(!willKillEnemy && hasStoneVest && dmgP>0){ dmgP=Math.max(0,dmgP-3); lines.push({t:`🦺 돌 조끼: 피해-3`,cls:'good'}); }
   // 단련된 몸: 피해 -1
-  if(!willKillEnemy && allCards().some(c=>c.id==='sk_cb_s1') && dmgP>0){ dmgP=Math.max(0,dmgP-1); lines.push({t:`🦾 단련된 몸: 피해-1`,cls:'good'}); }
+  if(!willKillEnemy && allCards().some(c=>c.id==='sk_cb_b') && dmgP>0){ dmgP=Math.max(0,dmgP-1); lines.push({t:`🦾 단련된 몸: 피해-1`,cls:'good'}); }
   if(willKillEnemy) lines.push({t:`⚔️ 이번 공격으로 처치 — 적의 반격 없음`,cls:'good'});
 
   lines.unshift({t:`⚔️ 내공격: 일반${normalAtk}-방어${effDef}+관통${pierceAtk}+독${poisonDmg}+출혈${bleedDmg}=${dmgE}피해`,cls:'good'});
@@ -4886,8 +4912,8 @@ function _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,will
     if(allCards().some(c=>c.id==='sk_cb_s2')){ G.hp=Math.min(100,G.hp+8); resEl.innerHTML+=`<div class="rl good">🩸 사냥의 기쁨: HP+8</div>`; }
     if(allCards().some(c=>c.id==='sk_cb_g')){
       let di=G.deck.findIndex(c=>c.id==='debris'||c.tag==='status');
-      if(di>=0){ const rc=G.deck.splice(di,1)[0]; resEl.innerHTML+=`<div class="rl good">🌪️ 공허의 칼날: ${rc.icon}${rc.name} 소멸</div>`; }
-      else { di=G.disc.findIndex(c=>c.id==='debris'||c.tag==='status'); if(di>=0){ const rc=G.disc.splice(di,1)[0]; resEl.innerHTML+=`<div class="rl good">🌪️ 공허의 칼날: ${rc.icon}${rc.name} 소멸</div>`; } }
+      if(di>=0){ const rc=G.deck.splice(di,1)[0]; resEl.innerHTML+=`<div class="rl good">💥 힘을 담은 일격: ${rc.icon}${rc.name} 소멸</div>`; }
+      else { di=G.disc.findIndex(c=>c.id==='debris'||c.tag==='status'); if(di>=0){ const rc=G.disc.splice(di,1)[0]; resEl.innerHTML+=`<div class="rl good">💥 힘을 담은 일격: ${rc.icon}${rc.name} 소멸</div>`; } }
     }
     // 사원 페이즈 진행
     if(e._templeNextPhase!==undefined){

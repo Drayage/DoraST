@@ -4,7 +4,7 @@
 let _prevCbtHandUIDs=new Set();
 
 function drawCombatHand(){
-  const n=5+(allCards().some(c=>c.id==='sk_cb_b')?1:0);
+  const n=5+(allCards().some(c=>c.id==='sk_cb_s1')?1:0);
   return drawToHand(n);
 }
 
@@ -274,6 +274,19 @@ function cbtCardClick(i){
     log(`🏃 ${c.name}: ${CBT.hand.length-before}장 드로우`,'success');
     renderCombat(); return;
   }
+  // 힘을 담은 일격: 즉발 스킬
+  if(c.tag==='skill'&&c.use==='sk_cb_strike'){
+    CBT.atkZone=CBT.atkZone.filter(x=>x.uid!==c.uid);
+    CBT.defZone=CBT.defZone.filter(x=>x.uid!==c.uid);
+    CBT.hand.splice(i,1);
+    G.disc.push({...c});
+    const e=CBT.enemy;
+    const stunOk=e.bossType?Math.random()<0.35:true;
+    e.curHp=Math.max(0,e.curHp-10);
+    if(stunOk) CBT.stunned=true;
+    log(`💥 힘을 담은 일격: 적 HP-10${stunOk?' + 스턴!':' (보스 기절 저항)'}`, 'success');
+    renderCombat(); return;
+  }
   const inA=CBT.atkZone.some(x=>x.uid===c.uid);
   const inD=CBT.defZone.some(x=>x.uid===c.uid);
   if(inA||inD){
@@ -502,7 +515,7 @@ function resolveCombat(){
   if(!willKillEnemy && hasArmor && dmgP>0){ dmgP=Math.max(0,dmgP-2); lines.push({t:`🧥 가죽갑옷: 피해-2`,cls:'good'}); }
   if(!willKillEnemy && hasStoneVest && dmgP>0){ dmgP=Math.max(0,dmgP-3); lines.push({t:`🦺 돌 조끼: 피해-3`,cls:'good'}); }
   // 단련된 몸: 피해 -1
-  if(!willKillEnemy && allCards().some(c=>c.id==='sk_cb_s1') && dmgP>0){ dmgP=Math.max(0,dmgP-1); lines.push({t:`🦾 단련된 몸: 피해-1`,cls:'good'}); }
+  if(!willKillEnemy && allCards().some(c=>c.id==='sk_cb_b') && dmgP>0){ dmgP=Math.max(0,dmgP-1); lines.push({t:`🦾 단련된 몸: 피해-1`,cls:'good'}); }
   if(willKillEnemy) lines.push({t:`⚔️ 이번 공격으로 처치 — 적의 반격 없음`,cls:'good'});
 
   lines.unshift({t:`⚔️ 내공격: 일반${normalAtk}-방어${effDef}+관통${pierceAtk}+독${poisonDmg}+출혈${bleedDmg}=${dmgE}피해`,cls:'good'});
@@ -572,8 +585,8 @@ function _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,will
     if(allCards().some(c=>c.id==='sk_cb_s2')){ G.hp=Math.min(100,G.hp+8); resEl.innerHTML+=`<div class="rl good">🩸 사냥의 기쁨: HP+8</div>`; }
     if(allCards().some(c=>c.id==='sk_cb_g')){
       let di=G.deck.findIndex(c=>c.id==='debris'||c.tag==='status');
-      if(di>=0){ const rc=G.deck.splice(di,1)[0]; resEl.innerHTML+=`<div class="rl good">🌪️ 공허의 칼날: ${rc.icon}${rc.name} 소멸</div>`; }
-      else { di=G.disc.findIndex(c=>c.id==='debris'||c.tag==='status'); if(di>=0){ const rc=G.disc.splice(di,1)[0]; resEl.innerHTML+=`<div class="rl good">🌪️ 공허의 칼날: ${rc.icon}${rc.name} 소멸</div>`; } }
+      if(di>=0){ const rc=G.deck.splice(di,1)[0]; resEl.innerHTML+=`<div class="rl good">💥 힘을 담은 일격: ${rc.icon}${rc.name} 소멸</div>`; }
+      else { di=G.disc.findIndex(c=>c.id==='debris'||c.tag==='status'); if(di>=0){ const rc=G.disc.splice(di,1)[0]; resEl.innerHTML+=`<div class="rl good">💥 힘을 담은 일격: ${rc.icon}${rc.name} 소멸</div>`; } }
     }
     // 사원 페이즈 진행
     if(e._templeNextPhase!==undefined){

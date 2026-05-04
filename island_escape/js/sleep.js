@@ -112,12 +112,13 @@ function doSleep(){
   let ruinsBonusAP=0;
   const campCount={cave:0,forest:0,shore:0,ruins:0};
   const inCampNow=G.camps.includes(G.pos);
+  const campDouble=allCards().some(c=>c.id==='sk_cp_g');
   G.camps.forEach(cp=>{
     const t=G.tiles[cp];
-    if(t.id==='cave')   { sanR+=3; campCount.cave++; }
-    if(t.id==='forest') { addCard('berry',1); campCount.forest++; }
-    if(t.id==='shore')  { addCard('dew',1);   campCount.shore++; }
-    if(t.id==='ruins')  { ruinsBonusAP+=1; G.san=Math.max(0,G.san-2); campCount.ruins++; }
+    if(t.id==='cave')   { sanR+=campDouble?6:3; campCount.cave++; }
+    if(t.id==='forest') { addCard('berry',campDouble?2:1); campCount.forest++; }
+    if(t.id==='shore')  { addCard('dew',campDouble?2:1); campCount.shore++; }
+    if(t.id==='ruins')  { ruinsBonusAP+=campDouble?2:1; G.san=Math.max(0,G.san-(campDouble?4:2)); campCount.ruins++; }
   });
   // 스킬 패시브: 취침 HP/SAN 보너스
   if(allCards().some(c=>c.id==='sk_sl_s1')) hpR+=8;
@@ -288,7 +289,7 @@ function calcSleepEvtChance(early){
   // 스킬 패시브
   if(allCards().some(c=>c.id==='sk_sl_b')) c-=15;
   const inCamp=G.camps.includes(G.pos);
-  if(inCamp&&allCards().some(c=>c.id==='sk_cp_s2')) c-=10;
+  if(inCamp&&allCards().some(c=>c.id==='sk_cp_s2')) return 0;
   return Math.min(Math.max(c,0),80);
 }
 

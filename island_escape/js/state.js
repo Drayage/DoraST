@@ -111,7 +111,8 @@ function initGame(){
     templeRevealed:false, templeEventShown:{},
     actionCnt:{move:0,explore:0,gather:0,camp:0,craft:0,carduse:0,sleep:0,combat:0},
     pendingSkillType:null,
-    skillEvtCount:{},
+    skillEvtTotal:0,
+    skillEvtTriggered:{},
     skillCraftBypass:false,
     islandId,
   };

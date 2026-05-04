@@ -20,8 +20,10 @@ function log(msg, type){
 }
 
 function addCard(id, n){
-  const def=CARD_MAP[id]; if(!def) return;   // O(1) 조회
-  for(let i=0;i<n;i++){
+  const def=CARD_MAP[id]; if(!def) return;
+  // 황금 손: 스킬 카드 제외한 모든 카드 획득 2배 (양날의 검)
+  const realN=(G&&G.deck&&def.tag!=='skill'&&allCards().some(c=>c.id==='sk_ga_g'))?n*2:n;
+  for(let i=0;i<realN;i++){
     const card={...def, uid:uid()};
     if(def.dur) card.curDur=def.dur;
     G.disc.push(card);

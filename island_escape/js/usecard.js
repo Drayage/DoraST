@@ -4,19 +4,18 @@ let _prevUcHandUIDs=new Set();
 
 function openUseCard(){
   if(G.over) return;
-  const cardUseCost=allCards().some(c=>c.id==='sk_cu_g')?0:1;
-  if(G.ap<cardUseCost){log('AP부족 (카드사용:AP1)','danger');render();return;}
-  G.ap-=cardUseCost;
+  if(G.ap<1){log('AP부족 (카드사용:AP1)','danger');render();return;}
+  G.ap-=1;
   if(!G.actionCnt) G.actionCnt={move:0,explore:0,gather:0,camp:0,craft:0,carduse:0,sleep:0,combat:0};
   G.actionCnt.carduse=(G.actionCnt.carduse||0)+1;
   const ropeCnt=allCards().filter(c=>c.id==='rope').length;
   const beachCampCnt=G.camps.filter(cp=>G.tiles[cp].id==='beach').length;
-  const skillDrawBonus=allCards().filter(c=>c.id==='sk_cu_b').length;
+  const skillDrawBonus=allCards().some(c=>c.id==='sk_cu_s1')?3:0;
   const drawN=5+ropeCnt+beachCampCnt+skillDrawBonus;
   _ucHand=drawToHand(drawN);
   if(!_ucHand.length){log('덱이 비어있다.','danger');G.ap+=1;render();return;}
   _prevUcHandUIDs=new Set();
-  const bonusDesc=(ropeCnt?` (🪢밧줄+${ropeCnt})`:'')+(beachCampCnt?` (🏖️해변캠프+${beachCampCnt})`:'')+(skillDrawBonus?` (🃏드로우마스터+${skillDrawBonus})`:'');
+  const bonusDesc=(ropeCnt?` (🪢밧줄+${ropeCnt})`:'')+(beachCampCnt?` (🏖️해변캠프+${beachCampCnt})`:'')+(skillDrawBonus?` (🔀손놀림+${skillDrawBonus})`:'');
   document.getElementById('uc-sub').textContent=`${_ucHand.length}장 드로우${bonusDesc} — 사용할 카드 선택`;
   document.getElementById('uc-result').textContent='';
   document.getElementById('uc-mo').style.display='flex';
@@ -31,7 +30,8 @@ function renderUcCards(){
     const usable=(!!card.use||card.tag==='action')&&card.id!=='flare_kit'&&card.id!=='signal';
     const kBoost=hasTool('knife')?8:0;
     const durStr=card.dur?`<div style="font-size:8px;color:var(--accent);font-family:var(--font-m);">🔋${card.curDur||card.dur}/${card.dur}</div>`:'';
-    const useLabels={eat:`🍗허기+${22+kBoost}`,drink:'💧갈증+28',heal:'🌿HP+10',good_sleep:'😪HP+10·정신력+8',temple_map:'🏛️사원 위치 표시',_action:'🏃2장 드로우',sk_ex_reexplore:'📖재탐색 활성화',sk_ga_spot:'🎒현장채집(AP1)',sk_cr_anywhere:'🗂️이동 제작소',sk_cu_peek:'👁️덱 미리보기',sk_sl_nap:'💤낮잠(HP+8+정신력+4)'};
+    const gsHp=allCards().some(c=>c.id==='sk_cp_s3')?20:10, gsSan=allCards().some(c=>c.id==='sk_cp_s3')?16:8;
+    const useLabels={eat:`🍗허기+${22+kBoost}`,drink:'💧갈증+28',heal:'🌿HP+10',good_sleep:`😪HP+${gsHp}·정신력+${gsSan}`,temple_map:'🏛️사원 위치 표시',_action:'🏃2장 드로우',sk_ex_reexplore:'📖재탐색 활성화',sk_ga_spot:'🎒현장채집(AP1)',sk_cr_anywhere:'🗂️이동 제작소',sk_cu_peek:'👁️덱 미리보기',sk_cu_discard:'🌀손 카드 1장 소멸',sk_sl_wake:'⏰AP+10(1회용)',sk_cb_strike:'💥전투에서만 사용 가능'};
     const div=document.createElement('div');
     div.style.cssText=`background:var(--bg3);border:1px solid ${usable?'var(--green2)':'var(--border)'};border-radius:9px;padding:10px 8px;width:90px;text-align:center;cursor:${usable?'pointer':'default'};opacity:${usable?1:0.5};transition:all .12s;`;
     if(!_prevUcHandUIDs.has(card.uid)){
@@ -90,11 +90,13 @@ function ucUse(i){
     resEl.style.color='var(--green)';
     log('🌿 약초. HP+10','success');
   } else if(card.use==='good_sleep'){
-    G.hp=Math.min(100,G.hp+10);
-    G.san=Math.min(100,G.san+8);
-    resEl.textContent='😪 꿀잠 — HP+10, 정신력+8';
+    const cpS3=allCards().some(c=>c.id==='sk_cp_s3');
+    const gsHp=cpS3?20:10, gsSan=cpS3?16:8;
+    G.hp=Math.min(100,G.hp+gsHp);
+    G.san=Math.min(100,G.san+gsSan);
+    resEl.textContent=`😪 꿀잠 — HP+${gsHp}, 정신력+${gsSan}${cpS3?' (🔥2배)':''}`;
     resEl.style.color='var(--green)';
-    log('😪 꿀잠. HP+10, 정신력+8','success');
+    log(`😪 꿀잠. HP+${gsHp}, 정신력+${gsSan}`,'success');
   } else if(card.use==='temple_map'){
     const ti=G.tiles.findIndex(t=>t.id==='temple');
     if(ti>=0&&!G.templeRevealed){
@@ -144,11 +146,24 @@ function ucUse(i){
     resEl.style.color='var(--accent)';
     _showPeekChoices(peekCards);
     return;
-  } else if(card.use==='sk_sl_nap'){
-    G.hp=Math.min(100,G.hp+8); G.san=Math.min(100,G.san+4);
-    resEl.textContent='💤 낮잠: HP+8, 정신력+4 회복';
+  } else if(card.use==='sk_cu_discard'){
+    if(!_ucHand.length){resEl.textContent='손패에 카드가 없다.';resEl.style.color='var(--text3)';return;}
+    const tgtIdx=Math.floor(Math.random()*_ucHand.length);
+    const tgt=_ucHand[tgtIdx];
+    _ucHand.splice(tgtIdx,1);
+    resEl.textContent=`🌀 소멸: ${tgt.icon}${tgt.name}`;
+    resEl.style.color='var(--accent)';
+    log(`🌀 신속한 손: ${tgt.icon}${tgt.name} 소멸`,'success');
+    renderUcCards(); checkSurvival(); render(); return;
+  } else if(card.use==='sk_sl_wake'||card.use==='sk_sl_nap'){
+    G.ap=Math.min(G.maxAP+4,G.ap+10);
+    resEl.textContent='⏰ 꿈에서 깨다: AP+10 회복';
     resEl.style.color='var(--green)';
-    log('💤 낮잠. HP+8 정신력+4','success');
+    log('⏰ 꿈에서 깨다. AP+10','success');
+  } else if(card.use==='sk_cb_strike'){
+    resEl.textContent='💥 힘을 담은 일격은 전투 핸드에서만 사용 가능합니다.';
+    resEl.style.color='var(--red)';
+    return;
   }
   if(card.dur){
     card.curDur=(card.curDur||card.dur)-1;
@@ -168,11 +183,6 @@ function ucUse(i){
 function closeUseCard(){
   G.disc.push(..._ucHand); _ucHand=[];
   _prevUcHandUIDs=new Set();
-  // 손놀림: 버림더미 맨 위 1장 덱 복귀
-  if(allCards().some(c=>c.id==='sk_cu_s1')&&G.disc.length){
-    const top=G.disc.pop(); G.deck.push(top);
-    log(`🔀 손놀림: ${top.icon}${top.name} 덱 복귀`,'');
-  }
   document.getElementById('uc-mo').style.display='none';
   document.getElementById('tt').style.display='none';
   render();

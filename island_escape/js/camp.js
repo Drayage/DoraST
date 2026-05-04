@@ -3,7 +3,7 @@
 function doCamp(){
   if(G.over) return;
   // 스킬 패시브: 캠프 AP 비용
-  const campCost=allCards().some(c=>c.id==='sk_cp_g')?0:allCards().some(c=>c.id==='sk_cp_b')?6:8;
+  const campCost=allCards().some(c=>c.id==='sk_cp_b')?7:8;
   if(G.ap<campCost){log(`AP부족 (캠프:AP${campCost})`,'danger');render();return;}
   if(G.tiles[G.pos].hasCamp){log('이미 캠프가 있다.','');return;}
   G.tiles[G.pos].hasCamp=true; G.camps.push(G.pos); G.ap-=campCost;
