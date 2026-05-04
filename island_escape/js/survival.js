@@ -12,7 +12,8 @@ function checkWin(){
   if(G.escape>=85&&!G.escMile[85]){ G.escMile[85]=true; showEscapeMilestone(15); }
   if(G.escape>=100&&!G.over){
     G.over=true;
-    showVictoryFanfare(()=>showEnding(true, G.signalEscape?'signal':null));
+    const escMethod=G.templeEscape?'temple':G.signalEscape?'signal':null;
+    showVictoryFanfare(()=>showEnding(true, escMethod));
   }
 }
 
@@ -105,6 +106,7 @@ function showEnding(win, reason){
 
 function _endHeadline(win, reason){
   if(win){
+    if(reason==='temple') return {main:'저주 해제', sub:`${G.day}일 만에 사원의 저주를 풀고 탈출했다.`};
     if(reason==='signal') return {main:'구조 성공', sub:`${G.day}일 만에 구조신호로 탈출했다.`};
     let main='탈출 성공';
     if(G.hp>=70&&G.san>=70&&G.day<=15) main='완벽한 생존';
@@ -225,7 +227,7 @@ function showRecords(){
       html+='<div class="pn-ver" style="margin-bottom:8px;">';
       html+='<div class="pn-tag">🏆 최고 기록</div>';
       if(best.survival)   html+=`<div style="font-size:9px;color:var(--text2);font-family:var(--font-m);margin:2px 0;">🗓️ 최장 생존 <b style="color:var(--accent);">${best.survival.day}일</b> — 탈출 ${best.survival.escape}% · ${best.survival.date}</div>`;
-      if(best.escape)     html+=`<div style="font-size:9px;color:var(--text2);font-family:var(--font-m);margin:2px 0;">🚀 최단 탈출 <b style="color:var(--green);">${best.escape.day}일</b>${best.escape.method==='signal'?' 🎆신호':' 🛶뗏목'} — ${best.escape.date}</div>`;
+      if(best.escape){const em=best.escape.method==='temple'?'🏛️사원':best.escape.method==='signal'?'🎆신호':'🛶뗏목';html+=`<div style="font-size:9px;color:var(--text2);font-family:var(--font-m);margin:2px 0;">🚀 최단 탈출 <b style="color:var(--green);">${best.escape.day}일</b> ${em} — ${best.escape.date}</div>`;}
       if(best.winStreak)  html+=`<div style="font-size:9px;color:var(--text2);font-family:var(--font-m);margin:2px 0;">🔥 최대 연승 <b style="color:var(--accent);">${best.winStreak}연승</b></div>`;
       if(best.lossStreak) html+=`<div style="font-size:9px;color:var(--text2);font-family:var(--font-m);margin:2px 0;">💀 최대 연패 <b style="color:var(--red);">${best.lossStreak}연패</b></div>`;
       html+='</div>';
@@ -234,7 +236,7 @@ function showRecords(){
       html+='<div class="pn-tag" style="margin-bottom:6px;">📜 최근 기록</div>';
       runs.forEach((r,i)=>{
         const winTxt=r.win?'<span style="color:var(--green);font-weight:700;">탈출 성공</span>':'<span style="color:var(--red);">실패</span>';
-        const methodBadge=r.win?(r.method==='signal'?'<span style="color:var(--accent);">🎆신호</span>':'<span style="color:var(--text3);">🛶뗏목</span>'):'';
+        const methodBadge=r.win?(r.method==='temple'?'<span style="color:#ccaaee;">🏛️사원</span>':r.method==='signal'?'<span style="color:var(--accent);">🎆신호</span>':'<span style="color:var(--text3);">🛶뗏목</span>'):'';
         html+=`<div style="display:flex;align-items:center;gap:8px;background:var(--bg3);border-radius:6px;padding:7px 10px;margin-bottom:5px;font-family:var(--font-m);font-size:9px;">
           <span style="color:var(--text3);min-width:14px;">${i+1}</span>
           <span style="color:var(--text3);">${r.date}</span>

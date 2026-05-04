@@ -1,5 +1,7 @@
 // ═══════════════ EXPLORE ═══════════════
 
+let _exploreCallback=null;
+
 function doExplore(){
   if(G.over) return;
   if(G.ap<2){log('AP부족 (탐색:AP2)','');render();return;}
@@ -14,7 +16,8 @@ function doExplore(){
   showExploreChoice(evt);
 }
 
-function showExploreChoice(evt){
+function showExploreChoice(evt, callback){
+  _exploreCallback=callback||null;
   // Use actual draw pile for probability; fall back to deck+disc only when draw pile is empty
   const baseDeck=G.deck.length?G.deck:allCards();
   const hasCompass=hasTool('compass');
@@ -80,6 +83,11 @@ function fmtR(r){
   if(r.ap)         p.push(`AP+${r.ap}`);
   if(r.revealTile){const td=TILE_TYPES.find(t=>t.id===r.revealTile);p.push(`${td?.icon||'📍'}${td?.name||r.revealTile} 위치 표시`);}
   if(r.removeCard){const d=CARD_MAP[r.removeCard];p.push(`${d?.icon||''}${d?.name||r.removeCard} 소멸`);}
+  if(r.devourCard){const d=CARD_MAP[r.devourCard];p.push(`${d?.icon||''}${d?.name||r.devourCard} 소멸(제물)`);}
+  if(r.sacrifice){if(r.sacrifice.hp)p.push(`HP-${r.sacrifice.hp}`);if(r.sacrifice.san)p.push(`정신력-${r.sacrifice.san}`);}
+  if(r.templeAtk) p.push(`보스전ATK+${r.templeAtk}`);
+  if(r.templeDef) p.push(`보스전DEF+${r.templeDef}`);
+  if(r.devourTopCard) p.push('자원카드 소멸');
   return p.join(' ');
 }
 
@@ -270,6 +278,28 @@ function applyR(r, lines){
     else{di=G.deck.findIndex(c=>c.id===r.removeCard);if(di>=0){G.deck.splice(di,1);lines.push(`${rd?.icon||''}${rd?.name||r.removeCard} 소멸`);}
     else lines.push(`${rd?.name||r.removeCard} 없음`);}
   }
+  if(r.devourCard){
+    const rd=CARD_MAP[r.devourCard];
+    let di=G.deck.findIndex(c=>c.id===r.devourCard);
+    if(di>=0){G.deck.splice(di,1);lines.push(`${rd?.icon||''}${rd?.name||r.devourCard} 소멸(제물)`);}
+    else{di=G.disc.findIndex(c=>c.id===r.devourCard);if(di>=0){G.disc.splice(di,1);lines.push(`${rd?.icon||''}${rd?.name||r.devourCard} 소멸(제물)`);}
+    else lines.push(`(${rd?.name||r.devourCard} 없음)`);}
+  }
+  if(r.sacrifice){
+    if(r.sacrifice.hp){G.hp=Math.max(0,G.hp-r.sacrifice.hp);lines.push(`HP-${r.sacrifice.hp}(제물)`);flashDamage();}
+    if(r.sacrifice.san){G.san=Math.max(0,G.san-r.sacrifice.san);lines.push(`정신력-${r.sacrifice.san}(제물)`);}
+  }
+  if(r.templeAtk){if(!G._templeBonus)G._templeBonus={atk:0,def:0};G._templeBonus.atk+=r.templeAtk;lines.push(`보스전 ATK+${r.templeAtk}`);}
+  if(r.templeDef) {if(!G._templeBonus)G._templeBonus={atk:0,def:0};G._templeBonus.def+=r.templeDef;lines.push(`보스전 DEF+${r.templeDef}`);}
+  if(r.devourTopCard){
+    const ti=G.deck.findIndex(c=>c.tag==='resource');
+    if(ti>=0){const dc=G.deck.splice(ti,1)[0];lines.push(`${dc.icon}${dc.name} 소멸(제물)`);}
+    else{
+      const ti2=G.disc.findIndex(c=>c.tag==='resource');
+      if(ti2>=0){const dc=G.disc.splice(ti2,1)[0];lines.push(`${dc.icon}${dc.name} 소멸(제물)`);}
+      else lines.push('(자원 카드 없음)');
+    }
+  }
 }
 
 function applyPen(p, lines){
@@ -282,11 +312,13 @@ function applyPen(p, lines){
 
 function closeJdg(){
   document.getElementById('jdg-mo').style.display='none';
+  const cb=_exploreCallback; _exploreCallback=null;
   if(_pendingItems&&_pendingItems.length){
     const items=[..._pendingItems]; _pendingItems=null;
-    showItemPopup(items,'🎁 탐색 획득!',null);
+    showItemPopup(items,'🎁 탐색 획득!', cb||null);
   } else {
     _pendingItems=null;
+    if(cb) setTimeout(cb,100);
   }
   saveGame();
 }

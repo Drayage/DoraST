@@ -59,6 +59,8 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .tile.t-lookout{background:#1a2a1a;border-color:#4a8a5a;color:#aecbae;}
 .tile.t-lake{background:#080814;border-color:#334466;color:#8899cc;}
 .tile.t-swamp{background:#0d0d0a;border-color:#443322;color:#998877;}
+.tile.t-temple{background:#1a1020;border-color:#8866aa;color:#ccaaee;}
+.tile.t-thicket{background:#0f1a0f;border-color:#446644;color:#88aa88;}
 
 /* ACTIONS */
 #act-panel{padding:7px 9px;border-top:1px solid var(--border);}

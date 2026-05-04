@@ -196,14 +196,16 @@ function encFlee(){
   checkSurvival(); render();
 }
 
-function startCombat(evtId, ambush, fightChosen){
-  const enemy=ENEMIES[evtId];
-  CBT={enemy:{...enemy,curHp:enemy.hp},hand:[],atkZone:[],defZone:[],resolved:false,turn:1,stunned:false,poisoned:false,penaltyApplied:false,fightChosen:!!fightChosen};
+function startCombat(evtId, ambush, fightChosen, enemyOverride){
+  const baseEnemy=ENEMIES[evtId]||{};
+  const enemy=enemyOverride||baseEnemy;
+  CBT={enemy:{...enemy,curHp:enemy.hp},hand:[],atkZone:[],defZone:[],resolved:false,turn:1,stunned:false,poisoned:false,penaltyApplied:false,fightChosen:!!fightChosen,_evtId:evtId};
   _prevCbtHandUIDs=new Set();
   CBT.hand = ambush ? drawAmbushHand() : drawCombatHand();
   autoAssignStatusCards();
   _cbtMode=null;
   ['btn-cbt-resolve','btn-cbt-flee'].forEach(id=>document.getElementById(id).style.display='');
+  if(enemy.noFlee) document.getElementById('btn-cbt-flee').style.display='none';
   document.getElementById('btn-cbt-close').style.display='none';
   document.getElementById('cbt-res').style.display='none';
   document.getElementById('cbt-mo').style.display='flex';
@@ -295,7 +297,14 @@ function renderCombat(){
     fleeBtn._att={title:'💨 도망',cost:`HP -${cost}`,rows};
   }
   document.getElementById('cbt-title').textContent=`⚔️ ${e.name} 출현!`;
-  document.getElementById('cbt-sub').textContent=`라운드${CBT.turn} | 적 다음행동: ${CBT.stunned?'기절(피해없음)':`공격-${e.atk}HP`}`;
+  const isChargeRound=e.chargeEvery&&CBT.turn%e.chargeEvery===0;
+  const nextAtk=CBT.stunned?0:isChargeRound?Math.floor(e.atk*1.5):e.atk;
+  const intentTxt=CBT.stunned?'기절(피해없음)':isChargeRound?`⚡돌진-${nextAtk}HP`:`공격-${nextAtk}HP`;
+  let subExtra='';
+  if(e.noFlee) subExtra+=' | 도망 불가';
+  if(e.bossType==='charge') subExtra+=e._charging?' | 충전 중':'  | ⚡방출!';
+  if(e.patternDesc) subExtra+=` | ${e.patternDesc}`;
+  document.getElementById('cbt-sub').textContent=`라운드${CBT.turn} | 적 다음행동: ${intentTxt}${subExtra}`;
   const phpEl=document.getElementById('cbt-php');
   const phpClr=G.hp<30?'var(--red)':'var(--green)';
   phpEl.textContent=G.hp; phpEl.style.color=phpClr;
@@ -320,13 +329,20 @@ function renderCombat(){
   // 예상 피해 미리보기
   const prevEl=document.getElementById('cbt-preview');
   if(prevEl){
-    let preAtk=0; let hasPierce=false;
-    CBT.atkZone.forEach(c=>{if(c.cbtFx==='pierce'){preAtk+=c.atk+4;hasPierce=true;}else if(c.cbtFx==='stun')preAtk+=c.atk+3;else preAtk+=c.tag==='status'?c.atk:Math.max(0,c.atk);});
+    let preAtk=0; let hasPierce=false; let hasCrush=false;
+    CBT.atkZone.forEach(c=>{
+      if(c.cbtFx==='pierce'){preAtk+=c.atk+4;hasPierce=true;}
+      else if(c.cbtFx==='stun')preAtk+=c.atk+3;
+      else if(c.cbtFx==='crush'){preAtk+=c.atk;hasCrush=true;}
+      else preAtk+=c.tag==='status'?c.atk:Math.max(0,c.atk);
+    });
     let preDef=0; CBT.defZone.forEach(c=>{preDef+=c.cbtFx==='block'?c.def+5:c.tag==='status'?c.def:Math.max(0,c.def);});
     preAtk=Math.max(0,preAtk); preDef=Math.max(0,preDef);
-    const dmgE=hasPierce?preAtk:Math.max(0,preAtk-e.def);
+    const effDef=hasCrush?Math.floor(e.def/2):e.def;
+    const dmgE=hasPierce?preAtk:Math.max(0,preAtk-effDef);
     const eAk=CBT.stunned?0:e.atk; let dmgP=Math.max(0,eAk-preDef);
     if(allCards().some(c=>c.id==='leather_armor')&&dmgP>0) dmgP=Math.max(0,dmgP-2);
+    if(allCards().some(c=>c.id==='stone_vest')&&dmgP>0) dmgP=Math.max(0,dmgP-3);
     prevEl.innerHTML=`예상: <span style="color:var(--red);">적 ${dmgE}피해</span> · <span style="color:${dmgP>0?'var(--red)':'var(--green)'};">내 ${dmgP}피해</span>`;
   }
   renderZone('atk-zone',CBT.atkZone,'atk');
@@ -375,13 +391,14 @@ function resolveCombat(){
   let pD=0, normalAtk=0, pierceAtk=0;
   const lines=[]; let stun=false, poisonApplied=false;
   const hasArmor=allCards().some(c=>c.id==='leather_armor');
+  const hasStoneVest=allCards().some(c=>c.id==='stone_vest');
+  e._crushThisRound=false;
 
   [...CBT.atkZone,...CBT.defZone].forEach(c=>{
     if(c.cbtFx==='raw'&&CBT.atkZone.some(x=>x.uid===c.uid)){
       pierceAtk+=c.atk;
       lines.push({t:`★ 방어무시: ATK${c.atk}(방어무시)`,cls:'good'});
     } else if(c.cbtFx==='pierce'&&CBT.atkZone.some(x=>x.uid===c.uid)){
-      // 관통: 적 방어 완전무시 (별도 집계)
       pierceAtk+=c.atk+4;
       lines.push({t:`★ 창 관통: 방어무시 ATK${c.atk+4}`,cls:'good'});
     } else if(c.cbtFx==='block'&&CBT.defZone.some(x=>x.uid===c.uid)){
@@ -392,6 +409,21 @@ function resolveCombat(){
     } else if(c.cbtFx==='poison'&&CBT.atkZone.some(x=>x.uid===c.uid)){
       normalAtk+=c.atk; poisonApplied=true;
       lines.push({t:`★ 독칼: 독상태 부여(매라운드+3)`,cls:'good'});
+    } else if(c.cbtFx==='crush'&&CBT.atkZone.some(x=>x.uid===c.uid)){
+      normalAtk+=c.atk; e._crushThisRound=true;
+      lines.push({t:`★ 전쟁 몽둥이: crush — 이번 라운드 적 DEF 절반 무시`,cls:'good'});
+    } else if(c.cbtFx==='bleed'&&CBT.atkZone.some(x=>x.uid===c.uid)){
+      normalAtk+=c.atk;
+      e._bleedStacks=(e._bleedStacks||0)+1;
+      lines.push({t:`★ 뼈칼: bleed 누적 (${e._bleedStacks}스택 = 매라운드+${e._bleedStacks*2})`,cls:'good'});
+    } else if(c.cbtFx==='weaken'&&CBT.atkZone.some(x=>x.uid===c.uid)){
+      const prevAtk=e.atk;
+      normalAtk+=c.atk; e.atk=Math.max(0,e.atk-4);
+      lines.push({t:`★ 저주의 칼: weaken — 적 ATK ${prevAtk}→${e.atk} (영구)`,cls:'good'});
+    } else if(c.cbtFx==='shatter'&&CBT.atkZone.some(x=>x.uid===c.uid)){
+      const prevDef=e.def;
+      normalAtk+=c.atk; e.def=Math.max(0,e.def-6);
+      lines.push({t:`★ 파쇄 해머: shatter — 적 DEF ${prevDef}→${e.def} (영구)`,cls:'good'});
     } else {
       if(CBT.atkZone.some(x=>x.uid===c.uid)){
         const v=c.tag==='status'?c.atk:Math.max(0,c.atk);
@@ -406,21 +438,38 @@ function resolveCombat(){
     }
   });
 
+  // 사원 보스전 보너스 적용
+  if(e.bossType&&G._templeBonus){
+    if(G._templeBonus.atk){ normalAtk+=G._templeBonus.atk; lines.push({t:`🏛️ 제단 ATK+${G._templeBonus.atk}`,cls:'good'}); }
+    if(G._templeBonus.def){ pD+=G._templeBonus.def; lines.push({t:`🏛️ 제단 DEF+${G._templeBonus.def}`,cls:'good'}); }
+  }
+
   const poisonDmg=CBT.poisoned?3:0;
   if(CBT.poisoned) lines.push({t:`☠️ 독 지속피해: 적 -3`,cls:'good'});
+  const bleedDmg=(e._bleedStacks||0)*2;
+  if(e._bleedStacks) lines.push({t:`🦴 출혈 지속피해: 적 -${bleedDmg}`,cls:'good'});
 
-  // 일반 공격은 적 방어를 뺌, 관통 공격은 방어 무시
-  const dmgE=Math.max(0,normalAtk-e.def)+pierceAtk+poisonDmg;
+  // 멧돼지 돌진 패턴 (짝수 라운드 ATK×1.5)
+  const isBoarCharge=e.chargeEvery&&CBT.turn%e.chargeEvery===0;
+
+  // 유령 위상 이동 (첫 라운드 피해 무효)
+  let ghostPhased=false;
+  if(e.phaseFirst&&CBT.turn===1){ ghostPhased=true; lines.push({t:`👻 위상 이동: 첫 라운드 내 공격 무효`,cls:'bad'}); }
+
+  const effDef=e._crushThisRound?Math.floor(e.def/2):e.def;
+  const dmgE=ghostPhased?0:(Math.max(0,normalAtk-effDef)+pierceAtk+poisonDmg+bleedDmg);
 
   // 처치 시 반격 없음
   const willKillEnemy = (e.curHp - dmgE) <= 0;
-  const eA=CBT.stunned?0:e.atk;
+  let eA=CBT.stunned?0:e.atk;
+  if(isBoarCharge&&!CBT.stunned){ eA=Math.floor(eA*1.5); lines.push({t:`🐗 멧돼지 돌진! ATK ${eA}`,cls:'bad'}); }
   let dmgP = willKillEnemy ? 0 : Math.max(0,eA-pD);
   if(!willKillEnemy && hasArmor && dmgP>0){ dmgP=Math.max(0,dmgP-2); lines.push({t:`🧥 가죽갑옷: 피해-2`,cls:'good'}); }
+  if(!willKillEnemy && hasStoneVest && dmgP>0){ dmgP=Math.max(0,dmgP-3); lines.push({t:`🦺 돌 조끼: 피해-3`,cls:'good'}); }
   if(willKillEnemy) lines.push({t:`⚔️ 이번 공격으로 처치 — 적의 반격 없음`,cls:'good'});
 
-  lines.unshift({t:`⚔️ 내공격: 일반${normalAtk}-방어${e.def}+관통${pierceAtk}+독${poisonDmg}=${dmgE}피해`,cls:'good'});
-  lines.unshift({t:`🛡️ 내방어:${pD}${hasArmor&&!willKillEnemy?'(갑옷-2)':''}-적공격${eA}=${dmgP}피해`,cls:dmgP>0?'bad':'good'});
+  lines.unshift({t:`⚔️ 내공격: 일반${normalAtk}-방어${effDef}+관통${pierceAtk}+독${poisonDmg}+출혈${bleedDmg}=${dmgE}피해`,cls:'good'});
+  lines.unshift({t:`🛡️ 내방어:${pD}${hasArmor&&!willKillEnemy?'(갑옷-2)':''}${hasStoneVest&&!willKillEnemy?'(조끼-3)':''}-적공격${eA}=${dmgP}피해`,cls:dmgP>0?'bad':'good'});
 
   // 사망 확인: 이 라운드에 죽을 예정이면 확인 팝업
   if(!willKillEnemy && dmgP>0 && G.hp - dmgP <= 0){
@@ -465,9 +514,33 @@ function _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,will
       const bonus=e.altCards[Math.floor(Math.random()*e.altCards.length)];
       bonus.forEach(r=>{ const d=CARD_MAP[r.id]; rewardItems.push({id:r.id,icon:d?.icon||'📦',name:d?.name||r.id,n:r.n}); });
     }
+    // 사원지도 조각 드롭 (종류별 1회 한정)
+    if(e.mapDrop){
+      const dropKey=CBT._evtId||e.name;
+      if(!G.templeMapDrops[dropKey]){
+        G.templeMapDrops[dropKey]=true;
+        const d=CARD_MAP['temple_map_piece'];
+        rewardItems.push({id:'temple_map_piece',icon:d.icon,name:d.name,n:1});
+        resEl.innerHTML+=`<div class="rl good">🗺️ 사원지도 조각 획득! (이 종류에서 첫 드롭)</div>`;
+      } else {
+        resEl.innerHTML+=`<div class="rl neutral">🗺️ 이 종류 몬스터에선 이미 조각을 획득했다</div>`;
+      }
+    }
     resEl.innerHTML+=`<div class="rl good" style="font-size:13px;margin-top:5px;">🏆 ${e.name} 처치!</div>`;
     resEl.innerHTML+=`<div class="rl good">💎 전리품: ${rewardItems.map(r=>r.icon+r.name+'×'+r.n).join(' ')} — 클릭해서 선택 획득</div>`;
     G.kills++; CBT.resolved=true;
+    // 사원 페이즈 진행
+    if(e._templeNextPhase!==undefined){
+      G.templePhase=e._templeNextPhase;
+      if(G.templePhase>=3){
+        G.templeEscape=true; G.escape=Math.min(100,G.escape+100);
+        resEl.innerHTML+=`<div class="rl good" style="font-size:11px;">🏛️ 사원의 저주 해제! 탈출 가능!</div>`;
+        log(`🏛️ 석조 수호신 처치! 사원의 저주가 해제됐다.`, 'success');
+      } else {
+        resEl.innerHTML+=`<div class="rl good">🏛️ ${G.templePhase-1}페이즈 완료 — 정비 후 다음 단계 진입 가능</div>`;
+        log(`🏛️ ${G.templePhase-1}페이즈 완료`, 'success');
+      }
+    }
     log(`⚔️ ${e.name} 처치! 전리품 선택 획득 가능`,'success');
     document.getElementById('btn-cbt-resolve').style.display='none';
     document.getElementById('btn-cbt-flee').style.display='none';
@@ -491,9 +564,32 @@ function _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,will
       if(e.penalty.card){ addCard(e.penalty.card,1); resEl.innerHTML+=`<div class="rl bad">⚠️ ${e.penalty.desc||e.penalty.card+' 추가'}</div>`; log(`${e.penalty.desc||e.penalty.card+' 추가'}`, 'danger'); }
       if(e.penalty.san){ G.san=Math.max(0,G.san+e.penalty.san); resEl.innerHTML+=`<div class="rl bad">⚠️ ${e.penalty.desc||'정신력'+e.penalty.san}</div>`; log(`${e.penalty.desc||'정신력'+e.penalty.san}`, 'danger'); }
     }
+    // 박쥐떼 군집 강화: 플레이어가 피해를 못 줬으면 ATK+2
+    if(e.swarmGain&&dmgE===0){
+      e.atk+=e.swarmGain;
+      resEl.innerHTML+=`<div class="rl bad">🦇 군집 강화! ATK ${e.atk}</div>`;
+      log(`🦇 박쥐떼 군집 강화 ATK→${e.atk}`, 'danger');
+    }
     CBT.turn++;
     CBT.atkZone=[]; CBT.defZone=[];
     G.disc.push(...CBT.hand.filter(c=>!c._temp)); CBT.hand=[];
+    // 보스 패턴 (다음 라운드 진입 직전)
+    if(e.bossType==='escalate'){
+      e.atk+=e.atkPerRound;
+      resEl.innerHTML+=`<div class="rl bad">🗿 수호신의 분노: ATK→${e.atk}</div>`;
+      log(`🗿 석조 수호신 ATK→${e.atk}`, 'danger');
+    }
+    if(e.bossType==='charge'){
+      e._charging=!e._charging;
+      e.atk=e._charging?e.normalAtk:e.chargeAtk;
+      if(!e._charging){
+        resEl.innerHTML+=`<div class="rl bad">👁️ 전령: 에너지 방출 준비! ATK ${e.chargeAtk}</div>`;
+        log(`👁️ 망각의 전령 에너지 방출! ATK ${e.chargeAtk}`, 'danger');
+      } else {
+        resEl.innerHTML+=`<div class="rl neutral">👁️ 전령: 충전 중... ATK ${e.normalAtk}</div>`;
+        log(`👁️ 망각의 전령 충전 중... ATK ${e.normalAtk}`, '');
+      }
+    }
     CBT.hand=drawCombatHand();
     autoAssignStatusCards();
     resEl.innerHTML+=`<div class="rl neutral">— 라운드${CBT.turn}: ${CBT.hand.length}장 드로우 —</div>`;

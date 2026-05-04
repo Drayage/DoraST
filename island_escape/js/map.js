@@ -61,6 +61,28 @@ function buildMap(){
     }
   }
 
+  // 고대 사원(temple) 1개: 시작 거리 5 이상, lookout과 거리 3 이상
+  const allSpecialIds=[...specialIds,'temple','thicket'];
+  const isAnySpecial=i=>allSpecialIds.includes(G.tiles[i].id);
+  const templePool=shuffle(Array.from({length:49},(_,i)=>i)
+    .filter(i=>tileDist(i,G.pos)>=5 && !isAnySpecial(i)
+            && (lookoutIdx<0||tileDist(i,lookoutIdx)>=3)));
+  if(templePool.length) _placeTile(templePool[0],'temple');
+
+  // 수풀(thicket) 0~2개: 시작 거리 2 이상, 서로 거리 3 이상
+  const thicketCount=Math.floor(Math.random()*3);
+  const thicketBase=shuffle(Array.from({length:49},(_,i)=>i)
+    .filter(i=>tileDist(i,G.pos)>=2 && !isAnySpecial(i)));
+  let thicketPlaced=0, firstThicketIdx=-1;
+  for(const i of thicketBase){
+    if(thicketPlaced>=thicketCount) break;
+    if(thicketPlaced===0){
+      _placeTile(i,'thicket'); firstThicketIdx=i; thicketPlaced++;
+    } else {
+      if(tileDist(i,firstThicketIdx)>=3){ _placeTile(i,'thicket'); thicketPlaced++; }
+    }
+  }
+
   G.tiles[G.pos].revealed=true; G.tiles[G.pos].hasPlayer=true;
   getAdj(G.pos).forEach(i=>G.tiles[i].revealed=true);
 }
@@ -85,7 +107,17 @@ function clickTile(i){
   if(G.ap<cost){log(`AP부족 (이동${cost}칸=AP${cost})`, ''); render(); return;}
   G.tiles[G.pos].hasPlayer=false;
   G.pos=i; t.hasPlayer=true; G.ap-=cost; G.tilesMoved+=cost;
-  getAdj(i).forEach(j=>G.tiles[j].revealed=true);
+  getAdj(i).forEach(j=>{
+    const wasRevealed=G.tiles[j].revealed;
+    G.tiles[j].revealed=true;
+    if(!wasRevealed && G.tiles[j].id==='thicket' && !G.tiles[j].explored){
+      G.tiles[j].explored=true;
+      setTimeout(()=>{
+        log('🌿 수풀에서 무언가 뛰쳐나온다!','danger');
+        showEncounter(Math.random()<0.6?'cbt_boar':'cbt_snake');
+      },300);
+    }
+  });
   log(`📍 ${t.name}으로 이동 (${cost}칸·AP-${cost})`, '');
   checkSurvival(); render();
 }

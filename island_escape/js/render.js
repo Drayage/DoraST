@@ -261,6 +261,24 @@ function render(){
           <span>${hasKit?'🧨 키트 보유':'⚠️ 키트 없음'} · 탐색 성공률 <span style="color:${probCol(flareProb)};font-weight:700;">${flareProb}%</span></span>
           <span>🎆 ${sigCnt}장 보유 · 발사 성공률 <span style="color:${probCol(sigProb)};font-weight:700;">${sigProb}%</span></span>
         </div>`;
+    } else if(ct.id==='temple'){
+      const ph=p.templePhase;
+      const apArr=[2,2,3];
+      const phLabel=['🏛️ 1페이즈 진입','🏛️ 2페이즈 진입','🏛️ 보스 대결'];
+      specEl.style.display='';
+      if(ph>=3){
+        specEl.innerHTML=`<div style="font-size:9px;color:var(--accent);font-family:var(--font-m);">🏛️ 사원의 저주 해제 완료</div>`;
+      } else {
+        const bossHint=ph===1&&p.templeBoss
+          ?`<div style="font-size:8px;color:var(--accent2);margin-top:3px;">⚠️ 보스 유형: ${p.templeBoss==='boss_stone_idol'?'관통/분쇄 준비 필요':'방패/기절 준비 필요'}</div>` : '';
+        const prevDone=ph>0?`<div style="font-size:8px;color:var(--green);margin-top:2px;">✓ ${ph}페이즈 완료 — 정비 후 다음 단계 진입 가능</div>`:'';
+        specEl.innerHTML=`<div style="font-size:9px;color:#ccaaee;font-family:var(--font-m);margin-bottom:5px;">🏛️ 고대 사원 (${ph}/2 완료)</div>
+          <button class="btn full" style="border-color:#8866aa;color:#ccaaee;font-size:10px;"
+            onclick="doTemple()" ${p.ap<apArr[ph]||p.over?'disabled':''}>
+            ${phLabel[ph]}<span class="apb" style="margin-left:4px;">AP${apArr[ph]}</span>
+          </button>
+          ${prevDone}${bossHint}`;
+      }
     } else if(ct.id==='oblivion_lake'&&ct.explored){
       const coolDays=3-(p.day-(p.lastOblivion||-99));
       const onCool=coolDays>0;
