@@ -173,8 +173,8 @@ const CARDS=[
   // 사원 지도
   {id:'temple_map_piece', name:'사원지도 조각', icon:'🗺️', tag:'resource', atk:0, def:0, n:0, subTags:[],
    desc:'고대 사원 지도의 일부. 3장 모아 사원지도를 만들 수 있다.'},
-  {id:'temple_map', name:'사원지도', icon:'🏛️', tag:'tool', atk:0, def:0, n:0, subTags:[],
-   desc:'완성된 사원 지도. 사용 시 지도에 사원 위치 표시.', use:'temple_map'},
+  {id:'temple_map', name:'사원지도', icon:'🏛️', tag:'tool', atk:0, def:0, n:0, dur:1, subTags:[],
+   desc:'완성된 사원 지도. 사용 시 지도에 사원 위치 표시. 1회용 — 사용 후 소멸.', use:'temple_map'},
 ];
 
 const ENEMIES={
@@ -225,11 +225,11 @@ const ENEMIES={
     observeText:'수호자가 잠시 정지한 틈에 가죽과 돌을 챙겼다.',
     reward:{cards:[{id:'hide',n:1}]},
     altCards:[[{id:'stone',n:2}],[{id:'metal',n:2}]]},
-  boss_stone_idol:{name:'석조 수호신',icon:'🗿',hp:90,atk:10,def:12,
+  boss_stone_idol:{name:'석조 수호신',icon:'🗿',hp:160,atk:10,def:12,
     bossType:'escalate', atkPerRound:4, noFlee:true,
     encDesc:'거대한 석상이 천천히 눈을 뜬다. 방어는 두텁고, 시간이 지날수록 강해진다.',
     reward:{san:30}, altCards:[[{id:'shard',n:3}],[{id:'stone',n:4},{id:'hide',n:2}]]},
-  boss_oblivion_herald:{name:'망각의 전령',icon:'👁️',hp:70,atk:6,def:6,
+  boss_oblivion_herald:{name:'망각의 전령',icon:'👁️',hp:130,atk:6,def:8,
     bossType:'charge', chargeAtk:28, normalAtk:6, _charging:true, noFlee:true,
     encDesc:'붉은 눈이 에너지를 모은다. 충전 중에는 약하지만, 방출하면 치명적이다.',
     reward:{san:30}, altCards:[[{id:'shard',n:3}],[{id:'feather',n:3},{id:'venom',n:2}]]},
@@ -409,15 +409,17 @@ const EVENTS={
     ]},
   temple_event_2:{
     name:'사원 심부 제단',
-    flavor:'더 깊은 곳. 피와 의지를 요구한다.',
+    flavor:'더 깊은 곳. 제단이 교환을 요구한다. 낡은 것을 내어주면 더 강한 것으로 돌아온다.',
     choices:[
-      {label:'HP를 바친다',icon:'💉',req:null,
-       reward:{templeAtk:6,sacrifice:{hp:25}},desc:'HP-25. 이번 보스전 ATK+6 임시.'},
-      {label:'정신을 바친다',icon:'🧠',req:null,
-       reward:{templeDef:6,sacrifice:{san:25}},desc:'정신력-25. 이번 보스전 DEF+6 임시.'},
-      {label:'카드를 바친다',icon:'📦',req:'resource',
-       reward:{san:15,hp:15,devourTopCard:true},desc:'자원판정. 성공:자원카드 소멸+정신력+15+HP+15.'},
-      {label:'그냥 지나친다',icon:'🚶',req:null,reward:{},desc:'무조건. 보상 없음.'},
+      {label:'전투카드를 바친다',icon:'⚔️',req:null,
+       reward:{devourTagCard:'combat',card:'spear',n:1},
+       desc:'무조건. 보유 전투카드 1장 소멸 → 창🗡️ 획득.'},
+      {label:'도구를 바친다',icon:'🔧',req:null,
+       reward:{devourTagCard:'tool',card:'shield',n:1},
+       desc:'무조건. 보유 도구카드 1장 소멸 → 방패🛡️ 획득.'},
+      {label:'쉬어간다',icon:'🛌',req:null,
+       reward:{hp:20,san:10},
+       desc:'무조건. HP+20, 정신력+10 회복.'},
     ]},
   oblivion_curse:{
     name:'망각의 기운',

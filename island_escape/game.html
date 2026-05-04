@@ -1316,8 +1316,8 @@ const CARDS=[
   // 사원 지도
   {id:'temple_map_piece', name:'사원지도 조각', icon:'🗺️', tag:'resource', atk:0, def:0, n:0, subTags:[],
    desc:'고대 사원 지도의 일부. 3장 모아 사원지도를 만들 수 있다.'},
-  {id:'temple_map', name:'사원지도', icon:'🏛️', tag:'tool', atk:0, def:0, n:0, subTags:[],
-   desc:'완성된 사원 지도. 사용 시 지도에 사원 위치 표시.', use:'temple_map'},
+  {id:'temple_map', name:'사원지도', icon:'🏛️', tag:'tool', atk:0, def:0, n:0, dur:1, subTags:[],
+   desc:'완성된 사원 지도. 사용 시 지도에 사원 위치 표시. 1회용 — 사용 후 소멸.', use:'temple_map'},
 ];
 
 const ENEMIES={
@@ -1368,11 +1368,11 @@ const ENEMIES={
     observeText:'수호자가 잠시 정지한 틈에 가죽과 돌을 챙겼다.',
     reward:{cards:[{id:'hide',n:1}]},
     altCards:[[{id:'stone',n:2}],[{id:'metal',n:2}]]},
-  boss_stone_idol:{name:'석조 수호신',icon:'🗿',hp:90,atk:10,def:12,
+  boss_stone_idol:{name:'석조 수호신',icon:'🗿',hp:160,atk:10,def:12,
     bossType:'escalate', atkPerRound:4, noFlee:true,
     encDesc:'거대한 석상이 천천히 눈을 뜬다. 방어는 두텁고, 시간이 지날수록 강해진다.',
     reward:{san:30}, altCards:[[{id:'shard',n:3}],[{id:'stone',n:4},{id:'hide',n:2}]]},
-  boss_oblivion_herald:{name:'망각의 전령',icon:'👁️',hp:70,atk:6,def:6,
+  boss_oblivion_herald:{name:'망각의 전령',icon:'👁️',hp:130,atk:6,def:8,
     bossType:'charge', chargeAtk:28, normalAtk:6, _charging:true, noFlee:true,
     encDesc:'붉은 눈이 에너지를 모은다. 충전 중에는 약하지만, 방출하면 치명적이다.',
     reward:{san:30}, altCards:[[{id:'shard',n:3}],[{id:'feather',n:3},{id:'venom',n:2}]]},
@@ -1552,15 +1552,17 @@ const EVENTS={
     ]},
   temple_event_2:{
     name:'사원 심부 제단',
-    flavor:'더 깊은 곳. 피와 의지를 요구한다.',
+    flavor:'더 깊은 곳. 제단이 교환을 요구한다. 낡은 것을 내어주면 더 강한 것으로 돌아온다.',
     choices:[
-      {label:'HP를 바친다',icon:'💉',req:null,
-       reward:{templeAtk:6,sacrifice:{hp:25}},desc:'HP-25. 이번 보스전 ATK+6 임시.'},
-      {label:'정신을 바친다',icon:'🧠',req:null,
-       reward:{templeDef:6,sacrifice:{san:25}},desc:'정신력-25. 이번 보스전 DEF+6 임시.'},
-      {label:'카드를 바친다',icon:'📦',req:'resource',
-       reward:{san:15,hp:15,devourTopCard:true},desc:'자원판정. 성공:자원카드 소멸+정신력+15+HP+15.'},
-      {label:'그냥 지나친다',icon:'🚶',req:null,reward:{},desc:'무조건. 보상 없음.'},
+      {label:'전투카드를 바친다',icon:'⚔️',req:null,
+       reward:{devourTagCard:'combat',card:'spear',n:1},
+       desc:'무조건. 보유 전투카드 1장 소멸 → 창🗡️ 획득.'},
+      {label:'도구를 바친다',icon:'🔧',req:null,
+       reward:{devourTagCard:'tool',card:'shield',n:1},
+       desc:'무조건. 보유 도구카드 1장 소멸 → 방패🛡️ 획득.'},
+      {label:'쉬어간다',icon:'🛌',req:null,
+       reward:{hp:20,san:10},
+       desc:'무조건. HP+20, 정신력+10 회복.'},
     ]},
   oblivion_curse:{
     name:'망각의 기운',
@@ -2764,6 +2766,7 @@ function fmtR(r){
   if(r.revealTile){const td=TILE_TYPES.find(t=>t.id===r.revealTile);p.push(`${td?.icon||'📍'}${td?.name||r.revealTile} 위치 표시`);}
   if(r.removeCard){const d=CARD_MAP[r.removeCard];p.push(`${d?.icon||''}${d?.name||r.removeCard} 소멸`);}
   if(r.devourCard){const d=CARD_MAP[r.devourCard];p.push(`${d?.icon||''}${d?.name||r.devourCard} 소멸(제물)`);}
+  if(r.devourTagCard){p.push(`${r.devourTagCard} 카드 소멸`);}
   if(r.sacrifice){if(r.sacrifice.hp)p.push(`HP-${r.sacrifice.hp}`);if(r.sacrifice.san)p.push(`정신력-${r.sacrifice.san}`);}
   if(r.templeAtk) p.push(`보스전ATK+${r.templeAtk}`);
   if(r.templeDef) p.push(`보스전DEF+${r.templeDef}`);
@@ -2919,6 +2922,16 @@ function doJudgment(evt, ch){
 
 function applyR(r, lines){
   if(!r) return;
+  if(r.devourTagCard){
+    const tag=r.devourTagCard;
+    let di=G.deck.findIndex(c=>c.tag===tag);
+    if(di>=0){const dc=G.deck.splice(di,1)[0];lines.push(`${dc.icon}${dc.name} 소멸(제물)`);}
+    else{
+      const di2=G.disc.findIndex(c=>c.tag===tag);
+      if(di2>=0){const dc=G.disc.splice(di2,1)[0];lines.push(`${dc.icon}${dc.name} 소멸(제물)`);}
+      else lines.push(`(${tag} 카드 없음 — 소멸 면제)`);
+    }
+  }
   if(r.card){
     const d=CARD_MAP[r.card];
     lines.push(`${d?.icon||''}${d?.name||r.card}×${r.n||1}`);
@@ -4289,8 +4302,14 @@ function resolveCombat(){
     } else if(c.cbtFx==='block'&&CBT.defZone.some(x=>x.uid===c.uid)){
       pD+=c.def+5; lines.push({t:`★ 방패 완전방어+5`,cls:'good'});
     } else if(c.cbtFx==='stun'){
-      stun=true; normalAtk+=c.atk+3; pD+=c.def;
-      lines.push({t:`★ 함정: 기절+추가ATK3`,cls:'good'});
+      pD+=c.def; normalAtk+=c.atk;
+      if(e.bossType){
+        if(Math.random()<0.35){ stun=true; normalAtk+=3; lines.push({t:`★ 함정: 기절 성공! (보스 저항 돌파, 35%)`,cls:'good'}); }
+        else lines.push({t:`🛡️ 보스 기절 저항 (65% 저항 — 일반 공격만 적용)`,cls:'neutral'});
+      } else {
+        stun=true; normalAtk+=3;
+        lines.push({t:`★ 함정: 기절+추가ATK3`,cls:'good'});
+      }
     } else if(c.cbtFx==='poison'&&CBT.atkZone.some(x=>x.uid===c.uid)){
       normalAtk+=c.atk; poisonApplied=true;
       lines.push({t:`★ 독칼: 독상태 부여(매라운드+3)`,cls:'good'});

@@ -428,8 +428,14 @@ function resolveCombat(){
     } else if(c.cbtFx==='block'&&CBT.defZone.some(x=>x.uid===c.uid)){
       pD+=c.def+5; lines.push({t:`★ 방패 완전방어+5`,cls:'good'});
     } else if(c.cbtFx==='stun'){
-      stun=true; normalAtk+=c.atk+3; pD+=c.def;
-      lines.push({t:`★ 함정: 기절+추가ATK3`,cls:'good'});
+      pD+=c.def; normalAtk+=c.atk;
+      if(e.bossType){
+        if(Math.random()<0.35){ stun=true; normalAtk+=3; lines.push({t:`★ 함정: 기절 성공! (보스 저항 돌파, 35%)`,cls:'good'}); }
+        else lines.push({t:`🛡️ 보스 기절 저항 (65% 저항 — 일반 공격만 적용)`,cls:'neutral'});
+      } else {
+        stun=true; normalAtk+=3;
+        lines.push({t:`★ 함정: 기절+추가ATK3`,cls:'good'});
+      }
     } else if(c.cbtFx==='poison'&&CBT.atkZone.some(x=>x.uid===c.uid)){
       normalAtk+=c.atk; poisonApplied=true;
       lines.push({t:`★ 독칼: 독상태 부여(매라운드+3)`,cls:'good'});

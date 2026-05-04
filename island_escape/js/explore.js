@@ -84,6 +84,7 @@ function fmtR(r){
   if(r.revealTile){const td=TILE_TYPES.find(t=>t.id===r.revealTile);p.push(`${td?.icon||'📍'}${td?.name||r.revealTile} 위치 표시`);}
   if(r.removeCard){const d=CARD_MAP[r.removeCard];p.push(`${d?.icon||''}${d?.name||r.removeCard} 소멸`);}
   if(r.devourCard){const d=CARD_MAP[r.devourCard];p.push(`${d?.icon||''}${d?.name||r.devourCard} 소멸(제물)`);}
+  if(r.devourTagCard){p.push(`${r.devourTagCard} 카드 소멸`);}
   if(r.sacrifice){if(r.sacrifice.hp)p.push(`HP-${r.sacrifice.hp}`);if(r.sacrifice.san)p.push(`정신력-${r.sacrifice.san}`);}
   if(r.templeAtk) p.push(`보스전ATK+${r.templeAtk}`);
   if(r.templeDef) p.push(`보스전DEF+${r.templeDef}`);
@@ -239,6 +240,16 @@ function doJudgment(evt, ch){
 
 function applyR(r, lines){
   if(!r) return;
+  if(r.devourTagCard){
+    const tag=r.devourTagCard;
+    let di=G.deck.findIndex(c=>c.tag===tag);
+    if(di>=0){const dc=G.deck.splice(di,1)[0];lines.push(`${dc.icon}${dc.name} 소멸(제물)`);}
+    else{
+      const di2=G.disc.findIndex(c=>c.tag===tag);
+      if(di2>=0){const dc=G.disc.splice(di2,1)[0];lines.push(`${dc.icon}${dc.name} 소멸(제물)`);}
+      else lines.push(`(${tag} 카드 없음 — 소멸 면제)`);
+    }
+  }
   if(r.card){
     const d=CARD_MAP[r.card];
     lines.push(`${d?.icon||''}${d?.name||r.card}×${r.n||1}`);
