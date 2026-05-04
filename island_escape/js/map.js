@@ -103,10 +103,18 @@ function clickTile(i){
   if(G.over) return;
   const t=G.tiles[i];
   if(!t.revealed||i===G.pos) return;
-  const cost=tileDist(G.pos, i);
-  if(G.ap<cost){log(`AP부족 (이동${cost}칸=AP${cost})`, ''); render(); return;}
+  const baseCost=tileDist(G.pos, i);
+  // 스킬 패시브: 이동 AP 할인 (gold -2, bronze -1 중복 가능)
+  const mvDisc=(allCards().some(c=>c.id==='sk_mv_g')?2:0)+(allCards().some(c=>c.id==='sk_mv_b')?1:0);
+  const cost=Math.max(1, baseCost-mvDisc);
+  if(G.ap<cost){log(`AP부족 (이동${baseCost}칸=AP${cost})`, ''); render(); return;}
   G.tiles[G.pos].hasPlayer=false;
-  G.pos=i; t.hasPlayer=true; G.ap-=cost; G.tilesMoved+=cost;
+  const wasExplored=t.explored;
+  G.pos=i; t.hasPlayer=true; G.ap-=cost; G.tilesMoved+=baseCost;
+  // 스킬 패시브: 이동 후 효과
+  if(allCards().some(c=>c.id==='sk_mv_s1')) G.hp=Math.min(100,G.hp+1);
+  if(allCards().some(c=>c.id==='sk_mv_s2')) G.san=Math.min(100,G.san+1);
+  if(wasExplored&&allCards().some(c=>c.id==='sk_mv_s3')) G.ap=Math.min(G.maxAP+4,G.ap+1);
   getAdj(i).forEach(j=>{
     const wasRevealed=G.tiles[j].revealed;
     G.tiles[j].revealed=true;
@@ -116,6 +124,6 @@ function clickTile(i){
       setTimeout(()=>showThicketAmbush(ambEvt),300);
     }
   });
-  log(`📍 ${t.name}으로 이동 (${cost}칸·AP-${cost})`, '');
+  log(`📍 ${t.name}으로 이동 (${baseCost}칸·AP-${cost})`, '');
   checkSurvival(); render();
 }

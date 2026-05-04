@@ -8,6 +8,8 @@ function openGather(){
   const opts=tile.gather||[];
   const cards=allCards();
   const avail=opts.filter(o=>cards.some(c=>c.id===o.tool));
+  // 성공률 표시에 스킬 보너스 반영
+  const skillGaBonus=allCards().some(c=>c.id==='sk_ga_b')?10:0;
   if(!avail.length){
     const needed=opts.map(o=>CARD_MAP[o.tool]?.name||o.tool).join(', ');
     log(`수집 장비 없음. 필요: ${needed}`,''); render(); return;
@@ -20,7 +22,7 @@ function openGather(){
     const cnt=G.gatherCnt[key]||0;
     const bonus=G.gatherBonus[key]||0;
     const baseRate=Math.max(20,90-cnt*15);
-    const rate=Math.min(95,baseRate+bonus);
+    const rate=Math.min(95,baseRate+bonus+skillGaBonus);
     const resDef=CARD_MAP[o.res];
     const toolDef=CARD_MAP[o.tool];
     const div=document.createElement('div'); div.className='ex-choice fi';
@@ -56,18 +58,31 @@ function doGather(opt, key, rate){
     flashDamage();
     log(`🎒 수집 피해: ${hDmg?`허기HP-${hDmg} `:''}${tDmg?`갈증HP-${tDmg}`:''}`,'danger');
   }
-  const effectiveRate = rate;
+  const skillGaBonusNow=allCards().some(c=>c.id==='sk_ga_b')?10:0;
+  const effectiveRate = Math.min(95, rate+skillGaBonusNow);
   if(Math.random()*100 < effectiveRate){
-    G.gatherCnt[key]=(G.gatherCnt[key]||0)+1; // 성공 시만 횟수 증가
-    G.gatherBonus[key]=0;                       // 숨겨진 보너스 초기화
-    const n=Math.random()<0.28?2:1;
+    G.gatherCnt[key]=(G.gatherCnt[key]||0)+1;
+    G.gatherBonus[key]=0;
+    if(!G.actionCnt) G.actionCnt={move:0,explore:0,gather:0,camp:0,craft:0,carduse:0,sleep:0,combat:0};
+    G.actionCnt.gather=(G.actionCnt.gather||0)+1;
+    let n=Math.random()<0.28?2:1;
+    // 알뜰한 손: 성공 시 +1
+    if(allCards().some(c=>c.id==='sk_ga_s1')) n+=1;
     const d=CARD_MAP[opt.res];
+    const items=[{id:opt.res,icon:d?.icon||'📦',name:d?.name||opt.res,n}];
+    // 황금 손: 수집 카드 +1
+    if(allCards().some(c=>c.id==='sk_ga_g')){
+      items.push({id:opt.res,icon:d?.icon||'📦',name:d?.name||opt.res,n:1});
+      log(`💰 황금 손: ${d?.name||opt.res}×1 추가`,'success');
+    }
     log(`🎒 ${opt.label} 성공! ${d?.icon||''}${d?.name||opt.res}×${n} (AP-3)`,'gather');
-    showItemPopup([{id:opt.res,icon:d?.icon||'📦',name:d?.name||opt.res,n}],`🎒 ${opt.label} 성공!`,()=>{
+    showItemPopup(items,`🎒 ${opt.label} 성공!`,()=>{
       checkSurvival(); render(); saveGame();
     });
   } else {
-    G.gatherBonus[key]=(G.gatherBonus[key]||0)+5; // 실패 시 숨겨진 +5%
+    G.gatherBonus[key]=(G.gatherBonus[key]||0)+5;
+    // 끈기: 실패 시 AP 환급
+    if(allCards().some(c=>c.id==='sk_ga_s2')){ G.ap=Math.min(G.maxAP+4,G.ap+1); log('⏰ 끈기: 수집 실패 AP+1 환급',''); }
     log(`🎒 ${opt.label} 실패... 빈손 (AP-3)`,'danger');
     checkSurvival(); render(); saveGame();
   }

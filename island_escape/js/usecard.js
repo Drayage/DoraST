@@ -4,15 +4,19 @@ let _prevUcHandUIDs=new Set();
 
 function openUseCard(){
   if(G.over) return;
-  if(G.ap<1){log('AP부족 (카드사용:AP1)','danger');render();return;}
-  G.ap-=1;
+  const cardUseCost=allCards().some(c=>c.id==='sk_cu_g')?0:1;
+  if(G.ap<cardUseCost){log('AP부족 (카드사용:AP1)','danger');render();return;}
+  G.ap-=cardUseCost;
+  if(!G.actionCnt) G.actionCnt={move:0,explore:0,gather:0,camp:0,craft:0,carduse:0,sleep:0,combat:0};
+  G.actionCnt.carduse=(G.actionCnt.carduse||0)+1;
   const ropeCnt=allCards().filter(c=>c.id==='rope').length;
   const beachCampCnt=G.camps.filter(cp=>G.tiles[cp].id==='beach').length;
-  const drawN=5+ropeCnt+beachCampCnt;
+  const skillDrawBonus=allCards().filter(c=>c.id==='sk_cu_b').length;
+  const drawN=5+ropeCnt+beachCampCnt+skillDrawBonus;
   _ucHand=drawToHand(drawN);
   if(!_ucHand.length){log('덱이 비어있다.','danger');G.ap+=1;render();return;}
   _prevUcHandUIDs=new Set();
-  const bonusDesc=(ropeCnt?` (🪢밧줄+${ropeCnt})`:'')+(beachCampCnt?` (🏖️해변캠프+${beachCampCnt})`:'');
+  const bonusDesc=(ropeCnt?` (🪢밧줄+${ropeCnt})`:'')+(beachCampCnt?` (🏖️해변캠프+${beachCampCnt})`:'')+(skillDrawBonus?` (🃏드로우마스터+${skillDrawBonus})`:'');
   document.getElementById('uc-sub').textContent=`${_ucHand.length}장 드로우${bonusDesc} — 사용할 카드 선택`;
   document.getElementById('uc-result').textContent='';
   document.getElementById('uc-mo').style.display='flex';
@@ -27,7 +31,7 @@ function renderUcCards(){
     const usable=(!!card.use||card.tag==='action')&&card.id!=='flare_kit'&&card.id!=='signal';
     const kBoost=hasTool('knife')?8:0;
     const durStr=card.dur?`<div style="font-size:8px;color:var(--accent);font-family:var(--font-m);">🔋${card.curDur||card.dur}/${card.dur}</div>`:'';
-    const useLabels={eat:`🍗허기+${22+kBoost}`,drink:'💧갈증+28',heal:'🌿HP+10',good_sleep:'😪HP+10·정신력+8',temple_map:'🏛️사원 위치 표시',_action:'🏃2장 드로우'};
+    const useLabels={eat:`🍗허기+${22+kBoost}`,drink:'💧갈증+28',heal:'🌿HP+10',good_sleep:'😪HP+10·정신력+8',temple_map:'🏛️사원 위치 표시',_action:'🏃2장 드로우',sk_ex_reexplore:'📖재탐색 활성화',sk_ga_spot:'🎒현장채집(AP1)',sk_cr_anywhere:'🗂️이동 제작소',sk_cu_peek:'👁️덱 미리보기',sk_sl_nap:'💤낮잠(HP+8+정신력+4)'};
     const div=document.createElement('div');
     div.style.cssText=`background:var(--bg3);border:1px solid ${usable?'var(--green2)':'var(--border)'};border-radius:9px;padding:10px 8px;width:90px;text-align:center;cursor:${usable?'pointer':'default'};opacity:${usable?1:0.5};transition:all .12s;`;
     if(!_prevUcHandUIDs.has(card.uid)){
@@ -69,16 +73,17 @@ function ucUse(i){
   if(!card.use) return;
   const resEl=document.getElementById('uc-result');
   const kBoost=hasTool('knife')?8:0;
+  const foodBonus=allCards().some(c=>c.id==='sk_cu_s2')?8:0;
   if(card.use==='eat'){
-    const g=22+kBoost; G.hun=Math.min(100,G.hun+g);
-    resEl.textContent=`🍗 ${card.name} — 허기+${g}${kBoost?` (🔪+${kBoost})`:''}`;
+    const g=22+kBoost+foodBonus; G.hun=Math.min(100,G.hun+g);
+    resEl.textContent=`🍗 ${card.name} — 허기+${g}${kBoost?` (🔪+${kBoost})`:''}${foodBonus?` (🍴+${foodBonus})`:''}`;
     resEl.style.color='var(--accent)';
     log(`🍗 섭취. 허기+${g}`,'success');
   } else if(card.use==='drink'){
-    G.thi=Math.min(100,G.thi+28);
-    resEl.textContent='💧 물 음용 — 갈증+28';
+    const w=28+foodBonus; G.thi=Math.min(100,G.thi+w);
+    resEl.textContent=`💧 물 음용 — 갈증+${w}${foodBonus?` (🍴+${foodBonus})`:''}`;
     resEl.style.color='var(--blue)';
-    log('💧 음용. 갈증+28','success');
+    log(`💧 음용. 갈증+${w}`,'success');
   } else if(card.use==='heal'){
     G.hp=Math.min(100,G.hp+10);
     resEl.textContent='🌿 약초 — HP+10';
@@ -106,6 +111,44 @@ function ucUse(i){
       resEl.style.color='var(--text3)';
     }
     render();
+  } else if(card.use==='sk_ex_reexplore'){
+    G.tiles[G.pos].explored=false;
+    resEl.textContent='📖 기억: 현재 타일 재탐색 가능';
+    resEl.style.color='var(--green)';
+    log('📖 재탐색 활성화','success');
+  } else if(card.use==='sk_ga_spot'){
+    if(G.ap<1){resEl.textContent='AP 부족';resEl.style.color='var(--red)';return;}
+    G.ap-=1;
+    const t=G.tiles[G.pos]; const glist=t.gather||[];
+    if(!glist.length){resEl.textContent='수집 가능한 자원 없음.';resEl.style.color='var(--text3)';return;}
+    const opt=glist[Math.floor(Math.random()*glist.length)];
+    const rsCnt=allCards().filter(c=>c.tag==='resource').length;
+    const total=Math.max(1,allCards().length);
+    const ok=Math.random()<Math.min(0.9,rsCnt/total+0.3);
+    const d=CARD_MAP[opt.res];
+    if(ok){addCard(opt.res,1);resEl.textContent=`🎒 현장채집: ${d?.name||opt.res}×1`;resEl.style.color='var(--green)';}
+    else {resEl.textContent='🎒 현장채집 실패.';resEl.style.color='var(--red)';}
+  } else if(card.use==='sk_cr_anywhere'){
+    G.skillCraftBypass=true;
+    resEl.textContent='🗂️ 이동 제작소: 다음 제작은 캠프 불필요';
+    resEl.style.color='var(--green)';
+    log('🗂️ 이동 제작소 활성화','success');
+  } else if(card.use==='sk_cu_peek'){
+    const peekCards=[];
+    for(let p=0;p<3;p++){
+      if(!G.deck.length&&G.disc.length){G.deck=shuffle(G.disc);G.disc=[];}
+      if(G.deck.length) peekCards.push(G.deck.pop());
+    }
+    if(!peekCards.length){resEl.textContent='덱이 비어있다.';resEl.style.color='var(--text3)';return;}
+    resEl.textContent='👁️ 선견지명: 카드를 선택하세요';
+    resEl.style.color='var(--accent)';
+    _showPeekChoices(peekCards);
+    return;
+  } else if(card.use==='sk_sl_nap'){
+    G.hp=Math.min(100,G.hp+8); G.san=Math.min(100,G.san+4);
+    resEl.textContent='💤 낮잠: HP+8, 정신력+4 회복';
+    resEl.style.color='var(--green)';
+    log('💤 낮잠. HP+8 정신력+4','success');
   }
   if(card.dur){
     card.curDur=(card.curDur||card.dur)-1;
@@ -125,7 +168,35 @@ function ucUse(i){
 function closeUseCard(){
   G.disc.push(..._ucHand); _ucHand=[];
   _prevUcHandUIDs=new Set();
+  // 손놀림: 버림더미 맨 위 1장 덱 복귀
+  if(allCards().some(c=>c.id==='sk_cu_s1')&&G.disc.length){
+    const top=G.disc.pop(); G.deck.push(top);
+    log(`🔀 손놀림: ${top.icon}${top.name} 덱 복귀`,'');
+  }
   document.getElementById('uc-mo').style.display='none';
   document.getElementById('tt').style.display='none';
   render();
+}
+
+function _showPeekChoices(cards){
+  const uc=document.getElementById('uc-cards'); uc.innerHTML='';
+  const lbl=document.createElement('div');
+  lbl.style.cssText='font-size:9px;color:var(--accent);font-family:var(--font-m);text-align:center;margin-bottom:8px;width:100%;';
+  lbl.textContent='👁️ 선견지명: 1장을 선택해 손패에 추가 (나머지는 버림)';
+  uc.appendChild(lbl);
+  cards.forEach((card,idx)=>{
+    const div=document.createElement('div');
+    div.style.cssText='background:var(--bg3);border:1px solid var(--accent);border-radius:9px;padding:10px 8px;width:90px;text-align:center;cursor:pointer;transition:all .12s;';
+    div.innerHTML=`<div style="font-size:24px;margin-bottom:4px;">${card.icon}</div>
+      <div style="font-size:8px;font-weight:700;color:var(--text);margin-bottom:2px;">${card.name}</div>
+      <div class="card-tag tag-${card.tag}" style="font-size:6px;display:inline-block;margin-bottom:4px;">${card.tag}</div>
+      <div style="font-size:7px;color:var(--text3);font-family:var(--font-m);">A${card.atk} D${card.def}</div>`;
+    div.onclick=()=>{
+      _ucHand.push(card);
+      cards.forEach((c,i)=>{ if(i!==idx) G.disc.push(c); });
+      log(`👁️ 선견지명: ${card.icon}${card.name} 손패 추가`,'success');
+      renderUcCards(); checkSurvival(); render();
+    };
+    uc.appendChild(div);
+  });
 }

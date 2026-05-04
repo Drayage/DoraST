@@ -472,6 +472,18 @@ body.game-inactive #mob-tabs{
 .sf-face.dimmed{opacity:.5;}
 .sf-cname{font-size:6px;color:var(--text2);font-family:var(--font-m);text-align:center;line-height:1.2;max-width:48px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
 
+/* ══ SKILL EVENT ══ */
+.skill-choice{background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:14px 10px;width:130px;min-height:150px;text-align:center;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.skill-choice:hover{border-color:var(--accent2);transform:translateY(-3px);box-shadow:0 4px 14px rgba(0,0,0,.3);}
+.sk-hidden{border-style:dashed;opacity:.75;}
+.sk-name{font-family:var(--font-t);font-size:11px;font-weight:700;color:var(--text);}
+.sk-desc{font-size:8px;color:var(--text3);font-family:var(--font-m);line-height:1.4;text-align:left;}
+.sk-tier-label{font-size:8px;font-family:var(--font-m);color:var(--text3);}
+.skill-choice.sk-tier-bronze{border-color:#886644;}
+.skill-choice.sk-tier-silver{border-color:#8888aa;}
+.skill-choice.sk-tier-gold{border-color:#cc9922;background:rgba(80,60,0,.18);}
+.tag-skill{background:#2a1533;color:#cc88ff;}
+
 /* ══ SIGNAL MILESTONE TOAST ══ */
 .signal-milestone{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);z-index:920;padding:12px 22px;border-radius:11px;border:1px solid var(--green);background:rgba(8,16,24,.95);text-align:center;font-family:var(--font-m);animation:smIn .35s cubic-bezier(.2,.8,.4,1) both,smOut .3s ease 3.3s both;pointer-events:none;box-shadow:0 4px 20px rgba(76,175,125,.25);}
 .sm-pct{font-family:var(--font-t);font-size:16px;color:var(--green);}

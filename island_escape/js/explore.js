@@ -8,6 +8,8 @@ function doExplore(){
   const t=G.tiles[G.pos];
   if(t.explored){log('이미 탐색한 지역이다.','');return;}
   G.ap-=2; t.explored=true;
+  if(!G.actionCnt) G.actionCnt={move:0,explore:0,gather:0,camp:0,craft:0,carduse:0,sleep:0,combat:0};
+  G.actionCnt.explore=(G.actionCnt.explore||0)+1;
   if(t.id==='oblivion_swamp') _swampDevour();
   const evtId=t.events[Math.floor(Math.random()*t.events.length)];
   if(ENEMIES[evtId]){ showEncounter(evtId); return; }
@@ -190,6 +192,11 @@ function doJudgment(evt, ch){
           log('🌀 환각 발동! 망각 카드가 덱에 추가됐다.','danger');
         }
       }
+      // 스킬 패시브: 천재적 직관 — 항상 성공
+      let _skillForceSuccess=false;
+      if(!success&&allCards().some(c=>c.id==='sk_ex_g')){ success=true; _skillForceSuccess=true; }
+      // 브론즈: 실패 시 10% 추가 기회
+      if(!success&&!_skillForceSuccess&&allCards().some(c=>c.id==='sk_ex_b')&&Math.random()<0.1){ success=true; bonLines.push('🔍 날카로운 눈: 실패 뒤집기 성공!'); }
       if(compassExtra) bonLines.push(`🧭 나침반: ${compassExtra.icon}${compassExtra.name} 제외 → 유리한 카드 선택`);
       if(subOk&&!primaryOk) bonLines.push(`🏷️ #${ch.subReq} 보조 태그 매치 성공!`);
       if(ch.devourDrawn){
@@ -208,6 +215,8 @@ function doJudgment(evt, ch){
         resEl.className='jdg-res great'; resEl.textContent='★ 대성공!';
         applyR(ch.reward,lines); applyR(ch.greatBonus,lines);
         bonLines.push(`★ ${CARD_MAP[ch.greatCard]?.name||ch.greatCard} 대성공 발동!`);
+        // 황금 손: 카드 보상 시 +1장
+        if(ch.reward?.card&&allCards().some(c=>c.id==='sk_ga_g')){addCard(ch.reward.card,1);bonLines.push(`💰 황금 손: ${CARD_MAP[ch.reward.card]?.name||ch.reward.card}×1 추가`);}
       } else if(success){
         resEl.className='jdg-res ok'; resEl.textContent='✓ 성공!';
         applyR(ch.reward,lines);
@@ -215,9 +224,18 @@ function doJudgment(evt, ch){
           if(!G.deck.length&&G.disc.length){G.deck=shuffle(G.disc);G.disc=[];}
           if(G.deck.length){const b=G.deck.pop();G.disc.push(b);bonLines.push(`🕯️ 횃불 패시브: ${b.icon}${b.name} 추가`);}
         }
+        // 경험의 빛: tool 성공 시 추가 드로우
+        if(ch.req==='tool'&&allCards().some(c=>c.id==='sk_ex_s1')){
+          if(!G.deck.length&&G.disc.length){G.deck=shuffle(G.disc);G.disc=[];}
+          if(G.deck.length){const b=G.deck.pop();G.disc.push(b);bonLines.push(`🕯️ 경험의 빛: ${b.icon}${b.name} 추가`);}
+        }
+        // 황금 손: 카드 보상 시 +1장
+        if(ch.reward?.card&&allCards().some(c=>c.id==='sk_ga_g')){addCard(ch.reward.card,1);bonLines.push(`💰 황금 손: ${CARD_MAP[ch.reward.card]?.name||ch.reward.card}×1 추가`);}
       } else {
         resEl.className='jdg-res fail'; resEl.textContent='✗ 실패...';
         if(ch.failPen) applyPen(ch.failPen,lines); else lines.push('별다른 피해 없음');
+        // 꼼꼼한 탐색가: 실패 시 AP 환급
+        if(allCards().some(c=>c.id==='sk_ex_s2')){ G.ap=Math.min(G.maxAP+4,G.ap+1); bonLines.push('🎯 꼼꼼한 탐색가: AP+1 환급'); }
       }
       // curseDeck: 선택 시 무조건 덱에 저주 카드 추가
       if(ch.curseDeck){

@@ -109,6 +109,10 @@ function initGame(){
     templePhase:0, templeEscape:false, templeBoss:null,
     _templeBonus:{atk:0,def:0}, templeMapDrops:{},
     templeRevealed:false, templeEventShown:{},
+    actionCnt:{move:0,explore:0,gather:0,camp:0,craft:0,carduse:0,sleep:0,combat:0},
+    pendingSkillType:null,
+    skillEvtCount:{},
+    skillCraftBypass:false,
     islandId,
   };
   _pendingItems=null; _itemCb=null; _pendingItemCards=null; _ucHand=[];

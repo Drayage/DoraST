@@ -657,10 +657,23 @@
 <!-- GAMEOVER / ENDING (내용은 showEnding()으로 동적 생성) -->
 <div id="go-scr"></div>
 
+<!-- SKILL EVENT MODAL -->
+<div id="skill-mo" class="mo" style="display:none;">
+  <div class="mb" style="max-width:520px;width:94vw;">
+    <div id="skill-type-label" style="font-family:var(--font-t);font-size:15px;color:var(--accent);text-align:center;margin-bottom:6px;">✨ 스킬 획득!</div>
+    <div style="font-size:9px;color:var(--text3);margin-bottom:12px;font-family:var(--font-m);text-align:center;">3개 중 1장을 선택하세요 (앞면 2 · 랜덤 1)</div>
+    <div id="skill-choices" style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:14px;"></div>
+    <div style="text-align:center;">
+      <button id="skill-skip" class="btn" style="font-size:9px;color:var(--text3);padding:5px 14px;">⏭️ 건너뛰기 (카운터 차감, 재도전 가능)</button>
+    </div>
+  </div>
+</div>
+
 <!-- JS: 로드 순서 중요 -->
 <script src="js/data.js"></script>
 <script src="js/state.js"></script>
 <script src="js/helpers.js"></script>
+<script src="js/skills.js"></script>
 <script src="js/survival.js"></script>
 <script src="js/tooltip.js"></script>
 <script src="js/mobile.js"></script>

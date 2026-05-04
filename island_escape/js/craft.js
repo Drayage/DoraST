@@ -5,7 +5,10 @@ let _craftFilter='전체';
 
 function openCraft(){
   if(G.over) return;
-  if(!G.tiles[G.pos].hasCamp){log('제작은 캠프 위치에서만 가능.','danger');render();return;}
+  if(!G.tiles[G.pos].hasCamp){
+    if(G.skillCraftBypass){ G.skillCraftBypass=false; log('🗂️ 이동 제작소: 캠프 없이 제작 허용','success'); }
+    else { log('제작은 캠프 위치에서만 가능.','danger');render();return; }
+  }
   document.getElementById('cr-msg').style.display='none';
   document.getElementById('cr-mo').style.display='flex';
   renderCraft();
@@ -130,9 +133,17 @@ function openRecipes(){
 function doCraft(id){
   const rec=RECIPES.find(r=>r.id===id);
   if(!rec||!canCraft(rec)) return;
-  if(G.ap<rec.ap){log('AP부족','');return;}
-  G.ap-=rec.ap;
-  rec.cost.forEach(c=>rmFromDeck(c.id,c.n));
+  // 스킬 패시브: 제작 AP 비용
+  const craftFree=allCards().some(c=>c.id==='sk_cr_g');
+  const craftAp=craftFree?0:Math.max(1,rec.ap-allCards().filter(c=>c.id==='sk_cr_b').length);
+  if(G.ap<craftAp){log('AP부족','');return;}
+  G.ap-=craftAp;
+  // 고철 절약 (재료 절약 스킬)
+  const metalSave=allCards().some(c=>c.id==='sk_cr_s1')?1:0;
+  rec.cost.forEach(c=>{
+    const n=c.id==='metal'?Math.max(0,c.n-metalSave):c.n;
+    if(n>0) rmFromDeck(c.id,n);
+  });
 
   if(rec.raftLottery){
     closeCraft();
@@ -141,8 +152,15 @@ function doCraft(id){
   }
 
   addCard(rec.result, rec.rn);
+  if(!G.actionCnt) G.actionCnt={move:0,explore:0,gather:0,camp:0,craft:0,carduse:0,sleep:0,combat:0};
+  G.actionCnt.craft=(G.actionCnt.craft||0)+1;
+  // 재활용: 버림더미 자원 카드 1장 덱으로 복귀
+  if(allCards().some(c=>c.id==='sk_cr_s2')){
+    const ri=G.disc.findIndex(c=>c.tag==='resource');
+    if(ri>=0){const rc=G.disc.splice(ri,1)[0];G.deck.push(rc);log(`🔄 재활용: ${rc.icon}${rc.name} 덱 복귀`,'success');}
+  }
   const d=CARDS.find(c=>c.id===rec.result);
-  log(`🔨 ${rec.name}. ${d?.icon||''}${d?.name||''}×${rec.rn} (AP-${rec.ap})`,'success');
+  log(`🔨 ${rec.name}. ${d?.icon||''}${d?.name||''}×${rec.rn} (AP-${craftAp})`,'success');
   if(rec.result==='compass'){
     const escBefore=G.escape;
     G.escape=Math.min(100,G.escape+20);

@@ -102,6 +102,8 @@ function checkGatherDanger(){
 function doSleep(){
   if(G.over) return;
   const early=G.ap>=4;
+  if(!G.actionCnt) G.actionCnt={move:0,explore:0,gather:0,camp:0,craft:0,carduse:0,sleep:0,combat:0};
+  G.actionCnt.sleep=(G.actionCnt.sleep||0)+1;
   G.day++;
 
   let hpR=early?15:9, sanR=early?4:2;
@@ -109,6 +111,7 @@ function doSleep(){
 
   let ruinsBonusAP=0;
   const campCount={cave:0,forest:0,shore:0,ruins:0};
+  const inCampNow=G.camps.includes(G.pos);
   G.camps.forEach(cp=>{
     const t=G.tiles[cp];
     if(t.id==='cave')   { sanR+=3; campCount.cave++; }
@@ -116,6 +119,10 @@ function doSleep(){
     if(t.id==='shore')  { addCard('dew',1);   campCount.shore++; }
     if(t.id==='ruins')  { ruinsBonusAP+=1; G.san=Math.max(0,G.san-2); campCount.ruins++; }
   });
+  // 스킬 패시브: 취침 HP/SAN 보너스
+  if(allCards().some(c=>c.id==='sk_sl_s1')) hpR+=8;
+  if(allCards().some(c=>c.id==='sk_sl_s2')) sanR+=8;
+  if(inCampNow&&allCards().some(c=>c.id==='sk_cp_s1')) hpR+=5;
   const _cx=n=>n>1?`(x${n})`:'';
   if(campCount.forest) log(`🌲 숲캠프${_cx(campCount.forest)}: 작은 열매 🍒 ×${campCount.forest} 자동생성`,'success');
   if(campCount.shore)  log(`🌊 해안캠프${_cx(campCount.shore)}: 맺힌이슬 💦 ×${campCount.shore} 자동생성`,'success');
@@ -211,17 +218,38 @@ function _processDoom(early){
 }
 
 function _afterDoom(early){
+  _checkSkillUnlock();
+  if(G.pendingSkillType){
+    showSkillEvent(()=>_afterDoomContinue(early));
+    return;
+  }
+  _afterDoomContinue(early);
+}
+
+function _afterDoomContinue(early){
   checkSurvival(); if(G.over) return;
   checkWin(); if(G.over) return;
   // DOOM 100% → 복권으로 대체
   if(G.doom>=100 && G.doomPhase>=4){
     showDoomLottery(); return;
   }
+  // 스킬 패시브: 완벽한 수면
+  if(allCards().some(c=>c.id==='sk_sl_g')){
+    addCard('good_sleep',1);
+    log('✨ 완벽한 수면: 꿀잠 카드 추가 (이벤트 면역)','success');
+    render(); saveGame(); return;
+  }
   if(Math.random()*100<calcSleepEvtChance(early)) showSleepEvt();
   else {
-    if(G.camps.includes(G.pos)){
+    const inCamp=G.camps.includes(G.pos);
+    if(inCamp){
       addCard('good_sleep',1);
       log('😪 캠프에서 숙면: 꿀잠 카드 추가','success');
+      // 모닥불의 온기 패시브
+      if(allCards().some(c=>c.id==='sk_cp_s3')){
+        addCard('good_sleep',1);
+        log('🔥 모닥불의 온기: 꿀잠 카드 추가','success');
+      }
     }
     render(); saveGame();
   }
@@ -257,7 +285,11 @@ function calcSleepEvtChance(early){
   const stN=allCards().filter(c=>c.tag==='status').length;
   c+=stN*6;
   if(G.hp<40) c+=10; if(G.hun<30) c+=8; if(G.thi<30) c+=8; if(G.ap<=2) c+=4;
-  return Math.min(c,80);
+  // 스킬 패시브
+  if(allCards().some(c=>c.id==='sk_sl_b')) c-=15;
+  const inCamp=G.camps.includes(G.pos);
+  if(inCamp&&allCards().some(c=>c.id==='sk_cp_s2')) c-=10;
+  return Math.min(Math.max(c,0),80);
 }
 
 function applyWeather(){

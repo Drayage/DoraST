@@ -3,7 +3,10 @@
 
 let _prevCbtHandUIDs=new Set();
 
-function drawCombatHand(){ return drawToHand(5); }
+function drawCombatHand(){
+  const n=5+(allCards().some(c=>c.id==='sk_cb_b')?1:0);
+  return drawToHand(n);
+}
 
 function autoAssignStatusCards(){
   CBT.hand.forEach(c=>{
@@ -223,6 +226,8 @@ function encFlee(){
 function startCombat(evtId, ambush, fightChosen, enemyOverride){
   const baseEnemy=ENEMIES[evtId]||{};
   const enemy=enemyOverride||baseEnemy;
+  // 급소 파악: 전투 시작 시 적 DEF -2
+  if(allCards().some(c=>c.id==='sk_cb_s3')) enemy.def=Math.max(0,(enemy.def||0)-2);
   CBT={enemy:{...enemy,curHp:enemy.hp},hand:[],atkZone:[],defZone:[],resolved:false,turn:1,stunned:false,poisoned:false,penaltyApplied:false,fightChosen:!!fightChosen,_evtId:evtId};
   _prevCbtHandUIDs=new Set();
   CBT.hand = ambush ? drawAmbushHand() : drawCombatHand();
@@ -496,6 +501,8 @@ function resolveCombat(){
   let dmgP = willKillEnemy ? 0 : Math.max(0,eA-pD);
   if(!willKillEnemy && hasArmor && dmgP>0){ dmgP=Math.max(0,dmgP-2); lines.push({t:`🧥 가죽갑옷: 피해-2`,cls:'good'}); }
   if(!willKillEnemy && hasStoneVest && dmgP>0){ dmgP=Math.max(0,dmgP-3); lines.push({t:`🦺 돌 조끼: 피해-3`,cls:'good'}); }
+  // 단련된 몸: 피해 -1
+  if(!willKillEnemy && allCards().some(c=>c.id==='sk_cb_s1') && dmgP>0){ dmgP=Math.max(0,dmgP-1); lines.push({t:`🦾 단련된 몸: 피해-1`,cls:'good'}); }
   if(willKillEnemy) lines.push({t:`⚔️ 이번 공격으로 처치 — 적의 반격 없음`,cls:'good'});
 
   lines.unshift({t:`⚔️ 내공격: 일반${normalAtk}-방어${effDef}+관통${pierceAtk}+독${poisonDmg}+출혈${bleedDmg}=${dmgE}피해`,cls:'good'});
@@ -559,6 +566,15 @@ function _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,will
     resEl.innerHTML+=`<div class="rl good" style="font-size:13px;margin-top:5px;">🏆 ${e.name} 처치!</div>`;
     resEl.innerHTML+=`<div class="rl good">💎 전리품: ${rewardItems.map(r=>r.icon+r.name+'×'+r.n).join(' ')} — 클릭해서 선택 획득</div>`;
     G.kills++; CBT.resolved=true;
+    if(!G.actionCnt) G.actionCnt={move:0,explore:0,gather:0,camp:0,craft:0,carduse:0,sleep:0,combat:0};
+    G.actionCnt.combat=(G.actionCnt.combat||0)+1;
+    // 전투 스킬 승리 패시브
+    if(allCards().some(c=>c.id==='sk_cb_s2')){ G.hp=Math.min(100,G.hp+8); resEl.innerHTML+=`<div class="rl good">🩸 사냥의 기쁨: HP+8</div>`; }
+    if(allCards().some(c=>c.id==='sk_cb_g')){
+      let di=G.deck.findIndex(c=>c.id==='debris'||c.tag==='status');
+      if(di>=0){ const rc=G.deck.splice(di,1)[0]; resEl.innerHTML+=`<div class="rl good">🌪️ 공허의 칼날: ${rc.icon}${rc.name} 소멸</div>`; }
+      else { di=G.disc.findIndex(c=>c.id==='debris'||c.tag==='status'); if(di>=0){ const rc=G.disc.splice(di,1)[0]; resEl.innerHTML+=`<div class="rl good">🌪️ 공허의 칼날: ${rc.icon}${rc.name} 소멸</div>`; } }
+    }
     // 사원 페이즈 진행
     if(e._templeNextPhase!==undefined){
       G.templePhase=e._templeNextPhase;
