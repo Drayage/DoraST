@@ -4799,7 +4799,7 @@ function renderCombat(){
     const baseE=ENEMIES[CBT._evtId]||{};
     const pen=baseE.penalty||e.penalty;
     const parts=[];
-    if(pen) parts.push(`⚠️ 패배 시: ${pen.desc||'패널티 있음'}`);
+    if(pen) parts.push(`⚠️ 피해 받으면: ${pen.desc||'패널티 있음'}`);
     if(e.patternDesc&&!pen) parts.push(`⚡ 패턴: ${e.patternDesc}`);
     if(parts.length){ warnEl.innerHTML=parts.join(' &nbsp;|&nbsp; '); warnEl.style.display=''; }
     else warnEl.style.display='none';
