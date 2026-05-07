@@ -2,16 +2,16 @@
 
 const TILE_TYPES=[
   {id:'beach', name:'해변',icon:'🏖️',cls:'t-beach',flavor:'해변의 모래사장을 걷는다. 파도 소리가 들려온다.',
-   events:['res_wood','res_metal','res_food','old_fire','nothing','debris_find'],
+   events:['res_wood','res_metal','res_food','old_fire','nothing','debris_find','res_rainwater'],
    gather:[{tool:'fishing_rod',res:'food',label:'낚시',flavor:'해변에서 낚싯대로 물고기를 잡는다.'}]},
   {id:'forest',name:'숲',  icon:'🌲',cls:'t-forest',flavor:'울창한 숲이다. 여러 동식물의 소리가 들린다.',
-   events:['res_wood','res_wood','res_food','res_herb','cbt_boar','cbt_snake','trap_pit','debris_find'],
+   events:['res_wood','res_wood','res_food','res_herb','cbt_boar','cbt_snake','trap_pit','debris_find','res_dew_collect'],
    gather:[
      {tool:'gathering_knife',res:'herb',label:'약초채집',flavor:'채집칼로 약초를 모은다.'},
      {tool:'axe',res:'wood',label:'나무베기',flavor:'도끼로 나무를 벤다.'},
    ]},
   {id:'cave',  name:'동굴',icon:'🪨',cls:'t-cave',flavor:'어두운 동굴 입구가 보인다. 안에서 차가운 공기가 흘러나온다.',
-   events:['res_metal','res_metal','res_metal','res_stone','cbt_bat','find_shelter','nothing'],
+   events:['res_metal','res_metal','res_metal','res_stone','cbt_bat','find_shelter','nothing','res_water_spring'],
    gather:[
      {tool:'pickaxe',res:'metal',label:'채굴',flavor:'곡괭이로 동굴 벽을 캔다.'},
      {tool:'pickaxe',res:'stone',label:'채석',flavor:'곡괭이로 동굴 바닥을 채석한다.'},
@@ -20,7 +20,7 @@ const TILE_TYPES=[
    events:['res_metal','find_blueprint','cbt_ghost','res_food','survivor_note','haunted_spot','debris_find'],
    gather:[{tool:'torch',res:'metal',label:'유물탐색',flavor:'횃불로 폐허를 샅샅이 뒤진다.'}]},
   {id:'shore', name:'해안',icon:'🌊',cls:'t-shore',flavor:'거친 파도가 해안을 두드린다. 표류물이 밀려와 있다.',
-   events:['res_food','res_metal','find_wreckage','nothing','isolation_dread','res_stone'],
+   events:['res_food','res_metal','find_wreckage','nothing','isolation_dread','res_stone','res_rainwater'],
    gather:[
      {tool:'fishing_rod',res:'food',label:'낚시',flavor:'해안에서 낚싯대로 낚시한다.'},
      {tool:'canteen',res:'water',label:'물 채집',flavor:'물통에 깨끗한 물을 담는다.'},
@@ -173,6 +173,9 @@ const CARDS=[
   // 사원 지도
   {id:'temple_map_piece', name:'사원지도 조각', icon:'🗺️', tag:'resource', atk:0, def:0, n:0, subTags:[],
    desc:'고대 사원 지도의 일부. 3장 모아 사원지도를 만들 수 있다.'},
+  // 유인 미끼
+  {id:'lure', name:'유인 미끼', icon:'🪤', tag:'tool', atk:0, def:0, n:0, dur:2, use:'lure', subTags:[],
+   desc:'사용: 현재 위치에서 야생 동물을 유인. 강제 전투 시작. 내구도 2회.'},
   {id:'temple_map', name:'사원지도', icon:'🏛️', tag:'tool', atk:0, def:0, n:0, dur:1, subTags:[],
    desc:'완성된 사원 지도. 사용 시 지도에 사원 위치 표시. 1회용 — 사용 후 소멸.', use:'temple_map'},
   // ── 스킬 카드 (40장, tag:'skill', n:0 — 덱 초기 미포함) ──
@@ -502,6 +505,32 @@ const EVENTS={
        devourDrawn:true,devourTag:'resource',reward:{},
        desc:'무조건. 덱의 자원 카드 1장을 뒤집어 소멸.'},
     ]},
+  res_water_spring:{
+    name:'지하 샘 발견',flavor:'동굴 깊은 곳에서 맑은 물이 솟아오른다. 음용하기 좋을 것 같다.',
+    choices:[
+      {label:'조심스럽게 채수',icon:'💧',req:'tool',reward:{card:'water',n:2},failPen:{hp:-5},
+       greatCard:'canteen',greatBonus:{card:'water',n:2,ap:1},
+       desc:'도구판정. 성공:물×2 / 대성공(물통):+물×2+AP환급 / 실패:HP-5'},
+      {label:'손으로 떠마신다',icon:'🤲',req:null,reward:{card:'water',n:1},
+       desc:'무조건 성공. 물×1.'},
+    ]},
+  res_rainwater:{
+    name:'빗물 웅덩이',flavor:'바위 위에 고인 빗물이 보인다. 마실 수 있을 것 같다.',
+    choices:[
+      {label:'깨끗이 걸러 채집',icon:'💦',req:'tool',reward:{card:'water',n:2},failPen:{san:-6},
+       greatCard:'canteen',greatBonus:{card:'water',n:2},
+       desc:'도구판정. 성공:물×2 / 대성공(물통):+물×2 / 실패:정신력-6'},
+      {label:'그냥 마신다',icon:'🥤',req:'resource',reward:{card:'water',n:1},failPen:{hp:-5},
+       desc:'자원판정. 성공:물×1 / 실패:HP-5'},
+    ]},
+  res_dew_collect:{
+    name:'아침 이슬',flavor:'나뭇잎 위에 이슬이 맺혀 있다. 조심스럽게 모으면 마실 물이 된다.',
+    choices:[
+      {label:'잎을 훑어 모은다',icon:'🌿',req:'resource',reward:{card:'water',n:1},
+       desc:'자원판정. 성공:물×1 / 실패:빈손.'},
+      {label:'빠르게 훑어간다',icon:'💨',req:null,reward:{card:'dew',n:1},
+       desc:'무조건 성공. 맺힌이슬×1.'},
+    ]},
   res_stone:{
     name:'암석 노출지대',
     flavor:'풍화된 바위들이 드러나 있다. 손으로 캐면 좋은 돌을 얻을 수 있을 것 같다.',
@@ -583,6 +612,7 @@ const RECIPES=[
   {id:'r_curse_blade',cat:'전투',name:'저주의 칼',    icon:'🌑',result:'curse_blade',   rn:1,ap:1,cost:[{id:'venom',n:1},{id:'shard',n:1}],                     desc:'weaken: 적 ATK영구-4. ATK4. 독낭+파편.'},
   {id:'r_shatter_blow',cat:'전투',name:'파쇄 해머',   icon:'🔨',result:'shattering_blow',rn:1,ap:1,cost:[{id:'stone',n:2},{id:'metal',n:1}],                   desc:'shatter: 적 DEF영구-6. ATK3. 돌×2 고철×1.'},
   {id:'r_temple_map', cat:'탈출',name:'사원지도',     icon:'🏛️',result:'temple_map',    rn:1,ap:1,cost:[{id:'temple_map_piece',n:3}],                           desc:'사원의 위치를 밝힌다. 조각×3.'},
+  {id:'r_lure',    cat:'수집',name:'유인 미끼',  icon:'🪤',result:'lure',          rn:1,ap:1,cost:[{id:'food',n:1},{id:'wood',n:1}],   desc:'야생 동물 유인 → 강제 전투. 내구도2. 식량×1 목재×1.'},
   {id:'r_flare_kit', cat:'탈출', name:'신호탄 키트', icon:'🧨', result:'flare_kit', rn:1, ap:1,
    cost:[{id:'metal',n:1},{id:'wood',n:1}],
    desc:'전망대에서 구조신호를 탐색하는 도구. 금속×1 목재×1.'},

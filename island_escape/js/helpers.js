@@ -131,6 +131,42 @@ function _renderItemPopup(title){
     }
     row.appendChild(div);
   });
+  // 오버레이 버튼 (덱/레시피 확인용)
+  let ovRow=document.getElementById('item-overlay-btns');
+  if(!ovRow){
+    ovRow=document.createElement('div');
+    ovRow.id='item-overlay-btns';
+    ovRow.style.cssText='display:flex;gap:6px;justify-content:center;margin-top:6px;';
+    const ib=document.getElementById('item-box'); if(ib) ib.insertBefore(ovRow, row.nextSibling);
+  }
+  ovRow.innerHTML=`<button class="btn" style="font-size:8px;padding:3px 10px;" onclick="openOverlayDeck()">📦 덱 보기</button><button class="btn" style="font-size:8px;padding:3px 10px;" onclick="openOverlayRecipes()">📋 레시피</button>`;
+}
+
+function openOverlayDeck(){
+  const existing=document.getElementById('overlay-deck');
+  if(existing){existing.remove();return;}
+  const el=document.createElement('div'); el.id='overlay-deck';
+  el.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:14px;z-index:1200;max-width:360px;width:90vw;max-height:70vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.6);';
+  const cards=allCards(); const grouped={};
+  cards.forEach(c=>{ if(!grouped[c.id]) grouped[c.id]={...c,count:0}; grouped[c.id].count++; });
+  const _tl={resource:'자원',tool:'도구',combat:'전투',action:'행동',skill:'행동',status:'상태'};
+  const rows=Object.values(grouped).map(c=>`<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border);font-family:var(--font-m);"><span style="font-size:15px;flex-shrink:0;">${c.icon}</span><span style="font-size:9px;flex:1;">${c.name}</span><span class="card-tag tag-${c.tag==='skill'?'action':c.tag}" style="font-size:6px;">${_tl[c.tag]||c.tag}</span><span style="font-size:9px;color:var(--accent);margin-left:4px;">×${c.count}</span></div>`).join('');
+  el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-family:var(--font-t);font-size:13px;color:var(--accent);">📦 내 덱 (${cards.length}장)</span><button class="btn" style="font-size:8px;padding:2px 8px;" onclick="document.getElementById('overlay-deck').remove()">✕ 닫기</button></div>${rows||'<div style="font-size:9px;color:var(--text3);font-family:var(--font-m);">덱이 비어있습니다.</div>'}`;
+  document.body.appendChild(el);
+}
+
+function openOverlayRecipes(){
+  const existing=document.getElementById('overlay-recipes');
+  if(existing){existing.remove();return;}
+  const el=document.createElement('div'); el.id='overlay-recipes';
+  el.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:14px;z-index:1200;max-width:380px;width:90vw;max-height:70vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.6);';
+  const rows=RECIPES.map(rec=>{
+    const ok=canCraft(rec);
+    const costHtml=rec.cost.map(c=>{const d=CARD_MAP[c.id];const have=cntInDeck(c.id);return `<span style="color:${have>=c.n?'var(--green)':'var(--red)'};">${d?.icon||''}${d?.name||c.id}×${c.n}(${have})</span>`;}).join('+');
+    return `<div style="padding:5px 0;border-bottom:1px solid var(--border);font-family:var(--font-m);"><div style="display:flex;gap:5px;align-items:center;"><span style="font-size:14px;">${rec.icon}</span><span style="font-size:9px;color:${ok?'var(--text)':'var(--text3)'};">${rec.name}</span><span style="margin-left:auto;font-size:7px;color:var(--text3);">AP${rec.ap}</span></div><div style="font-size:8px;margin-top:2px;">${costHtml}</div></div>`;
+  }).join('');
+  el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-family:var(--font-t);font-size:13px;color:var(--purple);">📋 레시피 (${RECIPES.length}종)</span><button class="btn" style="font-size:8px;padding:2px 8px;" onclick="document.getElementById('overlay-recipes').remove()">✕ 닫기</button></div>${rows}`;
+  document.body.appendChild(el);
 }
 
 function claimItem(idx){

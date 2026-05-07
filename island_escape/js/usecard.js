@@ -9,13 +9,15 @@ function openUseCard(){
   if(!G.actionCnt) G.actionCnt={move:0,explore:0,gather:0,camp:0,craft:0,carduse:0,sleep:0,combat:0};
   G.actionCnt.carduse=(G.actionCnt.carduse||0)+1;
   const ropeCnt=allCards().filter(c=>c.id==='rope').length;
-  const beachCampCnt=G.camps.filter(cp=>G.tiles[cp].id==='beach').length;
+  const campDouble=allCards().some(c=>c.id==='sk_cp_g');
+  const rawBeachCnt=G.camps.filter(cp=>G.tiles[cp].id==='beach').length;
+  const beachCampCnt=rawBeachCnt*(campDouble?2:1);
   const skillDrawBonus=allCards().some(c=>c.id==='sk_cu_s1')?3:0;
   const drawN=5+ropeCnt+beachCampCnt+skillDrawBonus;
   _ucHand=drawToHand(drawN);
   if(!_ucHand.length){log('덱이 비어있다.','danger');G.ap+=1;render();return;}
   _prevUcHandUIDs=new Set();
-  const bonusDesc=(ropeCnt?` (🪢밧줄+${ropeCnt})`:'')+(beachCampCnt?` (🏖️해변캠프+${beachCampCnt})`:'')+(skillDrawBonus?` (🔀손놀림+${skillDrawBonus})`:'');
+  const bonusDesc=(ropeCnt?` (🪢밧줄+${ropeCnt})`:'')+(rawBeachCnt?` (🏖️해변캠프+${beachCampCnt}${campDouble?' 🏰×2':''})`:'')+(skillDrawBonus?` (🔀손놀림+${skillDrawBonus})`:'');
   document.getElementById('uc-sub').textContent=`${_ucHand.length}장 드로우${bonusDesc} — 사용할 카드 선택`;
   document.getElementById('uc-result').textContent='';
   document.getElementById('uc-mo').style.display='flex';
@@ -31,16 +33,18 @@ function renderUcCards(){
     const kBoost=hasTool('knife')?8:0;
     const durStr=card.dur?`<div style="font-size:8px;color:var(--accent);font-family:var(--font-m);">🔋${card.curDur||card.dur}/${card.dur}</div>`:'';
     const gsHp=allCards().some(c=>c.id==='sk_cp_s3')?20:10, gsSan=allCards().some(c=>c.id==='sk_cp_s3')?16:8;
-    const useLabels={eat:`🍗허기+${22+kBoost}`,drink:'💧갈증+28',heal:'🌿HP+10',good_sleep:`😪HP+${gsHp}·정신력+${gsSan}`,temple_map:'🏛️사원 위치 표시',_action:'🏃2장 드로우',sk_ex_reexplore:'📖재탐색 활성화',sk_ga_spot:'🎒현장채집(AP1)',sk_cr_anywhere:'🗂️이동 제작소',sk_cu_peek:'👁️덱 미리보기',sk_cu_discard:'🌀손 카드 1장 소멸',sk_sl_wake:'⏰AP+10(1회용)',sk_cb_strike:'💥전투에서만 사용 가능'};
+    const useLabels={eat:`🍗허기+${22+kBoost}`,drink:'💧갈증+28',heal:'🌿HP+10',good_sleep:`😪HP+${gsHp}·정신력+${gsSan}`,temple_map:'🏛️사원 위치 표시',lure:'🪤야생 동물 유인 → 전투!',_action:'🏃2장 드로우',sk_ex_reexplore:'📖재탐색 활성화',sk_ga_spot:'🎒현장채집(AP1)',sk_cr_anywhere:'🗂️이동 제작소',sk_cu_peek:'👁️덱 미리보기',sk_cu_discard:'🌀손 카드 1장 소멸',sk_sl_wake:'⏰AP+10(1회용)',sk_cb_strike:'💥전투에서만 사용 가능'};
     const div=document.createElement('div');
     div.style.cssText=`background:var(--bg3);border:1px solid ${usable?'var(--green2)':'var(--border)'};border-radius:9px;padding:10px 8px;width:90px;text-align:center;cursor:${usable?'pointer':'default'};opacity:${usable?1:0.5};transition:all .12s;`;
     if(!_prevUcHandUIDs.has(card.uid)){
       div.classList.add('card-draw');
       div.style.animationDelay=(_ucAnimIdx++*80)+'ms';
     }
+    const _ucTagLbl={resource:'자원',tool:'도구',combat:'전투',action:'행동',skill:'행동',status:'상태'};
+    const _ucTagCls=card.tag==='skill'?'action':card.tag;
     div.innerHTML=`<div style="font-size:24px;margin-bottom:4px;">${card.icon}</div>
       <div style="font-size:8px;font-weight:700;color:var(--text);margin-bottom:2px;">${card.name}</div>
-      <div class="card-tag tag-${card.tag}" style="font-size:6px;display:inline-block;margin-bottom:4px;">${card.tag}</div>
+      <div class="card-tag tag-${_ucTagCls}" style="font-size:6px;display:inline-block;margin-bottom:4px;">${_ucTagLbl[card.tag]||card.tag}</div>
       <div style="font-size:7px;color:var(--text3);font-family:var(--font-m);">A${card.atk} D${card.def}</div>
       ${durStr}
       ${usable?`<div style="margin-top:4px;font-size:8px;color:var(--green);font-family:var(--font-m);">${card.tag==='action'?useLabels._action:(useLabels[card.use]||'')}</div>`
@@ -163,6 +167,20 @@ function ucUse(i){
   } else if(card.use==='sk_cb_strike'){
     resEl.textContent='💥 힘을 담은 일격은 전투 핸드에서만 사용 가능합니다.';
     resEl.style.color='var(--red)';
+    return;
+  } else if(card.use==='lure'){
+    const _lurePool=['cbt_boar','cbt_snake','cbt_bat','cbt_ghost'];
+    const evtId=_lurePool[Math.floor(Math.random()*_lurePool.length)];
+    const e=ENEMIES[evtId];
+    log(`🪤 유인 미끼: ${e.icon}${e.name}이(가) 나타났다!`,'danger');
+    // durability
+    if(card.dur){ card.curDur=(card.curDur||card.dur)-1; if(card.curDur<=0) _ucHand.splice(i,1); else G.disc.push(..._ucHand.splice(i,1)); }
+    else G.disc.push(..._ucHand.splice(i,1));
+    G.disc.push(..._ucHand); _ucHand=[];
+    _prevUcHandUIDs=new Set();
+    document.getElementById('uc-mo').style.display='none';
+    checkSurvival(); render();
+    setTimeout(()=>showEncounter(evtId), 200);
     return;
   }
   if(card.dur){

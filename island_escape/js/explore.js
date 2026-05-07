@@ -11,7 +11,11 @@ function doExplore(){
   if(!G.actionCnt) G.actionCnt={move:0,explore:0,gather:0,camp:0,craft:0,carduse:0,sleep:0,combat:0};
   G.actionCnt.explore=(G.actionCnt.explore||0)+1;
   if(t.id==='oblivion_swamp') _swampDevour();
-  const evtId=t.events[Math.floor(Math.random()*t.events.length)];
+  const hasTmpPiece=allCards().some(c=>c.id==='temple_map_piece');
+  const _evtPool=[];
+  t.events.forEach(e=>{ _evtPool.push(e); if(hasTmpPiece&&ENEMIES[e]&&Math.random()<0.5) _evtPool.push(e); });
+  const evtId=_evtPool[Math.floor(Math.random()*_evtPool.length)];
+  if(hasTmpPiece&&ENEMIES[evtId]) log('🗺️ 사원지도 조각: 전투 조우 확률 증가 발동!','');
   if(ENEMIES[evtId]){ showEncounter(evtId); return; }
   const evt=EVENTS[evtId];
   if(!evt){log('이벤트 오류','danger');return;}

@@ -482,7 +482,13 @@ body.game-inactive #mob-tabs{
 .skill-choice.sk-tier-bronze{border-color:#886644;}
 .skill-choice.sk-tier-silver{border-color:#8888aa;}
 .skill-choice.sk-tier-gold{border-color:#cc9922;background:rgba(80,60,0,.18);}
-.tag-skill{background:#2a1533;color:#cc88ff;}
+.tag-skill{background:var(--tag-action);color:var(--tag-action-t);}
+
+/* ══ SKILL CARD FLIP ANIMATIONS ══ */
+@keyframes skillFlipReveal{0%{transform:rotateY(90deg);opacity:0}100%{transform:rotateY(0deg);opacity:1}}
+@keyframes skillDrawIn{0%{transform:translateY(-22px) scale(.9);opacity:0}100%{transform:translateY(0) scale(1);opacity:1}}
+.skill-flip-in{animation:skillFlipReveal .45s cubic-bezier(.2,.8,.4,1) both}
+.skill-draw-in{animation:skillDrawIn .38s ease both}
 
 /* ══ SIGNAL MILESTONE TOAST ══ */
 .signal-milestone{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);z-index:920;padding:12px 22px;border-radius:11px;border:1px solid var(--green);background:rgba(8,16,24,.95);text-align:center;font-family:var(--font-m);animation:smIn .35s cubic-bezier(.2,.8,.4,1) both,smOut .3s ease 3.3s both;pointer-events:none;box-shadow:0 4px 20px rgba(76,175,125,.25);}

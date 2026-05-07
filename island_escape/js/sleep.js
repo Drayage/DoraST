@@ -125,9 +125,10 @@ function doSleep(){
   if(allCards().some(c=>c.id==='sk_sl_s2')) sanR+=8;
   if(inCampNow&&allCards().some(c=>c.id==='sk_cp_s1')) hpR+=5;
   const _cx=n=>n>1?`(x${n})`:'';
-  if(campCount.forest) log(`🌲 숲캠프${_cx(campCount.forest)}: 작은 열매 🍒 ×${campCount.forest} 자동생성`,'success');
-  if(campCount.shore)  log(`🌊 해안캠프${_cx(campCount.shore)}: 맺힌이슬 💦 ×${campCount.shore} 자동생성`,'success');
-  if(campCount.ruins)  log(`🏚️ 폐허캠프${_cx(campCount.ruins)}: AP+${campCount.ruins} / 정신력-${campCount.ruins*2}`,'');
+  if(campCount.cave)   log(`🪨 동굴캠프${_cx(campCount.cave)}: 취침 정신력+${(campDouble?6:3)*campCount.cave}${campDouble?' (🏰야영의 달인 ×2)':''}`,'success');
+  if(campCount.forest) log(`🌲 숲캠프${_cx(campCount.forest)}: 작은 열매 🍒 ×${campDouble?campCount.forest*2:campCount.forest} 자동생성${campDouble?' (🏰×2)':''}`,'success');
+  if(campCount.shore)  log(`🌊 해안캠프${_cx(campCount.shore)}: 맺힌이슬 💦 ×${campDouble?campCount.shore*2:campCount.shore} 자동생성${campDouble?' (🏰×2)':''}`,'success');
+  if(campCount.ruins)  log(`🏚️ 폐허캠프${_cx(campCount.ruins)}: AP+${campDouble?campCount.ruins*2:campCount.ruins}${campDouble?' (🏰×2)':''} / 정신력-${campCount.ruins*(campDouble?4:2)}`,'');
   const fatigueN=allCards().filter(c=>c.id==='fatigue').length;
   const preHun=G.hun, preThi=G.thi;
   G.weather=G.tomorrow;

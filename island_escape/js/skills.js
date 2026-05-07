@@ -39,15 +39,17 @@ function showSkillEvent(cb){
   const pick3=_drawSkillCard(otherPool,[]);
 
   const el=document.getElementById('skill-choices'); el.innerHTML='';
-  [pick1,pick2].filter(Boolean).forEach(id=>{
+  const _tierLabels={bronze:'🥉브론즈',silver:'🥈실버',gold:'🥇골드'};
+  [pick1,pick2].filter(Boolean).forEach((id,idx)=>{
     const c=CARD_MAP[id];
     const isAction=(!c||c.tag==='action');
-    const tierLabel=isAction?'🏃행동카드':{bronze:'🥉브론즈',silver:'🥈실버',gold:'🥇골드'}[c?.tier]||'';
+    const tierLabel=isAction?'🏃행동카드':_tierLabels[c?.tier]||'';
     const icon=c?c.icon:'🏃';
     const name=c?c.name:'달리기';
     const descTxt=isAction?'즉시 사용: 카드 2장 드로우':(c?.passiveDesc||c?.desc||'');
     const div=document.createElement('div');
-    div.className=`skill-choice${isAction?' sk-tier-bronze':` sk-tier-${c?.tier||'silver'}`}`;
+    div.className=`skill-choice skill-flip-in${isAction?' sk-tier-bronze':` sk-tier-${c?.tier||'silver'}`}`;
+    div.style.animationDelay=`${idx*130}ms`;
     div.innerHTML=`<div style="font-size:26px;">${icon}</div>
       <div class="sk-name">${name}</div>
       <div class="sk-tier-label">${tierLabel}</div>
@@ -57,12 +59,27 @@ function showSkillEvent(cb){
   });
   if(pick3){
     const div=document.createElement('div');
-    div.className='skill-choice sk-hidden';
+    div.className='skill-choice sk-hidden skill-draw-in';
+    div.style.animationDelay='260ms';
     div.innerHTML=`<div style="font-size:26px;">🎲</div>
       <div class="sk-name">미확인 스킬</div>
       <div class="sk-tier-label">랜덤</div>
       <div class="sk-desc">선택 후 공개됩니다.</div>`;
-    div.onclick=()=>_selectSkill(type,pick3,true,cb);
+    div.onclick=()=>{
+      // 뒤집어서 카드 공개 후 선택
+      const c3=CARD_MAP[pick3];
+      if(c3){
+        const tier3=c3.tier||'bronze';
+        div.className=`skill-choice sk-tier-${tier3} skill-flip-in`;
+        div.style.animationDelay='0ms';
+        div.innerHTML=`<div style="font-size:26px;">${c3.icon}</div>
+          <div class="sk-name">${c3.name}</div>
+          <div class="sk-tier-label">${_tierLabels[tier3]||''} <span style="color:var(--accent2);font-size:7px;">[랜덤]</span></div>
+          <div class="sk-desc">${c3.passiveDesc||c3.desc||''}</div>`;
+        div.onclick=null;
+        setTimeout(()=>_selectSkill(type,pick3,true,cb),550);
+      } else { _selectSkill(type,pick3,true,cb); }
+    };
     el.appendChild(div);
   }
   const total=(G.skillEvtTotal||0);

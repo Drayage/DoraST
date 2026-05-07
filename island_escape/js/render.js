@@ -24,11 +24,12 @@ function getDOM(){
 }
 
 function campBonus(tileId){
-  if(tileId==='beach')  return '카드사용+1드로우(캠프당)';
-  if(tileId==='cave')   return '취침 정신력+3';
-  if(tileId==='forest') return '취침 작은 열매 생성';
-  if(tileId==='shore')  return '취침 맺힌이슬 생성';
-  if(tileId==='ruins')  return '취침 AP+1 / 정신력-2(캠프당)';
+  const dbl=allCards().some(c=>c.id==='sk_cp_g');
+  if(tileId==='beach')  return `카드사용+${dbl?2:1}드로우(캠프당)${dbl?' 🏰':''}`;
+  if(tileId==='cave')   return `취침 정신력+${dbl?6:3}${dbl?' 🏰':''}`;
+  if(tileId==='forest') return `취침 열매×${dbl?2:1} 생성${dbl?' 🏰':''}`;
+  if(tileId==='shore')  return `취침 이슬×${dbl?2:1} 생성${dbl?' 🏰':''}`;
+  if(tileId==='ruins')  return `취침 AP+${dbl?2:1} / 정신력-${dbl?4:2}${dbl?' 🏰':''}`;
   return '';
 }
 
@@ -133,9 +134,11 @@ function render(){
     div.className='card'+(discUids.has(c.uid)?' card-disc':'');
     const durDisp=c.dur?`<br><span style="color:var(--accent);font-size:6px;">🔋${c.curDur||c.dur}/${c.dur}</span>`:'';
     const subTagHtml=(c.subTags&&c.subTags.length)?`<div style="margin-top:1px;">${c.subTags.map(t=>`<span class="sub-tag">#${t}</span>`).join('')}</div>`:'';
+    const _rkLbl={resource:'자원',tool:'도구',combat:'전투',action:'행동',skill:'행동',status:'상태'};
+    const _rkCls=c.tag==='skill'?'action':c.tag;
     div.innerHTML=`<div class="card-icon">${c.icon}</div>
       <div class="card-name">${c.name}</div>
-      <div class="card-tag tag-${c.tag}">${c.tag}</div>
+      <div class="card-tag tag-${_rkCls}">${_rkLbl[c.tag]||c.tag}</div>
       ${subTagHtml}
       <div class="card-stats">A${c.atk} D${c.def}${durDisp}</div>`;
     div.addEventListener('mouseenter',()=>showTT(c,div));

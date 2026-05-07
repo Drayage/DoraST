@@ -25,12 +25,13 @@ function showCbtDeckView(which){
   if(!cards.length){
     panel.innerHTML=`<div style="font-size:9px;color:var(--text3);font-family:var(--font-m);padding:6px;">${which==='deck'?'덱이 비어있습니다.':'버림더미가 비어있습니다.'}</div>`;
   } else {
+    const _dvTL={resource:'자원',tool:'도구',combat:'전투',action:'행동',skill:'행동',status:'상태'};
     panel.innerHTML=`<div style="font-size:8px;color:var(--text3);font-family:var(--font-m);margin-bottom:4px;">${which==='deck'?'🃏 뽑을 덱':'🗑 버림더미'} (${cards.length}장 · 실시간)</div>`+
       cards.map(c=>`
       <div style="display:flex;align-items:center;gap:7px;padding:3px 0;border-bottom:1px solid var(--border);font-family:var(--font-m);">
         <span style="font-size:14px;flex-shrink:0;">${c.icon}</span>
         <span style="font-size:9px;color:var(--text);flex:1;">${c.name}</span>
-        <span class="card-tag tag-${c.tag}" style="font-size:6px;">${c.tag}</span>
+        <span class="card-tag tag-${c.tag==='skill'?'action':c.tag}" style="font-size:6px;">${_dvTL[c.tag]||c.tag}</span>
         <span style="font-size:8px;color:var(--text3);white-space:nowrap;">A${c.atk} D${c.def}${c.curDur?` 🔋${c.curDur}/${c.dur}`:''}</span>
       </div>`).join('');
   }
@@ -347,6 +348,17 @@ function renderCombat(){
   if(e.bossType==='charge') subExtra+=e._charging?' | 충전 중':'  | ⚡방출!';
   if(e.patternDesc) subExtra+=` | ${e.patternDesc}`;
   document.getElementById('cbt-sub').textContent=`라운드${CBT.turn} | 적 다음행동: ${intentTxt}${subExtra}`;
+  // 특수 패턴/패널티 경고 표시
+  const warnEl=document.getElementById('cbt-warning');
+  if(warnEl){
+    const baseE=ENEMIES[CBT._evtId]||{};
+    const pen=baseE.penalty||e.penalty;
+    const parts=[];
+    if(pen) parts.push(`⚠️ 패배 시: ${pen.desc||'패널티 있음'}`);
+    if(e.patternDesc&&!pen) parts.push(`⚡ 패턴: ${e.patternDesc}`);
+    if(parts.length){ warnEl.innerHTML=parts.join(' &nbsp;|&nbsp; '); warnEl.style.display=''; }
+    else warnEl.style.display='none';
+  }
   const phpEl=document.getElementById('cbt-php');
   const phpClr=G.hp<30?'var(--red)':'var(--green)';
   phpEl.textContent=G.hp; phpEl.style.color=phpClr;
