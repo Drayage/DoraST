@@ -490,7 +490,13 @@ body.game-inactive #mob-tabs{
 .skill-choice.sk-tier-bronze{border-color:#886644;}
 .skill-choice.sk-tier-silver{border-color:#8888aa;}
 .skill-choice.sk-tier-gold{border-color:#cc9922;background:rgba(80,60,0,.18);}
-.tag-skill{background:#2a1533;color:#cc88ff;}
+.tag-skill{background:var(--tag-action);color:var(--tag-action-t);}
+
+/* ══ SKILL CARD FLIP ANIMATIONS ══ */
+@keyframes skillFlipReveal{0%{transform:rotateY(90deg);opacity:0}100%{transform:rotateY(0deg);opacity:1}}
+@keyframes skillDrawIn{0%{transform:translateY(-22px) scale(.9);opacity:0}100%{transform:translateY(0) scale(1);opacity:1}}
+.skill-flip-in{animation:skillFlipReveal .45s cubic-bezier(.2,.8,.4,1) both}
+.skill-draw-in{animation:skillDrawIn .38s ease both}
 
 /* ══ SIGNAL MILESTONE TOAST ══ */
 .signal-milestone{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);z-index:920;padding:12px 22px;border-radius:11px;border:1px solid var(--green);background:rgba(8,16,24,.95);text-align:center;font-family:var(--font-m);animation:smIn .35s cubic-bezier(.2,.8,.4,1) both,smOut .3s ease 3.3s both;pointer-events:none;box-shadow:0 4px 20px rgba(76,175,125,.25);}
@@ -884,7 +890,8 @@ body.game-inactive #mob-tabs{
 <div id="cbt-mo" class="mo">
   <div id="cbt-box" class="mb">
     <div class="cbt-title" id="cbt-title">⚔️ 전투!</div>
-    <div style="font-size:9px;color:var(--text3);font-family:var(--font-m);margin-bottom:9px;" id="cbt-sub"></div>
+    <div style="font-size:9px;color:var(--text3);font-family:var(--font-m);margin-bottom:6px;" id="cbt-sub"></div>
+    <div id="cbt-warning" style="display:none;background:rgba(200,60,60,.15);border:1px solid var(--red2);border-radius:6px;padding:5px 10px;font-size:9px;font-family:var(--font-m);color:var(--red);margin-bottom:7px;text-align:center;"></div>
     <div class="enemy-area">
       <div class="enemy-card">
         <div class="enemy-icon" id="cbt-eicon"></div>
@@ -1157,6 +1164,10 @@ body.game-inactive #mob-tabs{
     <div id="skill-type-label" style="font-family:var(--font-t);font-size:15px;color:var(--accent);text-align:center;margin-bottom:6px;">✨ 스킬 획득!</div>
     <div style="font-size:9px;color:var(--text3);margin-bottom:12px;font-family:var(--font-m);text-align:center;">3개 중 1장을 선택하세요 (앞면 2 · 랜덤 1)</div>
     <div id="skill-choices" style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:14px;"></div>
+    <div style="display:flex;gap:6px;justify-content:center;margin-bottom:8px;">
+      <button class="btn" style="font-size:8px;padding:3px 10px;" onclick="openOverlayDeck()">📦 덱 보기</button>
+      <button class="btn" style="font-size:8px;padding:3px 10px;" onclick="openOverlayRecipes()">📋 레시피</button>
+    </div>
     <div style="text-align:center;">
       <button id="skill-skip" class="btn" style="font-size:9px;color:var(--text3);padding:5px 14px;">⏭️ 건너뛰기 (카운터 차감, 재도전 가능)</button>
     </div>
@@ -1169,16 +1180,16 @@ body.game-inactive #mob-tabs{
 
 const TILE_TYPES=[
   {id:'beach', name:'해변',icon:'🏖️',cls:'t-beach',flavor:'해변의 모래사장을 걷는다. 파도 소리가 들려온다.',
-   events:['res_wood','res_metal','res_food','old_fire','nothing','debris_find'],
+   events:['res_wood','res_metal','res_food','old_fire','nothing','debris_find','res_rainwater'],
    gather:[{tool:'fishing_rod',res:'food',label:'낚시',flavor:'해변에서 낚싯대로 물고기를 잡는다.'}]},
   {id:'forest',name:'숲',  icon:'🌲',cls:'t-forest',flavor:'울창한 숲이다. 여러 동식물의 소리가 들린다.',
-   events:['res_wood','res_wood','res_food','res_herb','cbt_boar','cbt_snake','trap_pit','debris_find'],
+   events:['res_wood','res_wood','res_food','res_herb','cbt_boar','cbt_snake','trap_pit','debris_find','res_dew_collect'],
    gather:[
      {tool:'gathering_knife',res:'herb',label:'약초채집',flavor:'채집칼로 약초를 모은다.'},
      {tool:'axe',res:'wood',label:'나무베기',flavor:'도끼로 나무를 벤다.'},
    ]},
   {id:'cave',  name:'동굴',icon:'🪨',cls:'t-cave',flavor:'어두운 동굴 입구가 보인다. 안에서 차가운 공기가 흘러나온다.',
-   events:['res_metal','res_metal','res_metal','res_stone','cbt_bat','find_shelter','nothing'],
+   events:['res_metal','res_metal','res_metal','res_stone','cbt_bat','find_shelter','nothing','res_water_spring'],
    gather:[
      {tool:'pickaxe',res:'metal',label:'채굴',flavor:'곡괭이로 동굴 벽을 캔다.'},
      {tool:'pickaxe',res:'stone',label:'채석',flavor:'곡괭이로 동굴 바닥을 채석한다.'},
@@ -1187,7 +1198,7 @@ const TILE_TYPES=[
    events:['res_metal','find_blueprint','cbt_ghost','res_food','survivor_note','haunted_spot','debris_find'],
    gather:[{tool:'torch',res:'metal',label:'유물탐색',flavor:'횃불로 폐허를 샅샅이 뒤진다.'}]},
   {id:'shore', name:'해안',icon:'🌊',cls:'t-shore',flavor:'거친 파도가 해안을 두드린다. 표류물이 밀려와 있다.',
-   events:['res_food','res_metal','find_wreckage','nothing','isolation_dread','res_stone'],
+   events:['res_food','res_metal','find_wreckage','nothing','isolation_dread','res_stone','res_rainwater'],
    gather:[
      {tool:'fishing_rod',res:'food',label:'낚시',flavor:'해안에서 낚싯대로 낚시한다.'},
      {tool:'canteen',res:'water',label:'물 채집',flavor:'물통에 깨끗한 물을 담는다.'},
@@ -1340,6 +1351,9 @@ const CARDS=[
   // 사원 지도
   {id:'temple_map_piece', name:'사원지도 조각', icon:'🗺️', tag:'resource', atk:0, def:0, n:0, subTags:[],
    desc:'고대 사원 지도의 일부. 3장 모아 사원지도를 만들 수 있다.'},
+  // 유인 미끼
+  {id:'lure', name:'유인 미끼', icon:'🪤', tag:'tool', atk:0, def:0, n:0, dur:2, use:'lure', subTags:[],
+   desc:'사용: 현재 위치에서 야생 동물을 유인. 강제 전투 시작. 내구도 2회.'},
   {id:'temple_map', name:'사원지도', icon:'🏛️', tag:'tool', atk:0, def:0, n:0, dur:1, subTags:[],
    desc:'완성된 사원 지도. 사용 시 지도에 사원 위치 표시. 1회용 — 사용 후 소멸.', use:'temple_map'},
   // ── 스킬 카드 (40장, tag:'skill', n:0 — 덱 초기 미포함) ──
@@ -1669,6 +1683,32 @@ const EVENTS={
        devourDrawn:true,devourTag:'resource',reward:{},
        desc:'무조건. 덱의 자원 카드 1장을 뒤집어 소멸.'},
     ]},
+  res_water_spring:{
+    name:'지하 샘 발견',flavor:'동굴 깊은 곳에서 맑은 물이 솟아오른다. 음용하기 좋을 것 같다.',
+    choices:[
+      {label:'조심스럽게 채수',icon:'💧',req:'tool',reward:{card:'water',n:2},failPen:{hp:-5},
+       greatCard:'canteen',greatBonus:{card:'water',n:2,ap:1},
+       desc:'도구판정. 성공:물×2 / 대성공(물통):+물×2+AP환급 / 실패:HP-5'},
+      {label:'손으로 떠마신다',icon:'🤲',req:null,reward:{card:'water',n:1},
+       desc:'무조건 성공. 물×1.'},
+    ]},
+  res_rainwater:{
+    name:'빗물 웅덩이',flavor:'바위 위에 고인 빗물이 보인다. 마실 수 있을 것 같다.',
+    choices:[
+      {label:'깨끗이 걸러 채집',icon:'💦',req:'tool',reward:{card:'water',n:2},failPen:{san:-6},
+       greatCard:'canteen',greatBonus:{card:'water',n:2},
+       desc:'도구판정. 성공:물×2 / 대성공(물통):+물×2 / 실패:정신력-6'},
+      {label:'그냥 마신다',icon:'🥤',req:'resource',reward:{card:'water',n:1},failPen:{hp:-5},
+       desc:'자원판정. 성공:물×1 / 실패:HP-5'},
+    ]},
+  res_dew_collect:{
+    name:'아침 이슬',flavor:'나뭇잎 위에 이슬이 맺혀 있다. 조심스럽게 모으면 마실 물이 된다.',
+    choices:[
+      {label:'잎을 훑어 모은다',icon:'🌿',req:'resource',reward:{card:'water',n:1},
+       desc:'자원판정. 성공:물×1 / 실패:빈손.'},
+      {label:'빠르게 훑어간다',icon:'💨',req:null,reward:{card:'dew',n:1},
+       desc:'무조건 성공. 맺힌이슬×1.'},
+    ]},
   res_stone:{
     name:'암석 노출지대',
     flavor:'풍화된 바위들이 드러나 있다. 손으로 캐면 좋은 돌을 얻을 수 있을 것 같다.',
@@ -1750,6 +1790,7 @@ const RECIPES=[
   {id:'r_curse_blade',cat:'전투',name:'저주의 칼',    icon:'🌑',result:'curse_blade',   rn:1,ap:1,cost:[{id:'venom',n:1},{id:'shard',n:1}],                     desc:'weaken: 적 ATK영구-4. ATK4. 독낭+파편.'},
   {id:'r_shatter_blow',cat:'전투',name:'파쇄 해머',   icon:'🔨',result:'shattering_blow',rn:1,ap:1,cost:[{id:'stone',n:2},{id:'metal',n:1}],                   desc:'shatter: 적 DEF영구-6. ATK3. 돌×2 고철×1.'},
   {id:'r_temple_map', cat:'탈출',name:'사원지도',     icon:'🏛️',result:'temple_map',    rn:1,ap:1,cost:[{id:'temple_map_piece',n:3}],                           desc:'사원의 위치를 밝힌다. 조각×3.'},
+  {id:'r_lure',    cat:'수집',name:'유인 미끼',  icon:'🪤',result:'lure',          rn:1,ap:1,cost:[{id:'food',n:1},{id:'wood',n:1}],   desc:'야생 동물 유인 → 강제 전투. 내구도2. 식량×1 목재×1.'},
   {id:'r_flare_kit', cat:'탈출', name:'신호탄 키트', icon:'🧨', result:'flare_kit', rn:1, ap:1,
    cost:[{id:'metal',n:1},{id:'wood',n:1}],
    desc:'전망대에서 구조신호를 탐색하는 도구. 금속×1 목재×1.'},
@@ -2106,6 +2147,42 @@ function _renderItemPopup(title){
     }
     row.appendChild(div);
   });
+  // 오버레이 버튼 (덱/레시피 확인용)
+  let ovRow=document.getElementById('item-overlay-btns');
+  if(!ovRow){
+    ovRow=document.createElement('div');
+    ovRow.id='item-overlay-btns';
+    ovRow.style.cssText='display:flex;gap:6px;justify-content:center;margin-top:6px;';
+    const ib=document.getElementById('item-box'); if(ib) ib.insertBefore(ovRow, row.nextSibling);
+  }
+  ovRow.innerHTML=`<button class="btn" style="font-size:8px;padding:3px 10px;" onclick="openOverlayDeck()">📦 덱 보기</button><button class="btn" style="font-size:8px;padding:3px 10px;" onclick="openOverlayRecipes()">📋 레시피</button>`;
+}
+
+function openOverlayDeck(){
+  const existing=document.getElementById('overlay-deck');
+  if(existing){existing.remove();return;}
+  const el=document.createElement('div'); el.id='overlay-deck';
+  el.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:14px;z-index:1200;max-width:360px;width:90vw;max-height:70vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.6);';
+  const cards=allCards(); const grouped={};
+  cards.forEach(c=>{ if(!grouped[c.id]) grouped[c.id]={...c,count:0}; grouped[c.id].count++; });
+  const _tl={resource:'자원',tool:'도구',combat:'전투',action:'행동',skill:'행동',status:'상태'};
+  const rows=Object.values(grouped).map(c=>`<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border);font-family:var(--font-m);"><span style="font-size:15px;flex-shrink:0;">${c.icon}</span><span style="font-size:9px;flex:1;">${c.name}</span><span class="card-tag tag-${c.tag==='skill'?'action':c.tag}" style="font-size:6px;">${_tl[c.tag]||c.tag}</span><span style="font-size:9px;color:var(--accent);margin-left:4px;">×${c.count}</span></div>`).join('');
+  el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-family:var(--font-t);font-size:13px;color:var(--accent);">📦 내 덱 (${cards.length}장)</span><button class="btn" style="font-size:8px;padding:2px 8px;" onclick="document.getElementById('overlay-deck').remove()">✕ 닫기</button></div>${rows||'<div style="font-size:9px;color:var(--text3);font-family:var(--font-m);">덱이 비어있습니다.</div>'}`;
+  document.body.appendChild(el);
+}
+
+function openOverlayRecipes(){
+  const existing=document.getElementById('overlay-recipes');
+  if(existing){existing.remove();return;}
+  const el=document.createElement('div'); el.id='overlay-recipes';
+  el.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:14px;z-index:1200;max-width:380px;width:90vw;max-height:70vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.6);';
+  const rows=RECIPES.map(rec=>{
+    const ok=canCraft(rec);
+    const costHtml=rec.cost.map(c=>{const d=CARD_MAP[c.id];const have=cntInDeck(c.id);return `<span style="color:${have>=c.n?'var(--green)':'var(--red)'};">${d?.icon||''}${d?.name||c.id}×${c.n}(${have})</span>`;}).join('+');
+    return `<div style="padding:5px 0;border-bottom:1px solid var(--border);font-family:var(--font-m);"><div style="display:flex;gap:5px;align-items:center;"><span style="font-size:14px;">${rec.icon}</span><span style="font-size:9px;color:${ok?'var(--text)':'var(--text3)'};">${rec.name}</span><span style="margin-left:auto;font-size:7px;color:var(--text3);">AP${rec.ap}</span></div><div style="font-size:8px;margin-top:2px;">${costHtml}</div></div>`;
+  }).join('');
+  el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-family:var(--font-t);font-size:13px;color:var(--purple);">📋 레시피 (${RECIPES.length}종)</span><button class="btn" style="font-size:8px;padding:2px 8px;" onclick="document.getElementById('overlay-recipes').remove()">✕ 닫기</button></div>${rows}`;
+  document.body.appendChild(el);
 }
 
 function claimItem(idx){
@@ -2208,15 +2285,17 @@ function showSkillEvent(cb){
   const pick3=_drawSkillCard(otherPool,[]);
 
   const el=document.getElementById('skill-choices'); el.innerHTML='';
-  [pick1,pick2].filter(Boolean).forEach(id=>{
+  const _tierLabels={bronze:'🥉브론즈',silver:'🥈실버',gold:'🥇골드'};
+  [pick1,pick2].filter(Boolean).forEach((id,idx)=>{
     const c=CARD_MAP[id];
     const isAction=(!c||c.tag==='action');
-    const tierLabel=isAction?'🏃행동카드':{bronze:'🥉브론즈',silver:'🥈실버',gold:'🥇골드'}[c?.tier]||'';
+    const tierLabel=isAction?'🏃행동카드':_tierLabels[c?.tier]||'';
     const icon=c?c.icon:'🏃';
     const name=c?c.name:'달리기';
     const descTxt=isAction?'즉시 사용: 카드 2장 드로우':(c?.passiveDesc||c?.desc||'');
     const div=document.createElement('div');
-    div.className=`skill-choice${isAction?' sk-tier-bronze':` sk-tier-${c?.tier||'silver'}`}`;
+    div.className=`skill-choice skill-flip-in${isAction?' sk-tier-bronze':` sk-tier-${c?.tier||'silver'}`}`;
+    div.style.animationDelay=`${idx*130}ms`;
     div.innerHTML=`<div style="font-size:26px;">${icon}</div>
       <div class="sk-name">${name}</div>
       <div class="sk-tier-label">${tierLabel}</div>
@@ -2226,12 +2305,27 @@ function showSkillEvent(cb){
   });
   if(pick3){
     const div=document.createElement('div');
-    div.className='skill-choice sk-hidden';
+    div.className='skill-choice sk-hidden skill-draw-in';
+    div.style.animationDelay='260ms';
     div.innerHTML=`<div style="font-size:26px;">🎲</div>
       <div class="sk-name">미확인 스킬</div>
       <div class="sk-tier-label">랜덤</div>
       <div class="sk-desc">선택 후 공개됩니다.</div>`;
-    div.onclick=()=>_selectSkill(type,pick3,true,cb);
+    div.onclick=()=>{
+      // 뒤집어서 카드 공개 후 선택
+      const c3=CARD_MAP[pick3];
+      if(c3){
+        const tier3=c3.tier||'bronze';
+        div.className=`skill-choice sk-tier-${tier3} skill-flip-in`;
+        div.style.animationDelay='0ms';
+        div.innerHTML=`<div style="font-size:26px;">${c3.icon}</div>
+          <div class="sk-name">${c3.name}</div>
+          <div class="sk-tier-label">${_tierLabels[tier3]||''} <span style="color:var(--accent2);font-size:7px;">[랜덤]</span></div>
+          <div class="sk-desc">${c3.passiveDesc||c3.desc||''}</div>`;
+        div.onclick=null;
+        setTimeout(()=>_selectSkill(type,pick3,true,cb),550);
+      } else { _selectSkill(type,pick3,true,cb); }
+    };
     el.appendChild(div);
   }
   const total=(G.skillEvtTotal||0);
@@ -2960,7 +3054,8 @@ function clickTile(i){
     G.tiles[j].revealed=true;
     if(!wasRevealed && G.tiles[j].id==='thicket' && !G.tiles[j].explored){
       G.tiles[j].explored=true;
-      const ambEvt=Math.random()<0.6?'cbt_boar':'cbt_snake';
+      const _ambPool=['cbt_boar','cbt_boar','cbt_snake','cbt_snake','cbt_bat','cbt_ghost'];
+      const ambEvt=_ambPool[Math.floor(Math.random()*_ambPool.length)];
       setTimeout(()=>showThicketAmbush(ambEvt),300);
     }
   });
@@ -2983,7 +3078,11 @@ function doExplore(){
   if(!G.actionCnt) G.actionCnt={move:0,explore:0,gather:0,camp:0,craft:0,carduse:0,sleep:0,combat:0};
   G.actionCnt.explore=(G.actionCnt.explore||0)+1;
   if(t.id==='oblivion_swamp') _swampDevour();
-  const evtId=t.events[Math.floor(Math.random()*t.events.length)];
+  const hasTmpPiece=allCards().some(c=>c.id==='temple_map_piece');
+  const _evtPool=[];
+  t.events.forEach(e=>{ _evtPool.push(e); if(hasTmpPiece&&ENEMIES[e]&&Math.random()<0.5) _evtPool.push(e); });
+  const evtId=_evtPool[Math.floor(Math.random()*_evtPool.length)];
+  if(hasTmpPiece&&ENEMIES[evtId]) log('🗺️ 사원지도 조각: 전투 조우 확률 증가 발동!','');
   if(ENEMIES[evtId]){ showEncounter(evtId); return; }
   const evt=EVENTS[evtId];
   if(!evt){log('이벤트 오류','danger');return;}
@@ -3618,13 +3717,15 @@ function openUseCard(){
   if(!G.actionCnt) G.actionCnt={move:0,explore:0,gather:0,camp:0,craft:0,carduse:0,sleep:0,combat:0};
   G.actionCnt.carduse=(G.actionCnt.carduse||0)+1;
   const ropeCnt=allCards().filter(c=>c.id==='rope').length;
-  const beachCampCnt=G.camps.filter(cp=>G.tiles[cp].id==='beach').length;
+  const campDouble=allCards().some(c=>c.id==='sk_cp_g');
+  const rawBeachCnt=G.camps.filter(cp=>G.tiles[cp].id==='beach').length;
+  const beachCampCnt=rawBeachCnt*(campDouble?2:1);
   const skillDrawBonus=allCards().some(c=>c.id==='sk_cu_s1')?3:0;
   const drawN=5+ropeCnt+beachCampCnt+skillDrawBonus;
   _ucHand=drawToHand(drawN);
   if(!_ucHand.length){log('덱이 비어있다.','danger');G.ap+=1;render();return;}
   _prevUcHandUIDs=new Set();
-  const bonusDesc=(ropeCnt?` (🪢밧줄+${ropeCnt})`:'')+(beachCampCnt?` (🏖️해변캠프+${beachCampCnt})`:'')+(skillDrawBonus?` (🔀손놀림+${skillDrawBonus})`:'');
+  const bonusDesc=(ropeCnt?` (🪢밧줄+${ropeCnt})`:'')+(rawBeachCnt?` (🏖️해변캠프+${beachCampCnt}${campDouble?' 🏰×2':''})`:'')+(skillDrawBonus?` (🔀손놀림+${skillDrawBonus})`:'');
   document.getElementById('uc-sub').textContent=`${_ucHand.length}장 드로우${bonusDesc} — 사용할 카드 선택`;
   document.getElementById('uc-result').textContent='';
   document.getElementById('uc-mo').style.display='flex';
@@ -3640,16 +3741,18 @@ function renderUcCards(){
     const kBoost=hasTool('knife')?8:0;
     const durStr=card.dur?`<div style="font-size:8px;color:var(--accent);font-family:var(--font-m);">🔋${card.curDur||card.dur}/${card.dur}</div>`:'';
     const gsHp=allCards().some(c=>c.id==='sk_cp_s3')?20:10, gsSan=allCards().some(c=>c.id==='sk_cp_s3')?16:8;
-    const useLabels={eat:`🍗허기+${22+kBoost}`,drink:'💧갈증+28',heal:'🌿HP+10',good_sleep:`😪HP+${gsHp}·정신력+${gsSan}`,temple_map:'🏛️사원 위치 표시',_action:'🏃2장 드로우',sk_ex_reexplore:'📖재탐색 활성화',sk_ga_spot:'🎒현장채집(AP1)',sk_cr_anywhere:'🗂️이동 제작소',sk_cu_peek:'👁️덱 미리보기',sk_cu_discard:'🌀손 카드 1장 소멸',sk_sl_wake:'⏰AP+10(1회용)',sk_cb_strike:'💥전투에서만 사용 가능'};
+    const useLabels={eat:`🍗허기+${22+kBoost}`,drink:'💧갈증+28',heal:'🌿HP+10',good_sleep:`😪HP+${gsHp}·정신력+${gsSan}`,temple_map:'🏛️사원 위치 표시',lure:'🪤야생 동물 유인 → 전투!',_action:'🏃2장 드로우',sk_ex_reexplore:'📖재탐색 활성화',sk_ga_spot:'🎒현장채집(AP1)',sk_cr_anywhere:'🗂️이동 제작소',sk_cu_peek:'👁️덱 미리보기',sk_cu_discard:'🌀손 카드 1장 소멸',sk_sl_wake:'⏰AP+10(1회용)',sk_cb_strike:'💥전투에서만 사용 가능'};
     const div=document.createElement('div');
     div.style.cssText=`background:var(--bg3);border:1px solid ${usable?'var(--green2)':'var(--border)'};border-radius:9px;padding:10px 8px;width:90px;text-align:center;cursor:${usable?'pointer':'default'};opacity:${usable?1:0.5};transition:all .12s;`;
     if(!_prevUcHandUIDs.has(card.uid)){
       div.classList.add('card-draw');
       div.style.animationDelay=(_ucAnimIdx++*80)+'ms';
     }
+    const _ucTagLbl={resource:'자원',tool:'도구',combat:'전투',action:'행동',skill:'행동',status:'상태'};
+    const _ucTagCls=card.tag==='skill'?'action':card.tag;
     div.innerHTML=`<div style="font-size:24px;margin-bottom:4px;">${card.icon}</div>
       <div style="font-size:8px;font-weight:700;color:var(--text);margin-bottom:2px;">${card.name}</div>
-      <div class="card-tag tag-${card.tag}" style="font-size:6px;display:inline-block;margin-bottom:4px;">${card.tag}</div>
+      <div class="card-tag tag-${_ucTagCls}" style="font-size:6px;display:inline-block;margin-bottom:4px;">${_ucTagLbl[card.tag]||card.tag}</div>
       <div style="font-size:7px;color:var(--text3);font-family:var(--font-m);">A${card.atk} D${card.def}</div>
       ${durStr}
       ${usable?`<div style="margin-top:4px;font-size:8px;color:var(--green);font-family:var(--font-m);">${card.tag==='action'?useLabels._action:(useLabels[card.use]||'')}</div>`
@@ -3772,6 +3875,20 @@ function ucUse(i){
   } else if(card.use==='sk_cb_strike'){
     resEl.textContent='💥 힘을 담은 일격은 전투 핸드에서만 사용 가능합니다.';
     resEl.style.color='var(--red)';
+    return;
+  } else if(card.use==='lure'){
+    const _lurePool=['cbt_boar','cbt_snake','cbt_bat','cbt_ghost'];
+    const evtId=_lurePool[Math.floor(Math.random()*_lurePool.length)];
+    const e=ENEMIES[evtId];
+    log(`🪤 유인 미끼: ${e.icon}${e.name}이(가) 나타났다!`,'danger');
+    // durability
+    if(card.dur){ card.curDur=(card.curDur||card.dur)-1; if(card.curDur<=0) _ucHand.splice(i,1); else G.disc.push(..._ucHand.splice(i,1)); }
+    else G.disc.push(..._ucHand.splice(i,1));
+    G.disc.push(..._ucHand); _ucHand=[];
+    _prevUcHandUIDs=new Set();
+    document.getElementById('uc-mo').style.display='none';
+    checkSurvival(); render();
+    setTimeout(()=>showEncounter(evtId), 200);
     return;
   }
   if(card.dur){
@@ -3949,9 +4066,10 @@ function doSleep(){
   if(allCards().some(c=>c.id==='sk_sl_s2')) sanR+=8;
   if(inCampNow&&allCards().some(c=>c.id==='sk_cp_s1')) hpR+=5;
   const _cx=n=>n>1?`(x${n})`:'';
-  if(campCount.forest) log(`🌲 숲캠프${_cx(campCount.forest)}: 작은 열매 🍒 ×${campCount.forest} 자동생성`,'success');
-  if(campCount.shore)  log(`🌊 해안캠프${_cx(campCount.shore)}: 맺힌이슬 💦 ×${campCount.shore} 자동생성`,'success');
-  if(campCount.ruins)  log(`🏚️ 폐허캠프${_cx(campCount.ruins)}: AP+${campCount.ruins} / 정신력-${campCount.ruins*2}`,'');
+  if(campCount.cave)   log(`🪨 동굴캠프${_cx(campCount.cave)}: 취침 정신력+${(campDouble?6:3)*campCount.cave}${campDouble?' (🏰야영의 달인 ×2)':''}`,'success');
+  if(campCount.forest) log(`🌲 숲캠프${_cx(campCount.forest)}: 작은 열매 🍒 ×${campDouble?campCount.forest*2:campCount.forest} 자동생성${campDouble?' (🏰×2)':''}`,'success');
+  if(campCount.shore)  log(`🌊 해안캠프${_cx(campCount.shore)}: 맺힌이슬 💦 ×${campDouble?campCount.shore*2:campCount.shore} 자동생성${campDouble?' (🏰×2)':''}`,'success');
+  if(campCount.ruins)  log(`🏚️ 폐허캠프${_cx(campCount.ruins)}: AP+${campDouble?campCount.ruins*2:campCount.ruins}${campDouble?' (🏰×2)':''} / 정신력-${campCount.ruins*(campDouble?4:2)}`,'');
   const fatigueN=allCards().filter(c=>c.id==='fatigue').length;
   const preHun=G.hun, preThi=G.thi;
   G.weather=G.tomorrow;
@@ -4352,12 +4470,13 @@ function showCbtDeckView(which){
   if(!cards.length){
     panel.innerHTML=`<div style="font-size:9px;color:var(--text3);font-family:var(--font-m);padding:6px;">${which==='deck'?'덱이 비어있습니다.':'버림더미가 비어있습니다.'}</div>`;
   } else {
+    const _dvTL={resource:'자원',tool:'도구',combat:'전투',action:'행동',skill:'행동',status:'상태'};
     panel.innerHTML=`<div style="font-size:8px;color:var(--text3);font-family:var(--font-m);margin-bottom:4px;">${which==='deck'?'🃏 뽑을 덱':'🗑 버림더미'} (${cards.length}장 · 실시간)</div>`+
       cards.map(c=>`
       <div style="display:flex;align-items:center;gap:7px;padding:3px 0;border-bottom:1px solid var(--border);font-family:var(--font-m);">
         <span style="font-size:14px;flex-shrink:0;">${c.icon}</span>
         <span style="font-size:9px;color:var(--text);flex:1;">${c.name}</span>
-        <span class="card-tag tag-${c.tag}" style="font-size:6px;">${c.tag}</span>
+        <span class="card-tag tag-${c.tag==='skill'?'action':c.tag}" style="font-size:6px;">${_dvTL[c.tag]||c.tag}</span>
         <span style="font-size:8px;color:var(--text3);white-space:nowrap;">A${c.atk} D${c.def}${c.curDur?` 🔋${c.curDur}/${c.dur}`:''}</span>
       </div>`).join('');
   }
@@ -4674,6 +4793,17 @@ function renderCombat(){
   if(e.bossType==='charge') subExtra+=e._charging?' | 충전 중':'  | ⚡방출!';
   if(e.patternDesc) subExtra+=` | ${e.patternDesc}`;
   document.getElementById('cbt-sub').textContent=`라운드${CBT.turn} | 적 다음행동: ${intentTxt}${subExtra}`;
+  // 특수 패턴/패널티 경고 표시
+  const warnEl=document.getElementById('cbt-warning');
+  if(warnEl){
+    const baseE=ENEMIES[CBT._evtId]||{};
+    const pen=baseE.penalty||e.penalty;
+    const parts=[];
+    if(pen) parts.push(`⚠️ 패배 시: ${pen.desc||'패널티 있음'}`);
+    if(e.patternDesc&&!pen) parts.push(`⚡ 패턴: ${e.patternDesc}`);
+    if(parts.length){ warnEl.innerHTML=parts.join(' &nbsp;|&nbsp; '); warnEl.style.display=''; }
+    else warnEl.style.display='none';
+  }
   const phpEl=document.getElementById('cbt-php');
   const phpClr=G.hp<30?'var(--red)':'var(--green)';
   phpEl.textContent=G.hp; phpEl.style.color=phpClr;
@@ -5370,11 +5500,12 @@ function getDOM(){
 }
 
 function campBonus(tileId){
-  if(tileId==='beach')  return '카드사용+1드로우(캠프당)';
-  if(tileId==='cave')   return '취침 정신력+3';
-  if(tileId==='forest') return '취침 작은 열매 생성';
-  if(tileId==='shore')  return '취침 맺힌이슬 생성';
-  if(tileId==='ruins')  return '취침 AP+1 / 정신력-2(캠프당)';
+  const dbl=allCards().some(c=>c.id==='sk_cp_g');
+  if(tileId==='beach')  return `카드사용+${dbl?2:1}드로우(캠프당)${dbl?' 🏰':''}`;
+  if(tileId==='cave')   return `취침 정신력+${dbl?6:3}${dbl?' 🏰':''}`;
+  if(tileId==='forest') return `취침 열매×${dbl?2:1} 생성${dbl?' 🏰':''}`;
+  if(tileId==='shore')  return `취침 이슬×${dbl?2:1} 생성${dbl?' 🏰':''}`;
+  if(tileId==='ruins')  return `취침 AP+${dbl?2:1} / 정신력-${dbl?4:2}${dbl?' 🏰':''}`;
   return '';
 }
 
@@ -5479,9 +5610,11 @@ function render(){
     div.className='card'+(discUids.has(c.uid)?' card-disc':'');
     const durDisp=c.dur?`<br><span style="color:var(--accent);font-size:6px;">🔋${c.curDur||c.dur}/${c.dur}</span>`:'';
     const subTagHtml=(c.subTags&&c.subTags.length)?`<div style="margin-top:1px;">${c.subTags.map(t=>`<span class="sub-tag">#${t}</span>`).join('')}</div>`:'';
+    const _rkLbl={resource:'자원',tool:'도구',combat:'전투',action:'행동',skill:'행동',status:'상태'};
+    const _rkCls=c.tag==='skill'?'action':c.tag;
     div.innerHTML=`<div class="card-icon">${c.icon}</div>
       <div class="card-name">${c.name}</div>
-      <div class="card-tag tag-${c.tag}">${c.tag}</div>
+      <div class="card-tag tag-${_rkCls}">${_rkLbl[c.tag]||c.tag}</div>
       ${subTagHtml}
       <div class="card-stats">A${c.atk} D${c.def}${durDisp}</div>`;
     div.addEventListener('mouseenter',()=>showTT(c,div));
