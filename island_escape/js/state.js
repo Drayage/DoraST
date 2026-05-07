@@ -137,6 +137,8 @@ function initGame(){
   log(`${isl.icon} ${isl.startLog}${wxTxt?` ( ${wxTxt} )`:''}`,'system');
   const startDebris=G.deck.filter(c=>c.id==='debris').length;
   log(`🪨 시작 덱에 잔해 ${startDebris}장${startDebris>=3?' (식량·물 +1)':''}`, startDebris>=3?'success':'');
+  if(G._deckProfile) log(`📦 덱 구성: ${G._deckProfile.label} — ${G._deckProfile.desc}`,'system');
+  if(G._startSkillId){ const sk=CARD_MAP[G._startSkillId]; log(`✨ 시작 스킬: ${sk?.icon||''}${sk?.name||G._startSkillId} (브론즈) — ${sk?.passiveDesc||sk?.desc||''}`,'success'); }
   log('팁: 탐색→캠프→제작소에서 도구 제작→수집으로 자원 확보','');
   render();
   showIslandIntro();
@@ -144,14 +146,29 @@ function initGame(){
 }
 
 function buildDeck(){
+  // 랜덤 재료 비중 프로필
+  const matProfiles=[
+    {label:'목재 특화 🪵', desc:'목재가 풍부 → 뗏목·도구 중심 루트',  wood:5, metal:2, stone:0},
+    {label:'고철 특화 ⚙️', desc:'고철이 풍부 → 무기·도구 제작 중심',  wood:2, metal:5, stone:0},
+    {label:'돌 특화 🪨',   desc:'돌이 풍부 → 석기 무기·채광 중심',    wood:2, metal:2, stone:3},
+    {label:'균형 ⚖️',      desc:'균형 잡힌 재료 — 유연한 플레이',      wood:3, metal:3, stone:1},
+  ];
+  const prof=matProfiles[Math.floor(Math.random()*matProfiles.length)];
+  G._deckProfile=prof;
+
   let c=[];
   CARDS.forEach(d=>{
-    for(let i=0;i<d.n;i++){
+    let n=d.n;
+    if(d.id==='wood')  n=prof.wood;
+    if(d.id==='metal') n=prof.metal;
+    if(d.id==='stone') n=prof.stone;
+    for(let i=0;i<n;i++){
       const card={...d, uid:uid()};
       if(d.dur) card.curDur=d.dur;
       c.push(card);
     }
   });
+
   // 시작 잔해 카드 2~3장
   const debrisDef=CARDS.find(d=>d.id==='debris');
   const debrisCnt=2+Math.floor(Math.random()*2); // 2 or 3
@@ -164,5 +181,13 @@ function buildDeck(){
     if(fd){const fc={...fd,uid:uid()};if(fd.dur)fc.curDur=fd.dur;c.push(fc);}
     if(wd){const wc={...wd,uid:uid()};if(wd.dur)wc.curDur=wd.dur;c.push(wc);}
   }
+
+  // 시작 랜덤 브론즈 스킬 카드 1장 (달리기 제외)
+  const bronzePool=['sk_mv_b','sk_ex_b','sk_ga_b','sk_cp_b','sk_cr_b','sk_sl_b','sk_cb_b'];
+  const startSkillId=bronzePool[Math.floor(Math.random()*bronzePool.length)];
+  const skDef=CARD_MAP[startSkillId];
+  if(skDef){ c.push({...skDef, uid:uid()}); }
+  G._startSkillId=startSkillId;
+
   G.deck=shuffle(c);
 }

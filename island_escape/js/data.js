@@ -626,14 +626,14 @@ const CARD_MAP = Object.fromEntries(CARDS.map(c=>[c.id,c]));
 
 // ── 스킬 시스템 상수 ──
 const SKILL_THRESHOLDS = {
-  move:    70,   // G.tilesMoved
-  explore: 20,
-  gather:  15,
-  camp:     6,
-  craft:   20,
-  carduse: 40,
-  sleep:   25,
-  combat:   6,
+  move:    63,   // G.tilesMoved
+  explore: 18,
+  gather:  13,
+  camp:     5,
+  craft:   18,
+  carduse: 36,
+  sleep:   22,
+  combat:   5,
 };
 const SKILL_POOL = {
   move:    ['sk_mv_b','sk_mv_s1','sk_mv_s2','sk_mv_s3','sk_mv_g'],
