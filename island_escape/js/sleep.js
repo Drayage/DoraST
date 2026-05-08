@@ -295,20 +295,8 @@ function calcSleepEvtChance(early){
   const _cpS2Cnt=allCards().filter(c=>c.id==='sk_cp_s2').length;
   c-=15*_slBCnt;
   const inCamp=G.camps.includes(G.pos);
-  if(inCamp&&_cpS2Cnt) c-=10*_cpS2Cnt;
+  if(inCamp&&_cpS2Cnt) c=0;
   return Math.min(Math.max(c,0),80);
-}
-
-function applyWeather(){
-  const w=G.weather;
-  if(!w.eff){log(`${w.icon} 날씨: ${w.name}`,'');return;}
-  const [s,v]=w.eff.split('_'); const val=parseInt(v);
-  const pos=val>0; const sign=pos?'+':'';
-  if(s==='ap') { G.ap=Math.max(0,G.ap+val); log(`${w.icon} ${w.name}: AP${sign}${val}`,pos?'':'danger'); }
-  else if(s==='thi'){ G.thi=Math.min(100,Math.max(0,G.thi+val)); log(`${w.icon} ${w.name}: 갈증${sign}${val}`,pos?'success':'danger'); }
-  else if(s==='san'){ G.san=Math.min(100,Math.max(0,G.san+val)); log(`${w.icon} ${w.name}: 정신력${sign}${val}`,pos?'success':'danger'); }
-  else if(s==='hp') { G.hp=Math.max(0,G.hp+val); log(`${w.icon} ${w.name}: HP${sign}${val}`,'danger'); }
-  else               log(`${w.icon} ${w.name}: 안개`,'danger');
 }
 
 function showRaftLottery(){
@@ -490,13 +478,6 @@ function revealSC(el, type){
     document.getElementById('se-ok').style.display='';
     document.getElementById('se-ok').onclick=()=>closeSleepEvt();
   }, 350);
-}
-
-function rmStatusCard(){
-  let i=G.disc.findIndex(c=>c.tag==='status');
-  if(i>=0){G.disc.splice(i,1);return;}
-  i=G.deck.findIndex(c=>c.tag==='status');
-  if(i>=0) G.deck.splice(i,1);
 }
 
 function closeSleepEvt(){

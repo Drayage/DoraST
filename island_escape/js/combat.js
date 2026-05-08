@@ -508,13 +508,16 @@ function resolveCombat(){
     } else if(c.cbtFx==='block'&&CBT.defZone.some(x=>x.uid===c.uid)){
       pD+=c.def+5; lines.push({t:`★ 방패 완전방어+5`,cls:'good'});
     } else if(c.cbtFx==='stun'){
-      pD+=c.def; normalAtk+=c.atk;
-      if(e.bossType){
-        if(Math.random()<0.35){ stun=true; normalAtk+=3; lines.push({t:`★ 함정: 기절 성공! (보스 저항 돌파, 35%)`,cls:'good'}); }
-        else lines.push({t:`🛡️ 보스 기절 저항 (65% 저항 — 일반 공격만 적용)`,cls:'neutral'});
-      } else {
-        stun=true; normalAtk+=3;
-        lines.push({t:`★ 함정: 기절+추가ATK3`,cls:'good'});
+      if(CBT.defZone.some(x=>x.uid===c.uid)) pD+=c.def;
+      if(CBT.atkZone.some(x=>x.uid===c.uid)){
+        normalAtk+=c.atk;
+        if(e.bossType){
+          if(Math.random()<0.35){ stun=true; normalAtk+=3; lines.push({t:`★ 함정: 기절 성공! (보스 저항 돌파, 35%)`,cls:'good'}); }
+          else lines.push({t:`🛡️ 보스 기절 저항 (65% 저항 — 일반 공격만 적용)`,cls:'neutral'});
+        } else {
+          stun=true; normalAtk+=3;
+          lines.push({t:`★ 함정: 기절+추가ATK3`,cls:'good'});
+        }
       }
     } else if(c.cbtFx==='poison'&&CBT.atkZone.some(x=>x.uid===c.uid)){
       normalAtk+=c.atk; poisonApplied=true;
@@ -647,11 +650,6 @@ function _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,will
     // 전투 스킬 승리 패시브 (count 기반)
     const _cbS2Cnt=allCards().filter(c=>c.id==='sk_cb_s2').length;
     if(_cbS2Cnt){ G.hp=Math.min(100,G.hp+8*_cbS2Cnt); resEl.innerHTML+=`<div class="rl good">🩸 사냥의 기쁨: HP+${8*_cbS2Cnt}</div>`; }
-    if(allCards().some(c=>c.id==='sk_cb_g')){
-      let di=G.deck.findIndex(c=>c.id==='debris'||c.tag==='status');
-      if(di>=0){ const rc=G.deck.splice(di,1)[0]; resEl.innerHTML+=`<div class="rl good">💥 힘을 담은 일격: ${rc.icon}${rc.name} 소멸</div>`; }
-      else { di=G.disc.findIndex(c=>c.id==='debris'||c.tag==='status'); if(di>=0){ const rc=G.disc.splice(di,1)[0]; resEl.innerHTML+=`<div class="rl good">💥 힘을 담은 일격: ${rc.icon}${rc.name} 소멸</div>`; } }
-    }
     // 사원 페이즈 진행
     if(e._templeNextPhase!==undefined){
       G.templePhase=e._templeNextPhase;
