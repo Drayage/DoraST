@@ -105,7 +105,7 @@ function initGame(){
     over:false, win:false, logs:[], kills:0,
     raftTry:0, raftGreat:0, raftFail:0,
     gatherCnt:{}, gatherBonus:{}, tilesMoved:0,
-    lastOblivion:-99, signalEscape:false,
+    lastOblivion:-99, signalEscape:false, signalCollected:0,
     templePhase:0, templeEscape:false, templeBoss:null,
     _templeBonus:{atk:0,def:0}, templeMapDrops:{},
     templeRevealed:false, templeEventShown:{},

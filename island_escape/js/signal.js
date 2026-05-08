@@ -65,6 +65,7 @@ function doFlareSearch(){
       const hit=drawn.some(c=>c.id==='flare_kit');
       if(hit){
         addCard('signal',1);
+        G.signalCollected=(G.signalCollected||0)+1;
         const newCnt=allCards().filter(c=>c.id==='signal').length;
         _showSignalMilestone(newCnt);
         _sfFinish('🎆 신호탄 성공! 구조신호 획득!','var(--green)','확인',()=>render());

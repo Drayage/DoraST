@@ -75,7 +75,7 @@ function showEnding(win, reason){
   clearSave();
   const headline=_endHeadline(win, reason);
   const statsHtml=_endStats();
-  const hlItems=_endHighlights(win);
+  const hlItems=_endHighlights(win, reason);
   const prevLines=_prevRunComp();
   const streak=_saveRun(win, reason);
 
@@ -106,8 +106,16 @@ function showEnding(win, reason){
 
 function _endHeadline(win, reason){
   if(win){
-    if(reason==='temple') return {main:'저주 해제', sub:`${G.day}일 만에 사원의 저주를 풀고 탈출했다.`};
-    if(reason==='signal') return {main:'구조 성공', sub:`${G.day}일 만에 구조신호로 탈출했다.`};
+    if(reason==='temple'){
+      const bossNames={boss_stone_idol:'석조 수호신', boss_oblivion_herald:'망각의 전령'};
+      const bossName=bossNames[G.templeBoss]||'고대의 존재';
+      return {main:'저주 해제', sub:`${G.day}일 만에 사원의 ${bossName}을 쓰러뜨리고 저주를 풀었다.`};
+    }
+    if(reason==='signal'){
+      const sc=G.signalCollected||0;
+      const scTxt=sc>3?`${sc}발의 신호탄을 쏘아 올린 끝에`:`${sc}발의 신호탄으로`;
+      return {main:'구조 성공', sub:`${G.day}일 만에 ${scTxt} 구조선을 불러냈다.`};
+    }
     let main='탈출 성공';
     if(G.hp>=70&&G.san>=70&&G.day<=15) main='완벽한 생존';
     else if(G.hp<20||G.san<20)         main='간신히 살아남았다';
@@ -146,25 +154,43 @@ function _endStats(){
   return rows.map(([l,v])=>`<div class="go-si"><span class="go-sl">${l}</span><span class="go-sv">${v}</span></div>`).join('');
 }
 
-function _endHighlights(win){
+function _endHighlights(win, reason){
   const h=[];
   const explored=G.tiles.filter(t=>t.explored).length;
 
-  if(G.doomSurvives>0)         h.push(`🌀 망각의 복권에서 ${G.doomSurvives}번 살아남았다`);
-  if(G.doomPhase>=3)            h.push('🌫️ 안개가 기억을 삼키는 것을 두 눈으로 목격했다');
-  if(G.kills>=5)                h.push(`⚔️ 총 ${G.kills}마리를 쓰러뜨렸다`);
-  else if(G.kills===0&&G.day>3) h.push('⚔️ 한 번도 싸우지 않았다 (평화주의?)');
-  if(!win&&G.escape>=80)        h.push(`🛶 탈출까지 단 ${100-G.escape}%가 남아있었다`);
-  else if(!win&&G.escape===0)   h.push('🛶 뗏목을 한 번도 만들지 못했다');
-  if(G.camps.length===0&&G.day>=5) h.push('🏕️ 캠프 없이 맨몸으로 버텼다');
-  else if(G.camps.length>=3)    h.push(`🏕️ ${G.camps.length}곳에 캠프를 세웠다`);
-  if(explored>=20)              h.push(`🗺️ 섬 ${explored}곳을 샅샅이 뒤졌다`);
-  if(G.day>=20)                 h.push(`📅 ${G.day}일이라는 긴 시간을 버텼다`);
-  if(G.tilesMoved>=60)          h.push(`🚶 총 ${G.tilesMoved}칸을 부지런히 이동했다`);
-  if((G.raftGreat||0)>=2)       h.push(`🛶 뗏목 제작 대성공 ${G.raftGreat}회`);
-  if((G.raftFail||0)>=2)        h.push(`🛶 뗏목 제작 실패 ${G.raftFail}회 끝에 버텼다`);
+  // 루트별 하이라이트 (고정)
+  if(win&&reason==='temple'){
+    const bossNames={boss_stone_idol:'석조 수호신', boss_oblivion_herald:'망각의 전령'};
+    const bossName=bossNames[G.templeBoss]||'보스';
+    h.push(`🏛️ 3개 페이즈를 돌파하고 ${bossName}을 쓰러뜨렸다`);
+  }
+  if(!win&&G.templePhase>0) h.push(`🏛️ 사원 ${G.templePhase}페이즈까지 진입했다가 쓰러졌다`);
+  if(win&&reason==='signal'&&(G.signalCollected||0)>3){
+    h.push(`🎆 무려 ${G.signalCollected}발의 신호탄을 쏜 끝에 구조를 불렀다`);
+  }
 
-  return shuffle([...h]).slice(0,3);
+  // 골드 스킬 보유
+  const goldSkills=allCards().filter(c=>c.tier==='gold');
+  if(goldSkills.length>0) h.push(`🥇 황금 스킬 [${goldSkills.map(c=>c.name).join('·')}] 보유`);
+
+  // 일반 하이라이트 (랜덤)
+  const pool=[];
+  if(G.doomSurvives>0)         pool.push(`🌀 망각의 복권에서 ${G.doomSurvives}번 살아남았다`);
+  if(G.doomPhase>=3)            pool.push('🌫️ 안개가 기억을 삼키는 것을 두 눈으로 목격했다');
+  if(G.kills>=5)                pool.push(`⚔️ 총 ${G.kills}마리를 쓰러뜨렸다`);
+  else if(G.kills===0&&G.day>3) pool.push('⚔️ 한 번도 싸우지 않았다 (평화주의?)');
+  if(!win&&G.escape>=80)        pool.push(`🛶 탈출까지 단 ${100-G.escape}%가 남아있었다`);
+  else if(!win&&G.escape===0)   pool.push('🛶 뗏목을 한 번도 만들지 못했다');
+  if(G.camps.length===0&&G.day>=5) pool.push('🏕️ 캠프 없이 맨몸으로 버텼다');
+  else if(G.camps.length>=3)    pool.push(`🏕️ ${G.camps.length}곳에 캠프를 세웠다`);
+  if(explored>=20)              pool.push(`🗺️ 섬 ${explored}곳을 샅샅이 뒤졌다`);
+  if(G.day>=20)                 pool.push(`📅 ${G.day}일이라는 긴 시간을 버텼다`);
+  if(G.tilesMoved>=60)          pool.push(`🚶 총 ${G.tilesMoved}칸을 부지런히 이동했다`);
+  if((G.raftGreat||0)>=2)       pool.push(`🛶 뗏목 제작 대성공 ${G.raftGreat}회`);
+  if((G.raftFail||0)>=2)        pool.push(`🛶 뗏목 제작 실패 ${G.raftFail}회 끝에 버텼다`);
+
+  h.push(...shuffle([...pool]).slice(0, Math.max(0, 3 - h.length)));
+  return h.slice(0, 4);
 }
 
 function _prevRunComp(){
@@ -186,7 +212,16 @@ function _prevRunComp(){
     if(ed>0)            lines.push(`탈출도 +${ed}% 향상`);
     if(!prev.win&&G.win) lines.push('🎉 첫 탈출 성공!');
     if(prev.escape===0&&G.escape>0) lines.push('처음으로 뗏목을 만들었다');
-    return lines.slice(0,3);
+    // 가장 많이 사용한 탈출 루트 (승리 기록 기준)
+    try{
+      const rec2=JSON.parse(localStorage.getItem('ie_records')||'{}');
+      const mc={raft:0,signal:0,temple:0};
+      (rec2.runs||[]).filter(r=>r.win).forEach(r=>{ const m=r.method||'raft'; mc[m]=(mc[m]||0)+1; });
+      const top=Object.entries(mc).sort((a,b)=>b[1]-a[1])[0];
+      const routeNames={raft:'🛶 뗏목',signal:'🎆 구조신호',temple:'🏛️ 사원'};
+      if(top&&top[1]>=2) lines.push(`주력 탈출 루트: ${routeNames[top[0]]||top[0]} (${top[1]}회 성공)`);
+    }catch(_){}
+    return lines.slice(0,4);
   }catch(e){ return []; }
 }
 
