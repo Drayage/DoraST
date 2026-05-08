@@ -160,10 +160,14 @@ function openOverlayRecipes(){
   if(existing){existing.remove();return;}
   const el=document.createElement('div'); el.id='overlay-recipes';
   el.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:14px;z-index:1200;max-width:380px;width:90vw;max-height:70vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.6);';
+  const _orFree=allCards().some(c=>c.id==='sk_cr_g');
+  const _orBCnt=allCards().filter(c=>c.id==='sk_cr_b').length;
   const rows=RECIPES.map(rec=>{
     const ok=canCraft(rec);
+    const ap=_orFree?0:Math.max(1,rec.ap-_orBCnt);
+    const apTxt=ap<rec.ap?`AP<span style="color:var(--green);">${ap}</span>`:`AP${ap}`;
     const costHtml=rec.cost.map(c=>{const d=CARD_MAP[c.id];const have=cntInDeck(c.id);return `<span style="color:${have>=c.n?'var(--green)':'var(--red)'};">${d?.icon||''}${d?.name||c.id}×${c.n}(${have})</span>`;}).join('+');
-    return `<div style="padding:5px 0;border-bottom:1px solid var(--border);font-family:var(--font-m);"><div style="display:flex;gap:5px;align-items:center;"><span style="font-size:14px;">${rec.icon}</span><span style="font-size:9px;color:${ok?'var(--text)':'var(--text3)'};">${rec.name}</span><span style="margin-left:auto;font-size:7px;color:var(--text3);">AP${rec.ap}</span></div><div style="font-size:8px;margin-top:2px;">${costHtml}</div></div>`;
+    return `<div style="padding:5px 0;border-bottom:1px solid var(--border);font-family:var(--font-m);"><div style="display:flex;gap:5px;align-items:center;"><span style="font-size:14px;">${rec.icon}</span><span style="font-size:9px;color:${ok?'var(--text)':'var(--text3)'};">${rec.name}</span><span style="margin-left:auto;font-size:7px;color:var(--text3);">${apTxt}</span></div><div style="font-size:8px;margin-top:2px;">${costHtml}</div></div>`;
   }).join('');
   el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-family:var(--font-t);font-size:13px;color:var(--purple);">📋 레시피 (${RECIPES.length}종)</span><button class="btn" style="font-size:8px;padding:2px 8px;" onclick="document.getElementById('overlay-recipes').remove()">✕ 닫기</button></div>${rows}`;
   document.body.appendChild(el);

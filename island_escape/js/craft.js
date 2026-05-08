@@ -36,10 +36,13 @@ function renderCraft(){
   });
 
   // 정렬: 제작가능+AP있음 → 재료있음 → 불가
+  const craftFree=allCards().some(c=>c.id==='sk_cr_g');
+  const crBCnt=allCards().filter(c=>c.id==='sk_cr_b').length;
+  const effAp=rec=>craftFree?0:Math.max(1,rec.ap-crBCnt);
   const sorted=[...RECIPES]
     .filter(r=>_craftFilter==='전체'||r.cat===_craftFilter)
     .sort((a,b)=>{
-      const aFull=canCraft(a)&&G.ap>=a.ap, bFull=canCraft(b)&&G.ap>=b.ap;
+      const aFull=canCraft(a)&&G.ap>=effAp(a), bFull=canCraft(b)&&G.ap>=effAp(b);
       const aOk=canCraft(a), bOk=canCraft(b);
       if(aFull!==bFull) return bFull-aFull;
       if(aOk!==bOk) return (bOk?1:0)-(aOk?1:0);
@@ -48,7 +51,7 @@ function renderCraft(){
 
   const lEl=document.getElementById('cr-list'); lEl.innerHTML='';
   sorted.forEach(rec=>{
-    const ok=canCraft(rec), hasAP=G.ap>=rec.ap, canDo=ok&&hasAP;
+    const ok=canCraft(rec), ap=effAp(rec), hasAP=G.ap>=ap, canDo=ok&&hasAP;
     const resultDef=rec.result?CARD_MAP[rec.result]:null;
     const costHtml=rec.cost.map(c=>{
       const d=CARD_MAP[c.id]; const have=cntInDeck(c.id);
@@ -66,12 +69,12 @@ function renderCraft(){
           <div style="font-family:var(--font-t);font-size:12px;color:${ok?'var(--text)':'var(--text3)'};">${rec.name}</div>
           <div style="font-size:8px;font-family:var(--font-m);color:var(--text3);">${rec.raftLottery?'🛶탈출':'📦아이템'}</div>
         </div>
-        <span style="margin-left:auto;font-size:8px;font-family:var(--font-m);color:${hasAP?'var(--text3)':'var(--red)'};">AP${rec.ap}</span>
+        <span style="margin-left:auto;font-size:8px;font-family:var(--font-m);color:${hasAP?'var(--text3)':'var(--red)'};">AP${ap}${ap<rec.ap?`<span style="color:var(--green);"> (${rec.ap}-${rec.ap-ap})</span>`:''}</span>
       </div>
       <div style="font-size:8px;color:var(--text2);line-height:1.5;">${rec.desc}</div>
       <div style="font-size:8px;font-family:var(--font-m);">재료: ${costHtml} → ${resHtml}</div>
       <button class="btn" style="${canDo?'border-color:var(--purple);color:var(--purple);':''}" onclick="event.stopPropagation();doCraft('${rec.id}')" ${canDo?'':'disabled'}>
-        🔨 제작 (AP${rec.ap})${!ok?' — 재료부족':!hasAP?' — AP부족':''}
+        🔨 제작 (AP${ap})${!ok?' — 재료부족':!hasAP?' — AP부족':''}
       </button>`;
     if(resultDef){
       if(window.innerWidth>700){ div.addEventListener('mouseenter',()=>showTT(resultDef,div)); div.addEventListener('mouseleave',hideTT); }
