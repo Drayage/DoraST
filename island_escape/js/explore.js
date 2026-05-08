@@ -14,10 +14,10 @@ function doExplore(){
   const hasTmpPiece=allCards().some(c=>c.id==='temple_map_piece');
   const _evtPool=[];
   t.events.forEach(e=>{
-    // 탈출 % 보상 이벤트는 G.escape > 0 이면 풀에서 제외 (탐색 중 실수 완료 방지)
-    if(G.escape>0&&EVENTS[e]){
-      const hasEscRew=EVENTS[e].choices.some(ch=>(ch.reward&&ch.reward.escape)||(ch.greatBonus&&ch.greatBonus.escape));
-      if(hasEscRew) return;
+    // 탈출% 보상 이벤트: 현재 escape + 이벤트 최대 탈출% > 30 이면 제외
+    if(EVENTS[e]){
+      const maxEsc=Math.max(...EVENTS[e].choices.map(ch=>Math.max(ch.reward?.escape||0,ch.greatBonus?.escape||0)));
+      if(maxEsc>0&&G.escape+maxEsc>30) return;
     }
     _evtPool.push(e);
     if(hasTmpPiece&&ENEMIES[e]&&Math.random()<0.5) _evtPool.push(e);
