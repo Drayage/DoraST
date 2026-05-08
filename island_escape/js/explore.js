@@ -120,7 +120,6 @@ function doJudgment(evt, ch){
   if(!G.deck.length&&G.disc.length){G.deck=shuffle(G.disc);G.disc=[];}
   // devourTag: 해당 태그 카드를 덱 맨 위로 이동 후 소멸
   if(ch.devourTag&&G.deck.length){
-    const pool=[...G.deck,...G.disc];
     const tagIdx=G.deck.findIndex(c=>c.tag===ch.devourTag);
     if(tagIdx<0){
       // 덱에 없으면 버림더미 포함해서 셔플

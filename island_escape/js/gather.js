@@ -59,8 +59,7 @@ function doGather(opt, key, rate){
     flashDamage();
     log(`🎒 수집 피해: ${hDmg?`허기HP-${hDmg} `:''}${tDmg?`갈증HP-${tDmg}`:''}`,'danger');
   }
-  const effectiveRate = rate;
-  if(Math.random()*100 < effectiveRate){
+  if(Math.random()*100 < rate){
     G.gatherCnt[key]=(G.gatherCnt[key]||0)+1;
     G.gatherBonus[key]=0;
     if(!G.actionCnt) G.actionCnt={move:0,explore:0,gather:0,camp:0,craft:0,carduse:0,sleep:0,combat:0};
