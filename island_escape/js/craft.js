@@ -69,7 +69,7 @@ function renderCraft(){
           <div style="font-family:var(--font-t);font-size:12px;color:${ok?'var(--text)':'var(--text3)'};">${rec.name}</div>
           <div style="font-size:8px;font-family:var(--font-m);color:var(--text3);">${rec.raftLottery?'🛶탈출':'📦아이템'}</div>
         </div>
-        <span style="margin-left:auto;font-size:8px;font-family:var(--font-m);color:${hasAP?'var(--text3)':'var(--red)'};">AP${ap}${ap<rec.ap?`<span style="color:var(--green);"> (${rec.ap}-${rec.ap-ap})</span>`:''}</span>
+        <span style="margin-left:auto;font-size:8px;font-family:var(--font-m);color:${hasAP?(ap<rec.ap?'var(--green)':'var(--text3)'):'var(--red)'};">AP${ap}</span>
       </div>
       <div style="font-size:8px;color:var(--text2);line-height:1.5;">${rec.desc}</div>
       <div style="font-size:8px;font-family:var(--font-m);">재료: ${costHtml} → ${resHtml}</div>

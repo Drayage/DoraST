@@ -88,6 +88,8 @@ function showSkillEvent(cb){
     `✨ ${typeNames[type]||type} 스킬 획득! (게임 ${total+1}/2회)`;
   const subEl=document.getElementById('skill-subtitle');
   if(subEl) subEl.textContent='3개 중 1장을 선택하세요 (앞면 2 · 랜덤 1)';
+  const infoEl=document.getElementById('skill-deck-info');
+  if(infoEl) infoEl.style.display='none';
   const skipBtn=document.getElementById('skill-skip');
   if(skipBtn){ skipBtn.style.display=''; skipBtn.onclick=()=>_skipSkillEvent(type,cb); }
   document.getElementById('skill-mo').style.display='flex';
@@ -187,6 +189,19 @@ function showStartSkillEvent(cb){
   updateLabel();
   const subEl=document.getElementById('skill-subtitle');
   if(subEl) subEl.textContent='5장 중 2장을 선택하세요 (모두 앞면)';
+  // 덱 구성 정보 패널
+  const infoEl=document.getElementById('skill-deck-info');
+  if(infoEl){
+    const prof=G._deckProfile;
+    const debrisCnt=allCards().filter(c=>c.id==='debris').length;
+    const lines=[];
+    if(prof) lines.push(`📦 덱 구성: <b style="color:var(--accent);">${prof.label}</b> — ${prof.desc}`);
+    lines.push(`🪨 잔해 ${debrisCnt}장${debrisCnt>=3?' <span style="color:var(--green);">(식량·물 +1 보너스)</span>':''}`);
+    const matParts=['wood','metal','stone'].map(id=>{const d=CARD_MAP[id];const n=allCards().filter(c=>c.id===id).length;return n?`${d.icon}${d.name}×${n}`:null;}).filter(Boolean);
+    if(matParts.length) lines.push(`재료: ${matParts.join(' · ')}`);
+    infoEl.innerHTML=lines.join('<br>');
+    infoEl.style.display='';
+  }
   const skipBtn=document.getElementById('skill-skip');
   if(skipBtn) skipBtn.style.display='none';
   document.getElementById('skill-mo').style.display='flex';

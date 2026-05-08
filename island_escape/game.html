@@ -1187,7 +1187,8 @@ body.game-inactive #mob-tabs{
 <div id="skill-mo" class="mo" style="display:none;">
   <div class="mb" style="max-width:520px;width:94vw;">
     <div id="skill-type-label" style="font-family:var(--font-t);font-size:15px;color:var(--accent);text-align:center;margin-bottom:6px;">✨ 스킬 획득!</div>
-    <div id="skill-subtitle" style="font-size:9px;color:var(--text3);margin-bottom:12px;font-family:var(--font-m);text-align:center;">3개 중 1장을 선택하세요 (앞면 2 · 랜덤 1)</div>
+    <div id="skill-subtitle" style="font-size:9px;color:var(--text3);margin-bottom:8px;font-family:var(--font-m);text-align:center;">3개 중 1장을 선택하세요 (앞면 2 · 랜덤 1)</div>
+    <div id="skill-deck-info" style="display:none;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-family:var(--font-m);font-size:8px;line-height:1.8;color:var(--text2);"></div>
     <div id="skill-choices" style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:14px;"></div>
     <div style="display:flex;gap:6px;justify-content:center;margin-bottom:8px;">
       <button class="btn" style="font-size:8px;padding:3px 10px;" onclick="openOverlayDeck()">📦 덱 보기</button>
@@ -2382,6 +2383,8 @@ function showSkillEvent(cb){
     `✨ ${typeNames[type]||type} 스킬 획득! (게임 ${total+1}/2회)`;
   const subEl=document.getElementById('skill-subtitle');
   if(subEl) subEl.textContent='3개 중 1장을 선택하세요 (앞면 2 · 랜덤 1)';
+  const infoEl=document.getElementById('skill-deck-info');
+  if(infoEl) infoEl.style.display='none';
   const skipBtn=document.getElementById('skill-skip');
   if(skipBtn){ skipBtn.style.display=''; skipBtn.onclick=()=>_skipSkillEvent(type,cb); }
   document.getElementById('skill-mo').style.display='flex';
@@ -2481,6 +2484,19 @@ function showStartSkillEvent(cb){
   updateLabel();
   const subEl=document.getElementById('skill-subtitle');
   if(subEl) subEl.textContent='5장 중 2장을 선택하세요 (모두 앞면)';
+  // 덱 구성 정보 패널
+  const infoEl=document.getElementById('skill-deck-info');
+  if(infoEl){
+    const prof=G._deckProfile;
+    const debrisCnt=allCards().filter(c=>c.id==='debris').length;
+    const lines=[];
+    if(prof) lines.push(`📦 덱 구성: <b style="color:var(--accent);">${prof.label}</b> — ${prof.desc}`);
+    lines.push(`🪨 잔해 ${debrisCnt}장${debrisCnt>=3?' <span style="color:var(--green);">(식량·물 +1 보너스)</span>':''}`);
+    const matParts=['wood','metal','stone'].map(id=>{const d=CARD_MAP[id];const n=allCards().filter(c=>c.id===id).length;return n?`${d.icon}${d.name}×${n}`:null;}).filter(Boolean);
+    if(matParts.length) lines.push(`재료: ${matParts.join(' · ')}`);
+    infoEl.innerHTML=lines.join('<br>');
+    infoEl.style.display='';
+  }
   const skipBtn=document.getElementById('skill-skip');
   if(skipBtn) skipBtn.style.display='none';
   document.getElementById('skill-mo').style.display='flex';
@@ -3744,7 +3760,7 @@ function renderCraft(){
           <div style="font-family:var(--font-t);font-size:12px;color:${ok?'var(--text)':'var(--text3)'};">${rec.name}</div>
           <div style="font-size:8px;font-family:var(--font-m);color:var(--text3);">${rec.raftLottery?'🛶탈출':'📦아이템'}</div>
         </div>
-        <span style="margin-left:auto;font-size:8px;font-family:var(--font-m);color:${hasAP?'var(--text3)':'var(--red)'};">AP${ap}${ap<rec.ap?`<span style="color:var(--green);"> (${rec.ap}-${rec.ap-ap})</span>`:''}</span>
+        <span style="margin-left:auto;font-size:8px;font-family:var(--font-m);color:${hasAP?(ap<rec.ap?'var(--green)':'var(--text3)'):'var(--red)'};">AP${ap}</span>
       </div>
       <div style="font-size:8px;color:var(--text2);line-height:1.5;">${rec.desc}</div>
       <div style="font-size:8px;font-family:var(--font-m);">재료: ${costHtml} → ${resHtml}</div>
