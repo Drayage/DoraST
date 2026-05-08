@@ -492,6 +492,7 @@ body.game-inactive #mob-tabs{
 .skill-choice.sk-tier-gold{border-color:#cc9922;background:rgba(80,60,0,.18);}
 .skill-choice.sk-selected{border-color:var(--accent2)!important;background:rgba(0,200,150,.12);box-shadow:0 0 10px rgba(0,200,150,.25);}
 .tag-skill{background:var(--tag-action);color:var(--tag-action-t);}
+.tag-record{background:#1a1a2e;color:#9898cc;}
 
 /* ══ SKILL CARD FLIP ANIMATIONS ══ */
 @keyframes skillFlipReveal{0%{transform:rotateY(90deg);opacity:0}100%{transform:rotateY(0deg);opacity:1}}
@@ -1347,6 +1348,17 @@ const CARDS=[
   {id:'running',name:'달리기',icon:'🏃',tag:'action',atk:0,def:0,n:0,subTags:[],
    desc:'[전투·카드사용] 즉시 2장 드로우. 덱 부족 시 버림더미 셔플 후 보충.',
    passiveDesc:'[전투·카드사용] 즉시 2장 드로우'},
+  // 기록 카드 — 시작 스킬 선택 시 즉시 발동, 이후 덱에서 쓸모없음
+  {id:'rec_collector',name:'수집가의 기록',icon:'📦',tag:'record',tier:'bronze',atk:0,def:0,n:0,subTags:[],
+   desc:'[즉시 발동] 덱에 잔해×1, 목재×1, 고철×1 추가.'},
+  {id:'rec_morning',name:'아침형 인간의 기록',icon:'🌅',tag:'record',tier:'bronze',atk:0,def:0,n:0,subTags:[],
+   desc:'[즉시 발동] 게임 시작 AP+3.'},
+  {id:'rec_glutton',name:'먹고 죽은 귀신의 기록',icon:'🍖',tag:'record',tier:'bronze',atk:0,def:0,n:0,subTags:[],
+   desc:'[즉시 발동] 허기·갈증·정신력 모두 100으로 채워진 상태로 시작.'},
+  {id:'rec_thrifty',name:'절약가의 기록',icon:'💰',tag:'record',tier:'bronze',atk:0,def:0,n:0,subTags:[],
+   desc:'[즉시 발동] 덱에 나무열매×2, 맺힌이슬×2 추가.'},
+  {id:'rec_geographer',name:'지리학자의 기록',icon:'🌍',tag:'record',tier:'bronze',atk:0,def:0,n:0,subTags:[],
+   desc:'[즉시 발동] 시작 위치 3×3 범위(최대 9칸) 타일 공개.'},
   // 구조신호 시스템
   {id:'flare_kit', name:'신호탄 키트', icon:'🧨', tag:'tool', atk:0, def:0, n:0, subTags:['뾰족함'],
    gatherTool:false,
@@ -2427,9 +2439,10 @@ function _skipSkillEvent(type,cb){
   if(cb) setTimeout(cb,100);
 }
 
-// 게임 시작 시 브론즈 8종 중 5장 앞면 제시 → 2장 선택
+// 게임 시작 시 브론즈 13종 중 5장 앞면 제시 → 2장 선택
 function showStartSkillEvent(cb){
-  const pool=['running','sk_mv_b','sk_ex_b','sk_ga_b','sk_cp_b','sk_cr_b','sk_sl_b','sk_cb_b'];
+  const pool=['running','sk_mv_b','sk_ex_b','sk_ga_b','sk_cp_b','sk_cr_b','sk_sl_b','sk_cb_b',
+              'rec_collector','rec_morning','rec_glutton','rec_thrifty','rec_geographer'];
   const picks=shuffle([...pool]).slice(0,5);
   const _tierLabels={bronze:'🥉브론즈'};
   const selected=[];
@@ -2481,7 +2494,29 @@ function showStartSkillEvent(cb){
               const sName=sAction?'달리기':(sc?.name||sid);
               const sIcon=sAction?'🏃':(sc?.icon||'');
               const sDesc=sAction?'즉시 사용: 카드 2장 드로우':(sc?.passiveDesc||sc?.desc||'');
-              log(`✨ 시작 스킬: ${sIcon}${sName} (🥉브론즈) — ${sDesc}`,'success');
+              // 기록 카드 즉시 효과 발동
+              if(sid==='rec_collector'){
+                addCard('debris',1); addCard('wood',1); addCard('metal',1);
+                log(`📦 수집가의 기록: 잔해·목재·고철 각 1장 추가`,'success');
+              } else if(sid==='rec_morning'){
+                G.ap=Math.min(G.maxAP+4, G.ap+3);
+                log(`🌅 아침형 인간의 기록: AP+3`,'success');
+              } else if(sid==='rec_glutton'){
+                G.hun=100; G.thi=100; G.san=100;
+                log(`🍖 먹고 죽은 귀신의 기록: 허기·갈증·정신력 모두 100`,'success');
+              } else if(sid==='rec_thrifty'){
+                addCard('berry',2); addCard('dew',2);
+                log(`💰 절약가의 기록: 나무열매×2, 맺힌이슬×2 추가`,'success');
+              } else if(sid==='rec_geographer'){
+                const r=Math.floor(G.pos/7), c=G.pos%7;
+                for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++){
+                  const nr=r+dr, nc=c+dc;
+                  if(nr>=0&&nr<7&&nc>=0&&nc<7) G.tiles[nr*7+nc].revealed=true;
+                }
+                log(`🌍 지리학자의 기록: 시작 위치 3×3 범위 공개`,'success');
+              } else {
+                log(`✨ 시작 스킬: ${sIcon}${sName} (🥉브론즈) — ${sDesc}`,'success');
+              }
             });
             render(); saveGame();
             if(cb) cb();
@@ -4675,7 +4710,7 @@ function showCbtDeckView(which){
   if(!cards.length){
     panel.innerHTML=`<div style="font-size:9px;color:var(--text3);font-family:var(--font-m);padding:6px;">${which==='deck'?'덱이 비어있습니다.':'버림더미가 비어있습니다.'}</div>`;
   } else {
-    const _dvTL={resource:'자원',tool:'도구',combat:'전투',action:'행동',skill:'행동',status:'상태'};
+    const _dvTL={resource:'자원',tool:'도구',combat:'전투',action:'행동',skill:'행동',status:'상태',record:'기록'};
     panel.innerHTML=`<div style="font-size:8px;color:var(--text3);font-family:var(--font-m);margin-bottom:4px;">${which==='deck'?'🃏 뽑을 덱':'🗑 버림더미'} (${cards.length}장 · 실시간)</div>`+
       cards.map(c=>`
       <div style="display:flex;align-items:center;gap:7px;padding:3px 0;border-bottom:1px solid var(--border);font-family:var(--font-m);">
@@ -5867,7 +5902,7 @@ function render(){
     div.className='card'+(discUids.has(c.uid)?' card-disc':'');
     const durDisp=c.dur?`<br><span style="color:var(--accent);font-size:6px;">🔋${c.curDur||c.dur}/${c.dur}</span>`:'';
     const subTagHtml=(c.subTags&&c.subTags.length)?`<div style="margin-top:1px;">${c.subTags.map(t=>`<span class="sub-tag">#${t}</span>`).join('')}</div>`:'';
-    const _rkLbl={resource:'자원',tool:'도구',combat:'전투',action:'행동',skill:'행동',status:'상태'};
+    const _rkLbl={resource:'자원',tool:'도구',combat:'전투',action:'행동',skill:'행동',status:'상태',record:'기록'};
     const _rkCls=c.tag==='skill'?'action':c.tag;
     div.innerHTML=`<div class="card-icon">${c.icon}</div>
       <div class="card-name">${c.name}</div>

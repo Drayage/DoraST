@@ -136,7 +136,7 @@ function render(){
     div.className='card'+(discUids.has(c.uid)?' card-disc':'');
     const durDisp=c.dur?`<br><span style="color:var(--accent);font-size:6px;">🔋${c.curDur||c.dur}/${c.dur}</span>`:'';
     const subTagHtml=(c.subTags&&c.subTags.length)?`<div style="margin-top:1px;">${c.subTags.map(t=>`<span class="sub-tag">#${t}</span>`).join('')}</div>`:'';
-    const _rkLbl={resource:'자원',tool:'도구',combat:'전투',action:'행동',skill:'행동',status:'상태'};
+    const _rkLbl={resource:'자원',tool:'도구',combat:'전투',action:'행동',skill:'행동',status:'상태',record:'기록'};
     const _rkCls=c.tag==='skill'?'action':c.tag;
     div.innerHTML=`<div class="card-icon">${c.icon}</div>
       <div class="card-name">${c.name}</div>

@@ -130,6 +130,17 @@ const CARDS=[
   {id:'running',name:'달리기',icon:'🏃',tag:'action',atk:0,def:0,n:0,subTags:[],
    desc:'[전투·카드사용] 즉시 2장 드로우. 덱 부족 시 버림더미 셔플 후 보충.',
    passiveDesc:'[전투·카드사용] 즉시 2장 드로우'},
+  // 기록 카드 — 시작 스킬 선택 시 즉시 발동, 이후 덱에서 쓸모없음
+  {id:'rec_collector',name:'수집가의 기록',icon:'📦',tag:'record',tier:'bronze',atk:0,def:0,n:0,subTags:[],
+   desc:'[즉시 발동] 덱에 잔해×1, 목재×1, 고철×1 추가.'},
+  {id:'rec_morning',name:'아침형 인간의 기록',icon:'🌅',tag:'record',tier:'bronze',atk:0,def:0,n:0,subTags:[],
+   desc:'[즉시 발동] 게임 시작 AP+3.'},
+  {id:'rec_glutton',name:'먹고 죽은 귀신의 기록',icon:'🍖',tag:'record',tier:'bronze',atk:0,def:0,n:0,subTags:[],
+   desc:'[즉시 발동] 허기·갈증·정신력 모두 100으로 채워진 상태로 시작.'},
+  {id:'rec_thrifty',name:'절약가의 기록',icon:'💰',tag:'record',tier:'bronze',atk:0,def:0,n:0,subTags:[],
+   desc:'[즉시 발동] 덱에 나무열매×2, 맺힌이슬×2 추가.'},
+  {id:'rec_geographer',name:'지리학자의 기록',icon:'🌍',tag:'record',tier:'bronze',atk:0,def:0,n:0,subTags:[],
+   desc:'[즉시 발동] 시작 위치 3×3 범위(최대 9칸) 타일 공개.'},
   // 구조신호 시스템
   {id:'flare_kit', name:'신호탄 키트', icon:'🧨', tag:'tool', atk:0, def:0, n:0, subTags:['뾰족함'],
    gatherTool:false,

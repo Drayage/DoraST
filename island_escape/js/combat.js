@@ -26,7 +26,7 @@ function showCbtDeckView(which){
   if(!cards.length){
     panel.innerHTML=`<div style="font-size:9px;color:var(--text3);font-family:var(--font-m);padding:6px;">${which==='deck'?'덱이 비어있습니다.':'버림더미가 비어있습니다.'}</div>`;
   } else {
-    const _dvTL={resource:'자원',tool:'도구',combat:'전투',action:'행동',skill:'행동',status:'상태'};
+    const _dvTL={resource:'자원',tool:'도구',combat:'전투',action:'행동',skill:'행동',status:'상태',record:'기록'};
     panel.innerHTML=`<div style="font-size:8px;color:var(--text3);font-family:var(--font-m);margin-bottom:4px;">${which==='deck'?'🃏 뽑을 덱':'🗑 버림더미'} (${cards.length}장 · 실시간)</div>`+
       cards.map(c=>`
       <div style="display:flex;align-items:center;gap:7px;padding:3px 0;border-bottom:1px solid var(--border);font-family:var(--font-m);">

@@ -119,9 +119,10 @@ function _skipSkillEvent(type,cb){
   if(cb) setTimeout(cb,100);
 }
 
-// 게임 시작 시 브론즈 8종 중 5장 앞면 제시 → 2장 선택
+// 게임 시작 시 브론즈 13종 중 5장 앞면 제시 → 2장 선택
 function showStartSkillEvent(cb){
-  const pool=['running','sk_mv_b','sk_ex_b','sk_ga_b','sk_cp_b','sk_cr_b','sk_sl_b','sk_cb_b'];
+  const pool=['running','sk_mv_b','sk_ex_b','sk_ga_b','sk_cp_b','sk_cr_b','sk_sl_b','sk_cb_b',
+              'rec_collector','rec_morning','rec_glutton','rec_thrifty','rec_geographer'];
   const picks=shuffle([...pool]).slice(0,5);
   const _tierLabels={bronze:'🥉브론즈'};
   const selected=[];
@@ -173,7 +174,29 @@ function showStartSkillEvent(cb){
               const sName=sAction?'달리기':(sc?.name||sid);
               const sIcon=sAction?'🏃':(sc?.icon||'');
               const sDesc=sAction?'즉시 사용: 카드 2장 드로우':(sc?.passiveDesc||sc?.desc||'');
-              log(`✨ 시작 스킬: ${sIcon}${sName} (🥉브론즈) — ${sDesc}`,'success');
+              // 기록 카드 즉시 효과 발동
+              if(sid==='rec_collector'){
+                addCard('debris',1); addCard('wood',1); addCard('metal',1);
+                log(`📦 수집가의 기록: 잔해·목재·고철 각 1장 추가`,'success');
+              } else if(sid==='rec_morning'){
+                G.ap=Math.min(G.maxAP+4, G.ap+3);
+                log(`🌅 아침형 인간의 기록: AP+3`,'success');
+              } else if(sid==='rec_glutton'){
+                G.hun=100; G.thi=100; G.san=100;
+                log(`🍖 먹고 죽은 귀신의 기록: 허기·갈증·정신력 모두 100`,'success');
+              } else if(sid==='rec_thrifty'){
+                addCard('berry',2); addCard('dew',2);
+                log(`💰 절약가의 기록: 나무열매×2, 맺힌이슬×2 추가`,'success');
+              } else if(sid==='rec_geographer'){
+                const r=Math.floor(G.pos/7), c=G.pos%7;
+                for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++){
+                  const nr=r+dr, nc=c+dc;
+                  if(nr>=0&&nr<7&&nc>=0&&nc<7) G.tiles[nr*7+nc].revealed=true;
+                }
+                log(`🌍 지리학자의 기록: 시작 위치 3×3 범위 공개`,'success');
+              } else {
+                log(`✨ 시작 스킬: ${sIcon}${sName} (🥉브론즈) — ${sDesc}`,'success');
+              }
             });
             render(); saveGame();
             if(cb) cb();
