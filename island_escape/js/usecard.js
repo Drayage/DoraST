@@ -12,7 +12,8 @@ function openUseCard(){
   const campDouble=allCards().some(c=>c.id==='sk_cp_g');
   const rawBeachCnt=G.camps.filter(cp=>G.tiles[cp].id==='beach').length;
   const beachCampCnt=rawBeachCnt*(campDouble?2:1);
-  const skillDrawBonus=allCards().some(c=>c.id==='sk_cu_s1')?3:0;
+  const _cuS1Cnt=allCards().filter(c=>c.id==='sk_cu_s1').length;
+  const skillDrawBonus=3*_cuS1Cnt;
   const drawN=5+ropeCnt+beachCampCnt+skillDrawBonus;
   _ucHand=drawToHand(drawN);
   if(!_ucHand.length){log('덱이 비어있다.','danger');G.ap+=1;render();return;}
@@ -77,7 +78,8 @@ function ucUse(i){
   if(!card.use) return;
   const resEl=document.getElementById('uc-result');
   const kBoost=hasTool('knife')?8:0;
-  const foodBonus=allCards().some(c=>c.id==='sk_cu_s2')?8:0;
+  const _cuS2Cnt=allCards().filter(c=>c.id==='sk_cu_s2').length;
+  const foodBonus=8*_cuS2Cnt;
   if(card.use==='eat'){
     const g=22+kBoost+foodBonus; G.hun=Math.min(100,G.hun+g);
     resEl.textContent=`🍗 ${card.name} — 허기+${g}${kBoost?` (🔪+${kBoost})`:''}${foodBonus?` (🍴+${foodBonus})`:''}`;
