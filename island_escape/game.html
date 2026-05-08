@@ -5027,7 +5027,7 @@ function renderCombat(){
     const inA=CBT.atkZone.some(x=>x.uid===c.uid);
     const inD=CBT.defZone.some(x=>x.uid===c.uid);
     const div=document.createElement('div');
-    const isInert=c.atk<=0&&c.def<=0&&!c.cbtFx&&c.tag!=='action';
+    const isInert=c.atk<=0&&c.def<=0&&!c.cbtFx&&c.tag!=='action'&&c.use!=='sk_cb_strike';
     div.className='c-card'+(inA?' a-atk':inD?' a-def':'')+(c.tag==='action'?' a-action':'')+(isInert?' c-inert':'');
     if(!_prevCbtHandUIDs.has(c.uid)){
       div.classList.add('card-draw');
