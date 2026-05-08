@@ -138,11 +138,9 @@ function initGame(){
   const startDebris=G.deck.filter(c=>c.id==='debris').length;
   log(`🪨 시작 덱에 잔해 ${startDebris}장${startDebris>=3?' (식량·물 +1)':''}`, startDebris>=3?'success':'');
   if(G._deckProfile) log(`📦 덱 구성: ${G._deckProfile.label} — ${G._deckProfile.desc}`,'system');
-  if(G._startSkillId){ const sk=CARD_MAP[G._startSkillId]; log(`✨ 시작 스킬: ${sk?.icon||''}${sk?.name||G._startSkillId} (브론즈) — ${sk?.passiveDesc||sk?.desc||''}`,'success'); }
   log('팁: 탐색→캠프→제작소에서 도구 제작→수집으로 자원 확보','');
   render();
-  showIslandIntro();
-  saveGame();
+  showStartSkillEvent(()=>{ showIslandIntro(); saveGame(); });
 }
 
 function buildDeck(){
@@ -181,13 +179,6 @@ function buildDeck(){
     if(fd){const fc={...fd,uid:uid()};if(fd.dur)fc.curDur=fd.dur;c.push(fc);}
     if(wd){const wc={...wd,uid:uid()};if(wd.dur)wc.curDur=wd.dur;c.push(wc);}
   }
-
-  // 시작 랜덤 브론즈 스킬 카드 1장 (달리기 제외)
-  const bronzePool=['sk_mv_b','sk_ex_b','sk_ga_b','sk_cp_b','sk_cr_b','sk_sl_b','sk_cb_b'];
-  const startSkillId=bronzePool[Math.floor(Math.random()*bronzePool.length)];
-  const skDef=CARD_MAP[startSkillId];
-  if(skDef){ c.push({...skDef, uid:uid()}); }
-  G._startSkillId=startSkillId;
 
   G.deck=shuffle(c);
 }

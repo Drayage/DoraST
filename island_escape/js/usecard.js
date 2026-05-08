@@ -180,7 +180,7 @@ function ucUse(i){
     _prevUcHandUIDs=new Set();
     document.getElementById('uc-mo').style.display='none';
     checkSurvival(); render();
-    setTimeout(()=>showEncounter(evtId), 200);
+    setTimeout(()=>startCombat(evtId,true,true,{...ENEMIES[evtId],noFlee:true}), 200);
     return;
   }
   if(card.dur){

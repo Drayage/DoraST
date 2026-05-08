@@ -1305,7 +1305,7 @@ const CARDS=[
   {id:'ambush_fist',name:'맨손 기습',icon:'👊',tag:'combat',atk:3,def:0,n:0,cbtFx:'raw',subTags:[],
    desc:'공격카드 없이 맨손 기습. ATK 3(방어무시). 전투 후 소멸.'},
   // 행동 카드
-  {id:'running',name:'달리기',icon:'🏃',tag:'action',atk:0,def:0,n:1,subTags:[],
+  {id:'running',name:'달리기',icon:'🏃',tag:'action',atk:0,def:0,n:0,subTags:[],
    desc:'2장 드로우. 덱 부족 시 버림더미 셔플 후 보충. 전투/카드사용 시 즉시 발동.',
    passiveDesc:'사용 시 2장 드로우 (덱+버림더미 합산)'},
   // 구조신호 시스템
@@ -1352,8 +1352,8 @@ const CARDS=[
   {id:'temple_map_piece', name:'사원지도 조각', icon:'🗺️', tag:'resource', atk:0, def:0, n:0, subTags:[],
    desc:'고대 사원 지도의 일부. 3장 모아 사원지도를 만들 수 있다.'},
   // 유인 미끼
-  {id:'lure', name:'유인 미끼', icon:'🪤', tag:'tool', atk:0, def:0, n:0, dur:2, use:'lure', subTags:[],
-   desc:'사용: 현재 위치에서 야생 동물을 유인. 강제 전투 시작. 내구도 2회.'},
+  {id:'lure', name:'유인 미끼', icon:'🪤', tag:'tool', atk:0, def:0, n:0, dur:1, use:'lure', subTags:[],
+   desc:'사용: 현재 위치에서 야생 동물을 유인. 강제 전투 시작. 내구도 1회.'},
   {id:'temple_map', name:'사원지도', icon:'🏛️', tag:'tool', atk:0, def:0, n:0, dur:1, subTags:[],
    desc:'완성된 사원 지도. 사용 시 지도에 사원 위치 표시. 1회용 — 사용 후 소멸.', use:'temple_map'},
   // ── 스킬 카드 (40장, tag:'skill', n:0 — 덱 초기 미포함) ──
@@ -1790,7 +1790,7 @@ const RECIPES=[
   {id:'r_curse_blade',cat:'전투',name:'저주의 칼',    icon:'🌑',result:'curse_blade',   rn:1,ap:1,cost:[{id:'venom',n:1},{id:'shard',n:1}],                     desc:'weaken: 적 ATK영구-4. ATK4. 독낭+파편.'},
   {id:'r_shatter_blow',cat:'전투',name:'파쇄 해머',   icon:'🔨',result:'shattering_blow',rn:1,ap:1,cost:[{id:'stone',n:2},{id:'metal',n:1}],                   desc:'shatter: 적 DEF영구-6. ATK3. 돌×2 고철×1.'},
   {id:'r_temple_map', cat:'탈출',name:'사원지도',     icon:'🏛️',result:'temple_map',    rn:1,ap:1,cost:[{id:'temple_map_piece',n:3}],                           desc:'사원의 위치를 밝힌다. 조각×3.'},
-  {id:'r_lure',    cat:'수집',name:'유인 미끼',  icon:'🪤',result:'lure',          rn:1,ap:1,cost:[{id:'food',n:1},{id:'wood',n:1}],   desc:'야생 동물 유인 → 강제 전투. 내구도2. 식량×1 목재×1.'},
+  {id:'r_lure',    cat:'수집',name:'유인 미끼',  icon:'🪤',result:'lure',          rn:1,ap:1,cost:[{id:'food',n:1},{id:'wood',n:1}],   desc:'야생 동물 유인 → 회피불가 강제 전투. 내구도1. 식량×1 목재×1.'},
   {id:'r_flare_kit', cat:'탈출', name:'신호탄 키트', icon:'🧨', result:'flare_kit', rn:1, ap:1,
    cost:[{id:'metal',n:1},{id:'wood',n:1}],
    desc:'전망대에서 구조신호를 탐색하는 도구. 금속×1 목재×1.'},
@@ -1983,11 +1983,9 @@ function initGame(){
   const startDebris=G.deck.filter(c=>c.id==='debris').length;
   log(`🪨 시작 덱에 잔해 ${startDebris}장${startDebris>=3?' (식량·물 +1)':''}`, startDebris>=3?'success':'');
   if(G._deckProfile) log(`📦 덱 구성: ${G._deckProfile.label} — ${G._deckProfile.desc}`,'system');
-  if(G._startSkillId){ const sk=CARD_MAP[G._startSkillId]; log(`✨ 시작 스킬: ${sk?.icon||''}${sk?.name||G._startSkillId} (브론즈) — ${sk?.passiveDesc||sk?.desc||''}`,'success'); }
   log('팁: 탐색→캠프→제작소에서 도구 제작→수집으로 자원 확보','');
   render();
-  showIslandIntro();
-  saveGame();
+  showStartSkillEvent(()=>{ showIslandIntro(); saveGame(); });
 }
 
 function buildDeck(){
@@ -2026,13 +2024,6 @@ function buildDeck(){
     if(fd){const fc={...fd,uid:uid()};if(fd.dur)fc.curDur=fd.dur;c.push(fc);}
     if(wd){const wc={...wd,uid:uid()};if(wd.dur)wc.curDur=wd.dur;c.push(wc);}
   }
-
-  // 시작 랜덤 브론즈 스킬 카드 1장 (달리기 제외)
-  const bronzePool=['sk_mv_b','sk_ex_b','sk_ga_b','sk_cp_b','sk_cr_b','sk_sl_b','sk_cb_b'];
-  const startSkillId=bronzePool[Math.floor(Math.random()*bronzePool.length)];
-  const skDef=CARD_MAP[startSkillId];
-  if(skDef){ c.push({...skDef, uid:uid()}); }
-  G._startSkillId=startSkillId;
 
   G.deck=shuffle(c);
 }
@@ -2357,7 +2348,7 @@ function showSkillEvent(cb){
   document.getElementById('skill-type-label').textContent=
     `✨ ${typeNames[type]||type} 스킬 획득! (게임 ${total+1}/2회)`;
   const skipBtn=document.getElementById('skill-skip');
-  if(skipBtn) skipBtn.onclick=()=>_skipSkillEvent(type,cb);
+  if(skipBtn){ skipBtn.style.display=''; skipBtn.onclick=()=>_skipSkillEvent(type,cb); }
   document.getElementById('skill-mo').style.display='flex';
 }
 
@@ -2383,6 +2374,56 @@ function _skipSkillEvent(type,cb){
   log(`⏭️ 스킬 이벤트 건너뜀 — ${base}회 더 쌓이면 다시 발동`, '');
   render(); saveGame();
   if(cb) setTimeout(cb,100);
+}
+
+// 게임 시작 시 브론즈 8종 중 2장 뒷면 선택
+function showStartSkillEvent(cb){
+  const pool=['running','sk_mv_b','sk_ex_b','sk_ga_b','sk_cp_b','sk_cr_b','sk_sl_b','sk_cb_b'];
+  const shuffled=shuffle([...pool]);
+  const picks=[shuffled[0],shuffled[1]];
+  const _tierLabels={bronze:'🥉브론즈',silver:'🥈실버',gold:'🥇골드'};
+
+  const el=document.getElementById('skill-choices'); el.innerHTML='';
+  picks.forEach((id,idx)=>{
+    const div=document.createElement('div');
+    div.className='skill-choice sk-hidden skill-draw-in';
+    div.style.animationDelay=`${idx*160}ms`;
+    div.innerHTML=`<div style="font-size:26px;">🎲</div>
+      <div class="sk-name">미확인 스킬</div>
+      <div class="sk-tier-label">브론즈</div>
+      <div class="sk-desc">선택 후 공개됩니다.</div>`;
+    div.onclick=()=>{
+      const c=CARD_MAP[id];
+      const isAction=!c||c.tag==='action';
+      const tier=isAction?'bronze':(c?.tier||'bronze');
+      div.className=`skill-choice sk-tier-${tier} skill-flip-in`;
+      div.style.animationDelay='0ms';
+      const tierLabel=isAction?'🏃행동카드':(_tierLabels[tier]||'');
+      const descTxt=isAction?'즉시 사용: 카드 2장 드로우':(c?.passiveDesc||c?.desc||'');
+      div.innerHTML=`<div style="font-size:26px;">${isAction?'🏃':(c?.icon||'?')}</div>
+        <div class="sk-name">${isAction?'달리기':(c?.name||id)}</div>
+        <div class="sk-tier-label">${tierLabel}</div>
+        <div class="sk-desc">${descTxt}</div>`;
+      div.onclick=null;
+      setTimeout(()=>{
+        document.getElementById('skill-mo').style.display='none';
+        addCard(id,1);
+        G._startSkillId=id;
+        const tl=isAction?'행동카드':'🥉브론즈';
+        const name=isAction?'달리기':(c?.name||id);
+        const icon=isAction?'🏃':(c?.icon||'');
+        log(`✨ 시작 스킬: ${icon}${name} (${tl}) — ${descTxt}`,'success');
+        render(); saveGame();
+        if(cb) cb();
+      },500);
+    };
+    el.appendChild(div);
+  });
+
+  document.getElementById('skill-type-label').textContent='✨ 시작 스킬 선택! (2장 중 1장 — 뒤집어서 확인)';
+  const skipBtn=document.getElementById('skill-skip');
+  if(skipBtn) skipBtn.style.display='none'; // 시작 스킬은 건너뛰기 없음
+  document.getElementById('skill-mo').style.display='flex';
 }
 
 </script></script>
@@ -3921,7 +3962,7 @@ function ucUse(i){
     _prevUcHandUIDs=new Set();
     document.getElementById('uc-mo').style.display='none';
     checkSurvival(); render();
-    setTimeout(()=>showEncounter(evtId), 200);
+    setTimeout(()=>startCombat(evtId,true,true,{...ENEMIES[evtId],noFlee:true}), 200);
     return;
   }
   if(card.dur){

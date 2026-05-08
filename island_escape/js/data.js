@@ -127,7 +127,7 @@ const CARDS=[
   {id:'ambush_fist',name:'맨손 기습',icon:'👊',tag:'combat',atk:3,def:0,n:0,cbtFx:'raw',subTags:[],
    desc:'공격카드 없이 맨손 기습. ATK 3(방어무시). 전투 후 소멸.'},
   // 행동 카드
-  {id:'running',name:'달리기',icon:'🏃',tag:'action',atk:0,def:0,n:1,subTags:[],
+  {id:'running',name:'달리기',icon:'🏃',tag:'action',atk:0,def:0,n:0,subTags:[],
    desc:'2장 드로우. 덱 부족 시 버림더미 셔플 후 보충. 전투/카드사용 시 즉시 발동.',
    passiveDesc:'사용 시 2장 드로우 (덱+버림더미 합산)'},
   // 구조신호 시스템
@@ -174,8 +174,8 @@ const CARDS=[
   {id:'temple_map_piece', name:'사원지도 조각', icon:'🗺️', tag:'resource', atk:0, def:0, n:0, subTags:[],
    desc:'고대 사원 지도의 일부. 3장 모아 사원지도를 만들 수 있다.'},
   // 유인 미끼
-  {id:'lure', name:'유인 미끼', icon:'🪤', tag:'tool', atk:0, def:0, n:0, dur:2, use:'lure', subTags:[],
-   desc:'사용: 현재 위치에서 야생 동물을 유인. 강제 전투 시작. 내구도 2회.'},
+  {id:'lure', name:'유인 미끼', icon:'🪤', tag:'tool', atk:0, def:0, n:0, dur:1, use:'lure', subTags:[],
+   desc:'사용: 현재 위치에서 야생 동물을 유인. 강제 전투 시작. 내구도 1회.'},
   {id:'temple_map', name:'사원지도', icon:'🏛️', tag:'tool', atk:0, def:0, n:0, dur:1, subTags:[],
    desc:'완성된 사원 지도. 사용 시 지도에 사원 위치 표시. 1회용 — 사용 후 소멸.', use:'temple_map'},
   // ── 스킬 카드 (40장, tag:'skill', n:0 — 덱 초기 미포함) ──
@@ -612,7 +612,7 @@ const RECIPES=[
   {id:'r_curse_blade',cat:'전투',name:'저주의 칼',    icon:'🌑',result:'curse_blade',   rn:1,ap:1,cost:[{id:'venom',n:1},{id:'shard',n:1}],                     desc:'weaken: 적 ATK영구-4. ATK4. 독낭+파편.'},
   {id:'r_shatter_blow',cat:'전투',name:'파쇄 해머',   icon:'🔨',result:'shattering_blow',rn:1,ap:1,cost:[{id:'stone',n:2},{id:'metal',n:1}],                   desc:'shatter: 적 DEF영구-6. ATK3. 돌×2 고철×1.'},
   {id:'r_temple_map', cat:'탈출',name:'사원지도',     icon:'🏛️',result:'temple_map',    rn:1,ap:1,cost:[{id:'temple_map_piece',n:3}],                           desc:'사원의 위치를 밝힌다. 조각×3.'},
-  {id:'r_lure',    cat:'수집',name:'유인 미끼',  icon:'🪤',result:'lure',          rn:1,ap:1,cost:[{id:'food',n:1},{id:'wood',n:1}],   desc:'야생 동물 유인 → 강제 전투. 내구도2. 식량×1 목재×1.'},
+  {id:'r_lure',    cat:'수집',name:'유인 미끼',  icon:'🪤',result:'lure',          rn:1,ap:1,cost:[{id:'food',n:1},{id:'wood',n:1}],   desc:'야생 동물 유인 → 회피불가 강제 전투. 내구도1. 식량×1 목재×1.'},
   {id:'r_flare_kit', cat:'탈출', name:'신호탄 키트', icon:'🧨', result:'flare_kit', rn:1, ap:1,
    cost:[{id:'metal',n:1},{id:'wood',n:1}],
    desc:'전망대에서 구조신호를 탐색하는 도구. 금속×1 목재×1.'},
