@@ -114,52 +114,75 @@ function _skipSkillEvent(type,cb){
   if(cb) setTimeout(cb,100);
 }
 
-// 게임 시작 시 브론즈 8종 중 2장 뒷면 선택
+// 게임 시작 시 브론즈 8종 중 5장 앞면 제시 → 2장 선택
 function showStartSkillEvent(cb){
   const pool=['running','sk_mv_b','sk_ex_b','sk_ga_b','sk_cp_b','sk_cr_b','sk_sl_b','sk_cb_b'];
-  const shuffled=shuffle([...pool]);
-  const picks=[shuffled[0],shuffled[1]];
-  const _tierLabels={bronze:'🥉브론즈',silver:'🥈실버',gold:'🥇골드'};
+  const picks=shuffle([...pool]).slice(0,5);
+  const _tierLabels={bronze:'🥉브론즈'};
+  const selected=[];
+  let done=false;
 
+  const labelEl=document.getElementById('skill-type-label');
   const el=document.getElementById('skill-choices'); el.innerHTML='';
+
+  function updateLabel(){
+    labelEl.textContent=`✨ 시작 스킬 선택! ${selected.length}/2장 — 2장을 골라주세요`;
+  }
+
   picks.forEach((id,idx)=>{
+    const c=CARD_MAP[id];
+    const isAction=!c||c.tag==='action';
+    const icon=isAction?'🏃':(c?.icon||'?');
+    const name=isAction?'달리기':(c?.name||id);
+    const descTxt=isAction?'즉시 사용: 카드 2장 드로우':(c?.passiveDesc||c?.desc||'');
+    const tierLabel=isAction?'🏃행동카드':'🥉브론즈';
+
     const div=document.createElement('div');
-    div.className='skill-choice sk-hidden skill-draw-in';
-    div.style.animationDelay=`${idx*160}ms`;
-    div.innerHTML=`<div style="font-size:26px;">🎲</div>
-      <div class="sk-name">미확인 스킬</div>
-      <div class="sk-tier-label">브론즈</div>
-      <div class="sk-desc">선택 후 공개됩니다.</div>`;
+    div.className='skill-choice sk-tier-bronze skill-flip-in';
+    div.style.animationDelay=`${idx*80}ms`;
+    div.innerHTML=`<div style="font-size:26px;">${icon}</div>
+      <div class="sk-name">${name}</div>
+      <div class="sk-tier-label">${tierLabel}</div>
+      <div class="sk-desc">${descTxt}</div>`;
+
     div.onclick=()=>{
-      const c=CARD_MAP[id];
-      const isAction=!c||c.tag==='action';
-      const tier=isAction?'bronze':(c?.tier||'bronze');
-      div.className=`skill-choice sk-tier-${tier} skill-flip-in`;
-      div.style.animationDelay='0ms';
-      const tierLabel=isAction?'🏃행동카드':(_tierLabels[tier]||'');
-      const descTxt=isAction?'즉시 사용: 카드 2장 드로우':(c?.passiveDesc||c?.desc||'');
-      div.innerHTML=`<div style="font-size:26px;">${isAction?'🏃':(c?.icon||'?')}</div>
-        <div class="sk-name">${isAction?'달리기':(c?.name||id)}</div>
-        <div class="sk-tier-label">${tierLabel}</div>
-        <div class="sk-desc">${descTxt}</div>`;
-      div.onclick=null;
-      setTimeout(()=>{
-        document.getElementById('skill-mo').style.display='none';
-        addCard(id,1);
-        G._startSkillId=id;
-        const tl=isAction?'행동카드':'🥉브론즈';
-        const name=isAction?'달리기':(c?.name||id);
-        const icon=isAction?'🏃':(c?.icon||'');
-        log(`✨ 시작 스킬: ${icon}${name} (${tl}) — ${descTxt}`,'success');
-        render(); saveGame();
-        if(cb) cb();
-      },500);
+      if(done) return;
+      const si=selected.indexOf(id);
+      if(si>=0){
+        // 이미 선택됨 → 취소
+        selected.splice(si,1);
+        div.classList.remove('sk-selected');
+      } else {
+        if(selected.length>=2) return; // 이미 2장
+        selected.push(id);
+        div.classList.add('sk-selected');
+        if(selected.length===2){
+          done=true;
+          labelEl.textContent='✨ 선택 완료!';
+          setTimeout(()=>{
+            document.getElementById('skill-mo').style.display='none';
+            selected.forEach(sid=>{
+              addCard(sid,1);
+              const sc=CARD_MAP[sid];
+              const sAction=!sc||sc.tag==='action';
+              const sName=sAction?'달리기':(sc?.name||sid);
+              const sIcon=sAction?'🏃':(sc?.icon||'');
+              const sDesc=sAction?'즉시 사용: 카드 2장 드로우':(sc?.passiveDesc||sc?.desc||'');
+              log(`✨ 시작 스킬: ${sIcon}${sName} (🥉브론즈) — ${sDesc}`,'success');
+            });
+            G._startSkillId=selected[0];
+            render(); saveGame();
+            if(cb) cb();
+          },400);
+        }
+      }
+      updateLabel();
     };
     el.appendChild(div);
   });
 
-  document.getElementById('skill-type-label').textContent='✨ 시작 스킬 선택! (2장 중 1장 — 뒤집어서 확인)';
+  updateLabel();
   const skipBtn=document.getElementById('skill-skip');
-  if(skipBtn) skipBtn.style.display='none'; // 시작 스킬은 건너뛰기 없음
+  if(skipBtn) skipBtn.style.display='none';
   document.getElementById('skill-mo').style.display='flex';
 }

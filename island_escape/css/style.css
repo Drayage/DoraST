@@ -482,6 +482,7 @@ body.game-inactive #mob-tabs{
 .skill-choice.sk-tier-bronze{border-color:#886644;}
 .skill-choice.sk-tier-silver{border-color:#8888aa;}
 .skill-choice.sk-tier-gold{border-color:#cc9922;background:rgba(80,60,0,.18);}
+.skill-choice.sk-selected{border-color:var(--accent2)!important;background:rgba(0,200,150,.12);box-shadow:0 0 10px rgba(0,200,150,.25);}
 .tag-skill{background:var(--tag-action);color:var(--tag-action-t);}
 
 /* ══ SKILL CARD FLIP ANIMATIONS ══ */

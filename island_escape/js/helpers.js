@@ -208,7 +208,7 @@ function skipItemPopup(){
   if(cb) cb();
 }
 
-function showIslandIntro(){
+function showIslandIntro(cb){
   const isl=ISLANDS[G.islandId]||ISLANDS.mangrove;
   document.getElementById('ii-icon').textContent=isl.icon;
   document.getElementById('ii-name').textContent=isl.name;
@@ -223,5 +223,8 @@ function showIslandIntro(){
   }
   const mapName=document.getElementById('map-island-name');
   if(mapName) mapName.textContent=isl.name;
-  document.getElementById('island-intro-mo').style.display='flex';
+  const mo=document.getElementById('island-intro-mo');
+  const btn=mo.querySelector('button');
+  if(btn&&cb){ btn.onclick=()=>{ mo.style.display='none'; cb(); }; }
+  mo.style.display='flex';
 }

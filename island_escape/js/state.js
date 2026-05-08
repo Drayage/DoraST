@@ -140,7 +140,7 @@ function initGame(){
   if(G._deckProfile) log(`📦 덱 구성: ${G._deckProfile.label} — ${G._deckProfile.desc}`,'system');
   log('팁: 탐색→캠프→제작소에서 도구 제작→수집으로 자원 확보','');
   render();
-  showStartSkillEvent(()=>{ showIslandIntro(); saveGame(); });
+  showIslandIntro(()=>showStartSkillEvent(()=>saveGame()));
 }
 
 function buildDeck(){
