@@ -158,7 +158,7 @@ const CARDS=[
   {id:'war_club', name:'전쟁 몽둥이', icon:'🏏', tag:'combat', atk:7, def:0, n:0, cbtFx:'crush', subTags:['무거움'],
    desc:'crush: 공격 시 적 DEF 절반 무시. ATK7.'},
   {id:'bone_blade', name:'뼈칼', icon:'🦴', tag:'combat', atk:5, def:1, n:0, cbtFx:'bleed', subTags:['날카로움','뾰족함'],
-   desc:'bleed: 공격 시 적에게 매 라운드 ATK+2 누적 지속피해. ATK5.'},
+   desc:'bleed: 공격할 때마다 스택+1, 매 라운드 (스택×2) 지속피해. ATK5.'},
   // 새 방어 카드
   {id:'wooden_shield', name:'나무 방패', icon:'🛡️', tag:'combat', atk:0, def:6, n:0, cbtFx:'block', subTags:['무거움'],
    desc:'완전방어: 방어배정 시 +5 추가방어. DEF6.'},
@@ -229,8 +229,8 @@ const CARDS=[
    desc:'패시브: 모든 addCard 호출로 얻는 카드가 2배. 상태이상·잔해도 포함되는 양날의 검.'},
   // 캠프건설 (camp)
   {id:'sk_cp_b', name:'재빠른 건설', icon:'🏕️', tag:'skill', tier:'bronze', atk:0, def:0, n:0,
-   passiveDesc:'캠프 건설 AP 8→7',
-   desc:'패시브: 캠프 건설 비용 8 → 7 AP.'},
+   passiveDesc:'캠프 건설 AP 비용 -1',
+   desc:'패시브: 캠프 건설 AP 비용 -1.'},
   {id:'sk_cp_s1', name:'편안한 밤', icon:'🌙', tag:'skill', tier:'silver', atk:0, def:0, n:0,
    passiveDesc:'캠프 위치 취침 HP 추가 +5',
    desc:'패시브: 캠프에서 취침 시 HP 회복량 +5.'},

@@ -1362,7 +1362,7 @@ const CARDS=[
   {id:'war_club', name:'전쟁 몽둥이', icon:'🏏', tag:'combat', atk:7, def:0, n:0, cbtFx:'crush', subTags:['무거움'],
    desc:'crush: 공격 시 적 DEF 절반 무시. ATK7.'},
   {id:'bone_blade', name:'뼈칼', icon:'🦴', tag:'combat', atk:5, def:1, n:0, cbtFx:'bleed', subTags:['날카로움','뾰족함'],
-   desc:'bleed: 공격 시 적에게 매 라운드 ATK+2 누적 지속피해. ATK5.'},
+   desc:'bleed: 공격할 때마다 스택+1, 매 라운드 (스택×2) 지속피해. ATK5.'},
   // 새 방어 카드
   {id:'wooden_shield', name:'나무 방패', icon:'🛡️', tag:'combat', atk:0, def:6, n:0, cbtFx:'block', subTags:['무거움'],
    desc:'완전방어: 방어배정 시 +5 추가방어. DEF6.'},
@@ -1433,8 +1433,8 @@ const CARDS=[
    desc:'패시브: 모든 addCard 호출로 얻는 카드가 2배. 상태이상·잔해도 포함되는 양날의 검.'},
   // 캠프건설 (camp)
   {id:'sk_cp_b', name:'재빠른 건설', icon:'🏕️', tag:'skill', tier:'bronze', atk:0, def:0, n:0,
-   passiveDesc:'캠프 건설 AP 8→7',
-   desc:'패시브: 캠프 건설 비용 8 → 7 AP.'},
+   passiveDesc:'캠프 건설 AP 비용 -1',
+   desc:'패시브: 캠프 건설 AP 비용 -1.'},
   {id:'sk_cp_s1', name:'편안한 밤', icon:'🌙', tag:'skill', tier:'silver', atk:0, def:0, n:0,
    passiveDesc:'캠프 위치 취침 HP 추가 +5',
    desc:'패시브: 캠프에서 취침 시 HP 회복량 +5.'},
@@ -3639,9 +3639,7 @@ function doGather(opt, key, rate){
     flashDamage();
     log(`🎒 수집 피해: ${hDmg?`허기HP-${hDmg} `:''}${tDmg?`갈증HP-${tDmg}`:''}`,'danger');
   }
-  const _gaGaBCntNow=allCards().filter(c=>c.id==='sk_ga_b').length;
-  const skillGaBonusNow=10*_gaGaBCntNow;
-  const effectiveRate = Math.min(95, rate+skillGaBonusNow);
+  const effectiveRate = rate;
   if(Math.random()*100 < effectiveRate){
     G.gatherCnt[key]=(G.gatherCnt[key]||0)+1;
     G.gatherBonus[key]=0;
@@ -3675,7 +3673,7 @@ function doCamp(){
   if(G.over) return;
   // 스킬 패시브: 캠프 AP 비용 (count 기반)
   const _cpBCnt=allCards().filter(c=>c.id==='sk_cp_b').length;
-  const campCost=Math.max(0,8-2*_cpBCnt);
+  const campCost=Math.max(0,8-_cpBCnt);
   if(G.ap<campCost){log(`AP부족 (캠프:AP${campCost})`,'danger');render();return;}
   if(G.tiles[G.pos].hasCamp){log('이미 캠프가 있다.','');return;}
   G.tiles[G.pos].hasCamp=true; G.camps.push(G.pos); G.ap-=campCost;
@@ -4034,7 +4032,7 @@ function ucUse(i){
     resEl.style.color='var(--accent)';
     log(`🌀 신속한 손: ${tgt.icon}${tgt.name} 소멸`,'success');
     renderUcCards(); checkSurvival(); render(); return;
-  } else if(card.use==='sk_sl_wake'||card.use==='sk_sl_nap'){
+  } else if(card.use==='sk_sl_wake'){
     G.ap=Math.min(G.maxAP+4,G.ap+10);
     resEl.textContent='⏰ 꿈에서 깨다: AP+10 회복';
     resEl.style.color='var(--green)';
@@ -5898,7 +5896,7 @@ function render(){
 
   // 캠프
   const ctBonus=campBonus(ct.id);
-  const _campDisabled=(()=>{const bc=allCards().filter(c=>c.id==='sk_cp_b').length;return p.ap<Math.max(0,8-2*bc)||p.over||ct.hasCamp;})();
+  const _campDisabled=(()=>{const bc=allCards().filter(c=>c.id==='sk_cp_b').length;return p.ap<Math.max(0,8-bc)||p.over||ct.hasCamp;})();
   d.btnCamp.disabled=_campDisabled;
   const campRows=[
     {icon:'🏕️', text:'취침 이벤트 확률 대폭 감소', cls:'gain'},
@@ -5907,7 +5905,8 @@ function render(){
   if(ctBonus) campRows.push({icon:'⭐', text:'지형 보너스: '+ctBonus, cls:'accent'});
   if(ct.hasCamp) campRows.push({icon:'✓', text:'이미 설치됨', cls:'info'});
   const _cpBCnt=allCards().filter(c=>c.id==='sk_cp_b').length;
-  const _campCostDisp=Math.max(0,8-2*_cpBCnt);
+  const _campCostDisp=Math.max(0,8-_cpBCnt);
+  d.btnCamp.innerHTML=`🏕️ 캠프 건설 <span class="apb">AP${_campCostDisp}</span>`;
   d.btnCamp._att={title:'🏕️ 캠프 건설', cost:`AP ${_campCostDisp}`, rows:campRows};
 
   // 제작
