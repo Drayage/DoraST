@@ -1,7 +1,5 @@
 // ═══════════════ TOOLTIP ═══════════════
 
-let _ttLock=false;
-
 function showTT(c, el){
   clearTimeout(_ttTm);
   const tt=document.getElementById('tt');
@@ -36,7 +34,12 @@ function showTT(c, el){
     useEl.style.display='';
     const kB=hasTool('knife')?8:0;
     const eatTxt=kB?`🍗 허기+30 (칼 패시브+8)`:`🍗 허기+22`;
-    const m={eat:eatTxt,drink:'💧 갈증+28',heal:'🌿 HP+10'};
+    const gsHp=allCards().some(x=>x.id==='sk_cp_s3')?20:10;
+    const gsSan=allCards().some(x=>x.id==='sk_cp_s3')?16:8;
+    const m={eat:eatTxt,drink:'💧 갈증+28',heal:'🌿 HP+10',
+      good_sleep:`😪 HP+${gsHp}·정신력+${gsSan}`,
+      lure:'🪤 야생 동물 유인 → 강제 전투',
+      temple_map:'🏛️ 사원 위치 지도에 표시 후 소멸'};
     useEl.textContent=m[c.use]||'';
   } else useEl.style.display='none';
 

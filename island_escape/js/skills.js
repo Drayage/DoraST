@@ -175,7 +175,6 @@ function showStartSkillEvent(cb){
               const sDesc=sAction?'즉시 사용: 카드 2장 드로우':(sc?.passiveDesc||sc?.desc||'');
               log(`✨ 시작 스킬: ${sIcon}${sName} (🥉브론즈) — ${sDesc}`,'success');
             });
-            G._startSkillId=selected[0];
             render(); saveGame();
             if(cb) cb();
           },400);

@@ -1845,7 +1845,7 @@ const SKILL_POOL = {
   gather:  ['sk_ga_b','sk_ga_s1','sk_ga_s2','sk_ga_s3','sk_ga_g'],
   camp:    ['sk_cp_b','sk_cp_s1','sk_cp_s2','sk_cp_s3','sk_cp_g'],
   craft:   ['sk_cr_b','sk_cr_s1','sk_cr_s2','sk_cr_s3','sk_cr_g'],
-  carduse: ['action','sk_cu_s1','sk_cu_s2','sk_cu_s3','sk_cu_g'],
+  carduse: ['running','sk_cu_s1','sk_cu_s2','sk_cu_s3','sk_cu_g'],
   sleep:   ['sk_sl_b','sk_sl_s1','sk_sl_s2','sk_sl_s3','sk_sl_g'],
   combat:  ['sk_cb_b','sk_cb_s1','sk_cb_s2','sk_cb_s3','sk_cb_g'],
 };
@@ -2470,7 +2470,6 @@ function showStartSkillEvent(cb){
               const sDesc=sAction?'즉시 사용: 카드 2장 드로우':(sc?.passiveDesc||sc?.desc||'');
               log(`✨ 시작 스킬: ${sIcon}${sName} (🥉브론즈) — ${sDesc}`,'success');
             });
-            G._startSkillId=selected[0];
             render(); saveGame();
             if(cb) cb();
           },400);
@@ -2764,8 +2763,6 @@ function showRecords(){
 <script>
 // ═══════════════ TOOLTIP ═══════════════
 
-let _ttLock=false;
-
 function showTT(c, el){
   clearTimeout(_ttTm);
   const tt=document.getElementById('tt');
@@ -2800,7 +2797,12 @@ function showTT(c, el){
     useEl.style.display='';
     const kB=hasTool('knife')?8:0;
     const eatTxt=kB?`🍗 허기+30 (칼 패시브+8)`:`🍗 허기+22`;
-    const m={eat:eatTxt,drink:'💧 갈증+28',heal:'🌿 HP+10'};
+    const gsHp=allCards().some(x=>x.id==='sk_cp_s3')?20:10;
+    const gsSan=allCards().some(x=>x.id==='sk_cp_s3')?16:8;
+    const m={eat:eatTxt,drink:'💧 갈증+28',heal:'🌿 HP+10',
+      good_sleep:`😪 HP+${gsHp}·정신력+${gsSan}`,
+      lure:'🪤 야생 동물 유인 → 강제 전투',
+      temple_map:'🏛️ 사원 위치 지도에 표시 후 소멸'};
     useEl.textContent=m[c.use]||'';
   } else useEl.style.display='none';
 
@@ -2811,7 +2813,7 @@ function showTT(c, el){
   const cEl=document.getElementById('tt-cbt');
   if(c.cbtFx){
     cEl.style.display='';
-    const m2={pierce:'★ 관통: 적방어무시+4',block:'★ 완전방어: +5',stun:'★ 기절: 적피해0+ATK3',poison:'★ 독: 매라운드+3',armor:'★ 갑옷: 피해-2',cloak:'★ 망토: 도망HP-2',raw:'★ 방어무시: ATK 수치로 적 방어 무시'};
+    const m2={pierce:'★ 관통: 적방어무시+4',block:'★ 완전방어: +5',stun:'★ 기절: 적피해0+ATK3',poison:'★ 독: 매라운드+3',armor:'★ 갑옷: 피해-2',stone_armor:'★ 돌 조끼: 받는 피해 -3',cloak:'★ 망토: 도망HP-2',raw:'★ 방어무시: ATK 수치로 적 방어 무시'};
     cEl.textContent=m2[c.cbtFx]||'';
   } else cEl.style.display='none';
 
@@ -3196,6 +3198,11 @@ function clickTile(i){
   if(_mvS1Cnt) G.hp=Math.min(100,G.hp+_mvS1Cnt);
   if(_mvS2Cnt) G.san=Math.min(100,G.san+_mvS2Cnt);
   if(wasExplored&&_mvS3Cnt) G.ap=Math.min(G.maxAP+4,G.ap+_mvS3Cnt);
+  if(t.id==='thicket'&&!t.explored){
+    t.explored=true;
+    const _ambPool=['cbt_boar','cbt_boar','cbt_snake','cbt_snake','cbt_bat','cbt_ghost'];
+    setTimeout(()=>showThicketAmbush(_ambPool[Math.floor(Math.random()*_ambPool.length)]),300);
+  }
   getAdj(i).forEach(j=>{
     const wasRevealed=G.tiles[j].revealed;
     G.tiles[j].revealed=true;
@@ -3334,7 +3341,6 @@ function doJudgment(evt, ch){
   if(!G.deck.length&&G.disc.length){G.deck=shuffle(G.disc);G.disc=[];}
   // devourTag: 해당 태그 카드를 덱 맨 위로 이동 후 소멸
   if(ch.devourTag&&G.deck.length){
-    const pool=[...G.deck,...G.disc];
     const tagIdx=G.deck.findIndex(c=>c.tag===ch.devourTag);
     if(tagIdx<0){
       // 덱에 없으면 버림더미 포함해서 셔플
@@ -3639,8 +3645,7 @@ function doGather(opt, key, rate){
     flashDamage();
     log(`🎒 수집 피해: ${hDmg?`허기HP-${hDmg} `:''}${tDmg?`갈증HP-${tDmg}`:''}`,'danger');
   }
-  const effectiveRate = rate;
-  if(Math.random()*100 < effectiveRate){
+  if(Math.random()*100 < rate){
     G.gatherCnt[key]=(G.gatherCnt[key]||0)+1;
     G.gatherBonus[key]=0;
     if(!G.actionCnt) G.actionCnt={move:0,explore:0,gather:0,camp:0,craft:0,carduse:0,sleep:0,combat:0};
@@ -4401,20 +4406,8 @@ function calcSleepEvtChance(early){
   const _cpS2Cnt=allCards().filter(c=>c.id==='sk_cp_s2').length;
   c-=15*_slBCnt;
   const inCamp=G.camps.includes(G.pos);
-  if(inCamp&&_cpS2Cnt) c-=10*_cpS2Cnt;
+  if(inCamp&&_cpS2Cnt) c=0;
   return Math.min(Math.max(c,0),80);
-}
-
-function applyWeather(){
-  const w=G.weather;
-  if(!w.eff){log(`${w.icon} 날씨: ${w.name}`,'');return;}
-  const [s,v]=w.eff.split('_'); const val=parseInt(v);
-  const pos=val>0; const sign=pos?'+':'';
-  if(s==='ap') { G.ap=Math.max(0,G.ap+val); log(`${w.icon} ${w.name}: AP${sign}${val}`,pos?'':'danger'); }
-  else if(s==='thi'){ G.thi=Math.min(100,Math.max(0,G.thi+val)); log(`${w.icon} ${w.name}: 갈증${sign}${val}`,pos?'success':'danger'); }
-  else if(s==='san'){ G.san=Math.min(100,Math.max(0,G.san+val)); log(`${w.icon} ${w.name}: 정신력${sign}${val}`,pos?'success':'danger'); }
-  else if(s==='hp') { G.hp=Math.max(0,G.hp+val); log(`${w.icon} ${w.name}: HP${sign}${val}`,'danger'); }
-  else               log(`${w.icon} ${w.name}: 안개`,'danger');
 }
 
 function showRaftLottery(){
@@ -4596,13 +4589,6 @@ function revealSC(el, type){
     document.getElementById('se-ok').style.display='';
     document.getElementById('se-ok').onclick=()=>closeSleepEvt();
   }, 350);
-}
-
-function rmStatusCard(){
-  let i=G.disc.findIndex(c=>c.tag==='status');
-  if(i>=0){G.disc.splice(i,1);return;}
-  i=G.deck.findIndex(c=>c.tag==='status');
-  if(i>=0) G.deck.splice(i,1);
 }
 
 function closeSleepEvt(){
@@ -5040,7 +5026,7 @@ function renderCombat(){
   document.getElementById('cbt-emhp').textContent=e.hp;
   const edefEl=document.getElementById('cbt-edef'); if(edefEl) edefEl.textContent=e.def;
   document.getElementById('cbt-ehpbar').style.width=Math.max(0,e.curHp/e.hp*100)+'%';
-  document.getElementById('cbt-intent').textContent=CBT.stunned?'💫 기절':`💥 공격: ${e.atk}`;
+  document.getElementById('cbt-intent').textContent=CBT.stunned?'💫 기절':isChargeRound?`⚡돌진: ${nextAtk}`:`💥 공격: ${nextAtk}`;
   const aT=CBT.atkZone.reduce((s,c)=>s+Math.max(0,c.atk),0);
   const dT=CBT.defZone.reduce((s,c)=>s+Math.max(0,c.def),0);
   document.getElementById('atk-tot').textContent=aT;
@@ -5123,13 +5109,16 @@ function resolveCombat(){
     } else if(c.cbtFx==='block'&&CBT.defZone.some(x=>x.uid===c.uid)){
       pD+=c.def+5; lines.push({t:`★ 방패 완전방어+5`,cls:'good'});
     } else if(c.cbtFx==='stun'){
-      pD+=c.def; normalAtk+=c.atk;
-      if(e.bossType){
-        if(Math.random()<0.35){ stun=true; normalAtk+=3; lines.push({t:`★ 함정: 기절 성공! (보스 저항 돌파, 35%)`,cls:'good'}); }
-        else lines.push({t:`🛡️ 보스 기절 저항 (65% 저항 — 일반 공격만 적용)`,cls:'neutral'});
-      } else {
-        stun=true; normalAtk+=3;
-        lines.push({t:`★ 함정: 기절+추가ATK3`,cls:'good'});
+      if(CBT.defZone.some(x=>x.uid===c.uid)) pD+=c.def;
+      if(CBT.atkZone.some(x=>x.uid===c.uid)){
+        normalAtk+=c.atk;
+        if(e.bossType){
+          if(Math.random()<0.35){ stun=true; normalAtk+=3; lines.push({t:`★ 함정: 기절 성공! (보스 저항 돌파, 35%)`,cls:'good'}); }
+          else lines.push({t:`🛡️ 보스 기절 저항 (65% 저항 — 일반 공격만 적용)`,cls:'neutral'});
+        } else {
+          stun=true; normalAtk+=3;
+          lines.push({t:`★ 함정: 기절+추가ATK3`,cls:'good'});
+        }
       }
     } else if(c.cbtFx==='poison'&&CBT.atkZone.some(x=>x.uid===c.uid)){
       normalAtk+=c.atk; poisonApplied=true;
@@ -5262,11 +5251,6 @@ function _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,will
     // 전투 스킬 승리 패시브 (count 기반)
     const _cbS2Cnt=allCards().filter(c=>c.id==='sk_cb_s2').length;
     if(_cbS2Cnt){ G.hp=Math.min(100,G.hp+8*_cbS2Cnt); resEl.innerHTML+=`<div class="rl good">🩸 사냥의 기쁨: HP+${8*_cbS2Cnt}</div>`; }
-    if(allCards().some(c=>c.id==='sk_cb_g')){
-      let di=G.deck.findIndex(c=>c.id==='debris'||c.tag==='status');
-      if(di>=0){ const rc=G.deck.splice(di,1)[0]; resEl.innerHTML+=`<div class="rl good">💥 힘을 담은 일격: ${rc.icon}${rc.name} 소멸</div>`; }
-      else { di=G.disc.findIndex(c=>c.id==='debris'||c.tag==='status'); if(di>=0){ const rc=G.disc.splice(di,1)[0]; resEl.innerHTML+=`<div class="rl good">💥 힘을 담은 일격: ${rc.icon}${rc.name} 소멸</div>`; } }
-    }
     // 사원 페이즈 진행
     if(e._templeNextPhase!==undefined){
       G.templePhase=e._templeNextPhase;
@@ -5799,7 +5783,9 @@ function render(){
   const cards=allCards();
   const passives=[...new Set(cards.filter(c=>c.passiveDesc).map(c=>c.passiveDesc))];
   const ropeCnt=cards.filter(c=>c.id==='rope').length;
-  const beachCampCnt=p.camps.filter(cp=>p.tiles[cp].id==='beach').length;
+  const campDouble=cards.some(c=>c.id==='sk_cp_g');
+  const rawBeachCnt=p.camps.filter(cp=>p.tiles[cp].id==='beach').length;
+  const beachCampCnt=rawBeachCnt*(campDouble?2:1);
   const ruinsCampCnt=p.camps.filter(cp=>p.tiles[cp].id==='ruins').length;
   const extraPassives=[];
   if(ropeCnt>0) extraPassives.push(`🪢 밧줄 드로우 +${ropeCnt}`);
@@ -5906,7 +5892,6 @@ function render(){
   if(ct.hasCamp) campRows.push({icon:'✓', text:'이미 설치됨', cls:'info'});
   const _cpBCnt=allCards().filter(c=>c.id==='sk_cp_b').length;
   const _campCostDisp=Math.max(0,8-_cpBCnt);
-  d.btnCamp.innerHTML=`🏕️ 캠프 건설 <span class="apb">AP${_campCostDisp}</span>`;
   d.btnCamp._att={title:'🏕️ 캠프 건설', cost:`AP ${_campCostDisp}`, rows:campRows};
 
   // 제작
@@ -5918,12 +5903,15 @@ function render(){
   ]};
 
   // 카드 사용
-  const drawN=5+ropeCnt+beachCampCnt;
+  const _cuS1Cnt=cards.filter(c=>c.id==='sk_cu_s1').length;
+  const skillDrawBonus=3*_cuS1Cnt;
+  const drawN=5+ropeCnt+beachCampCnt+skillDrawBonus;
   d.btnUse.disabled=p.ap<1||p.over;
   d.btnUse.innerHTML=`✨ 카드 사용 — ${drawN}장 드로우 <span class="apb">AP1</span>`;
   const useRows=[{icon:'🎴', text:`${drawN}장 드로우`, cls:'gain'}];
-  if(ropeCnt)      useRows.push({icon:'🪢', text:`밧줄 : +${ropeCnt}장`, cls:'info'});
-  if(beachCampCnt) useRows.push({icon:'🏖️', text:`캠프 : +${beachCampCnt}장`, cls:'info'});
+  if(ropeCnt)        useRows.push({icon:'🪢', text:`밧줄 : +${ropeCnt}장`, cls:'info'});
+  if(rawBeachCnt)    useRows.push({icon:'🏖️', text:`해변캠프 : +${beachCampCnt}장${campDouble?' (🏰×2)':''}`, cls:'info'});
+  if(skillDrawBonus) useRows.push({icon:'🔀', text:`손놀림 : +${skillDrawBonus}장`, cls:'info'});
   useRows.push({icon:'🍗', text:'식량·물·약초 즉시 사용 가능', cls:'info'});
   d.btnUse._att={title:'✨ 카드 사용', cost:'AP 1', rows:useRows};
 
@@ -6009,7 +5997,14 @@ function render(){
   let sHpR=sleepEarly?15:9;
   let sSanR=sleepEarly?4:2;
   if(p.doomPhase===4){ sHpR=Math.max(0,sHpR-4); sSanR=Math.max(0,sSanR-2); }
-  const caveBonus=p.camps.reduce((n,cp)=>n+(p.tiles[cp]?.id==='cave'?3:0),0);
+  const _slS1Cnt=cards.filter(c=>c.id==='sk_sl_s1').length;
+  const _slS2Cnt=cards.filter(c=>c.id==='sk_sl_s2').length;
+  const _cpS1Cnt=cards.filter(c=>c.id==='sk_cp_s1').length;
+  const inCampNow=p.camps.includes(p.pos);
+  sHpR+=8*_slS1Cnt;
+  sSanR+=8*_slS2Cnt;
+  if(inCampNow) sHpR+=5*_cpS1Cnt;
+  const caveBonus=p.camps.reduce((n,cp)=>n+(p.tiles[cp]?.id==='cave'?campDouble?6:3:0),0);
   const doomSanExtra=p.doomPhase>=4?Math.floor((p.doom-79)/6):0;
   const sDrain=(p.camps.length?2:5)+doomSanExtra;
   const sSanNet=(sSanR+caveBonus)-sDrain;

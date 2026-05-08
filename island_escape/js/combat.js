@@ -425,7 +425,7 @@ function renderCombat(){
   document.getElementById('cbt-emhp').textContent=e.hp;
   const edefEl=document.getElementById('cbt-edef'); if(edefEl) edefEl.textContent=e.def;
   document.getElementById('cbt-ehpbar').style.width=Math.max(0,e.curHp/e.hp*100)+'%';
-  document.getElementById('cbt-intent').textContent=CBT.stunned?'💫 기절':`💥 공격: ${e.atk}`;
+  document.getElementById('cbt-intent').textContent=CBT.stunned?'💫 기절':isChargeRound?`⚡돌진: ${nextAtk}`:`💥 공격: ${nextAtk}`;
   const aT=CBT.atkZone.reduce((s,c)=>s+Math.max(0,c.atk),0);
   const dT=CBT.defZone.reduce((s,c)=>s+Math.max(0,c.def),0);
   document.getElementById('atk-tot').textContent=aT;
