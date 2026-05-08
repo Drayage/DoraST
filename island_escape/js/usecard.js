@@ -161,7 +161,7 @@ function ucUse(i){
     resEl.style.color='var(--accent)';
     log(`🌀 신속한 손: ${tgt.icon}${tgt.name} 소멸`,'success');
     renderUcCards(); checkSurvival(); render(); return;
-  } else if(card.use==='sk_sl_wake'||card.use==='sk_sl_nap'){
+  } else if(card.use==='sk_sl_wake'){
     G.ap=Math.min(G.maxAP+4,G.ap+10);
     resEl.textContent='⏰ 꿈에서 깨다: AP+10 회복';
     resEl.style.color='var(--green)';

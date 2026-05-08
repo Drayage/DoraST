@@ -641,7 +641,7 @@ const SKILL_POOL = {
   gather:  ['sk_ga_b','sk_ga_s1','sk_ga_s2','sk_ga_s3','sk_ga_g'],
   camp:    ['sk_cp_b','sk_cp_s1','sk_cp_s2','sk_cp_s3','sk_cp_g'],
   craft:   ['sk_cr_b','sk_cr_s1','sk_cr_s2','sk_cr_s3','sk_cr_g'],
-  carduse: ['action','sk_cu_s1','sk_cu_s2','sk_cu_s3','sk_cu_g'],
+  carduse: ['running','sk_cu_s1','sk_cu_s2','sk_cu_s3','sk_cu_g'],
   sleep:   ['sk_sl_b','sk_sl_s1','sk_sl_s2','sk_sl_s3','sk_sl_g'],
   combat:  ['sk_cb_b','sk_cb_s1','sk_cb_s2','sk_cb_s3','sk_cb_g'],
 };
