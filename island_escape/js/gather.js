@@ -59,9 +59,7 @@ function doGather(opt, key, rate){
     flashDamage();
     log(`🎒 수집 피해: ${hDmg?`허기HP-${hDmg} `:''}${tDmg?`갈증HP-${tDmg}`:''}`,'danger');
   }
-  const _gaGaBCntNow=allCards().filter(c=>c.id==='sk_ga_b').length;
-  const skillGaBonusNow=10*_gaGaBCntNow;
-  const effectiveRate = Math.min(95, rate+skillGaBonusNow);
+  const effectiveRate = rate;
   if(Math.random()*100 < effectiveRate){
     G.gatherCnt[key]=(G.gatherCnt[key]||0)+1;
     G.gatherBonus[key]=0;

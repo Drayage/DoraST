@@ -198,7 +198,7 @@ function render(){
 
   // 캠프
   const ctBonus=campBonus(ct.id);
-  const _campDisabled=(()=>{const bc=allCards().filter(c=>c.id==='sk_cp_b').length;return p.ap<Math.max(0,8-2*bc)||p.over||ct.hasCamp;})();
+  const _campDisabled=(()=>{const bc=allCards().filter(c=>c.id==='sk_cp_b').length;return p.ap<Math.max(0,8-bc)||p.over||ct.hasCamp;})();
   d.btnCamp.disabled=_campDisabled;
   const campRows=[
     {icon:'🏕️', text:'취침 이벤트 확률 대폭 감소', cls:'gain'},
@@ -207,7 +207,8 @@ function render(){
   if(ctBonus) campRows.push({icon:'⭐', text:'지형 보너스: '+ctBonus, cls:'accent'});
   if(ct.hasCamp) campRows.push({icon:'✓', text:'이미 설치됨', cls:'info'});
   const _cpBCnt=allCards().filter(c=>c.id==='sk_cp_b').length;
-  const _campCostDisp=Math.max(0,8-2*_cpBCnt);
+  const _campCostDisp=Math.max(0,8-_cpBCnt);
+  d.btnCamp.innerHTML=`🏕️ 캠프 건설 <span class="apb">AP${_campCostDisp}</span>`;
   d.btnCamp._att={title:'🏕️ 캠프 건설', cost:`AP ${_campCostDisp}`, rows:campRows};
 
   // 제작
