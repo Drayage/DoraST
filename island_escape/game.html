@@ -1332,8 +1332,8 @@ const CARDS=[
    desc:'공격카드 없이 맨손 기습. ATK 3(방어무시). 전투 후 소멸.'},
   // 행동 카드
   {id:'running',name:'달리기',icon:'🏃',tag:'action',atk:0,def:0,n:0,subTags:[],
-   desc:'2장 드로우. 덱 부족 시 버림더미 셔플 후 보충. 전투/카드사용 시 즉시 발동.',
-   passiveDesc:'사용 시 2장 드로우 (덱+버림더미 합산)'},
+   desc:'[전투·카드사용] 즉시 2장 드로우. 덱 부족 시 버림더미 셔플 후 보충.',
+   passiveDesc:'[전투·카드사용] 즉시 2장 드로우'},
   // 구조신호 시스템
   {id:'flare_kit', name:'신호탄 키트', icon:'🧨', tag:'tool', atk:0, def:0, n:0, subTags:['뾰족함'],
    gatherTool:false,
@@ -1410,8 +1410,8 @@ const CARDS=[
    passiveDesc:'탐색 판정 실패 시 AP 1 환급',
    desc:'패시브: 탐색 실패 시 AP 1 돌려받음.'},
   {id:'sk_ex_s3', name:'기억', icon:'📖', tag:'skill', tier:'silver', atk:0, def:0, n:0,
-   passiveDesc:'사용: 현재 타일 재탐색 가능',
-   desc:'사용: 현재 위치 탐색 완료 상태 초기화 → 재탐색 가능.', use:'sk_ex_reexplore'},
+   passiveDesc:'[카드사용 전용] 현재 타일 재탐색 가능',
+   desc:'[카드사용 전용] 현재 위치 탐색 완료 상태 초기화 → 재탐색 가능.', use:'sk_ex_reexplore'},
   {id:'sk_ex_g', name:'천재적 직관', icon:'🌟', tag:'skill', tier:'gold', atk:0, def:0, n:0,
    passiveDesc:'탐색 판정 항상 성공',
    desc:'패시브: 모든 탐색 판정이 자동 성공.'},
@@ -1426,8 +1426,8 @@ const CARDS=[
    passiveDesc:'수집 실패 시 AP 1 환급',
    desc:'패시브: 수집 실패 시 AP 1 돌려받음.'},
   {id:'sk_ga_s3', name:'현장 채집', icon:'🎒', tag:'skill', tier:'silver', atk:0, def:0, n:0,
-   passiveDesc:'사용: 현재 타일 즉시 수집 1회 (AP1)',
-   desc:'사용: 현재 위치에서 AP 1 소비로 즉시 수집 1회.', use:'sk_ga_spot'},
+   passiveDesc:'[카드사용 전용] 현재 타일 즉시 수집 1회 (AP1)',
+   desc:'[카드사용 전용] 현재 위치에서 AP 1 소비로 즉시 수집 1회.', use:'sk_ga_spot'},
   {id:'sk_ga_g', name:'황금 손', icon:'💰', tag:'skill', tier:'gold', atk:0, def:0, n:0,
    passiveDesc:'모든 카드 획득 2배 (상태이상 포함 — 양날의 검)',
    desc:'패시브: 모든 addCard 호출로 얻는 카드가 2배. 상태이상·잔해도 포함되는 양날의 검.'},
@@ -1458,8 +1458,8 @@ const CARDS=[
    passiveDesc:'제작 완료 후 소비된 재료 중 1종류 1장 돌려받음',
    desc:'패시브: 제작 완료 후 소비된 재료 중 무작위 1종류 1장을 덱에 다시 추가.'},
   {id:'sk_cr_s3', name:'이동 제작소', icon:'🗂️', tag:'skill', tier:'silver', atk:0, def:0, n:0,
-   passiveDesc:'사용: 캠프 없이 제작 1회 가능',
-   desc:'사용: 다음 제작 1회를 캠프 외 어느 위치에서나 가능.', use:'sk_cr_anywhere'},
+   passiveDesc:'[카드사용 전용] 캠프 없이 제작 1회 가능',
+   desc:'[카드사용 전용] 다음 제작 1회를 캠프 외 어느 위치에서나 가능.', use:'sk_cr_anywhere'},
   {id:'sk_cr_g', name:'거장', icon:'🏭', tag:'skill', tier:'gold', atk:0, def:0, n:0,
    passiveDesc:'모든 제작 AP 비용 0',
    desc:'패시브: 모든 제작이 완전 무료.'},
@@ -1471,11 +1471,11 @@ const CARDS=[
    passiveDesc:'식량·물 사용 효과 +8',
    desc:'패시브: 식량·물 카드 사용 시 회복량 +8.'},
   {id:'sk_cu_s3', name:'선견지명', icon:'👁️', tag:'skill', tier:'silver', atk:0, def:0, n:0,
-   passiveDesc:'사용: 덱 위 3장 확인 후 1장 선택 드로우',
-   desc:'사용: 덱 맨 위 3장을 보고 1장을 손패에 추가, 나머지는 버림.', use:'sk_cu_peek'},
+   passiveDesc:'[전투·카드사용] 덱 위 3장 확인 후 1장 선택 드로우',
+   desc:'[전투·카드사용] 덱 맨 위 3장을 보고 1장을 손패(전투핸드)에 추가, 나머지 버림.', use:'sk_cu_peek'},
   {id:'sk_cu_g', name:'신속한 손', icon:'⚡', tag:'skill', tier:'gold', atk:0, def:0, n:0,
-   passiveDesc:'[사용] 손패의 카드 무작위 1장 소멸',
-   desc:'사용: 현재 손패에서 무작위 카드 1장을 영구 소멸시킨다. 덱 정화 효과.', use:'sk_cu_discard'},
+   passiveDesc:'[카드사용 전용] 손패의 카드 무작위 1장 소멸',
+   desc:'[카드사용 전용] 현재 손패에서 무작위 카드 1장을 영구 소멸시킨다. 덱 정화 효과.', use:'sk_cu_discard'},
   // 취침 (sleep)
   {id:'sk_sl_b', name:'가벼운 잠', icon:'😴', tag:'skill', tier:'bronze', atk:0, def:0, n:0,
    passiveDesc:'취침 이벤트 확률 -15%',
@@ -1487,8 +1487,8 @@ const CARDS=[
    passiveDesc:'취침 정신력 회복 +8',
    desc:'패시브: 취침 시 정신력 회복량 +8.'},
   {id:'sk_sl_s3', name:'꿈에서 깨다', icon:'⏰', tag:'skill', tier:'silver', atk:0, def:0, n:0, dur:1,
-   passiveDesc:'[사용·1회용] AP +10 즉시 회복',
-   desc:'사용: AP +10 즉시 회복. 1회용.', use:'sk_sl_wake'},
+   passiveDesc:'[카드사용 전용·1회용] AP +10 즉시 회복',
+   desc:'[카드사용 전용] AP +10 즉시 회복. 1회용.', use:'sk_sl_wake'},
   {id:'sk_sl_g', name:'완벽한 수면', icon:'✨', tag:'skill', tier:'gold', atk:0, def:0, n:0,
    passiveDesc:'취침 이벤트 완전 면역 + 꿀잠 카드 자동 생성',
    desc:'패시브: 취침 이벤트 없음 + 매 취침마다 꿀잠 카드 1장 자동 추가.'},
@@ -1506,8 +1506,8 @@ const CARDS=[
    passiveDesc:'전투 시작 시 적 DEF -2',
    desc:'패시브: 전투 시작 시 적의 방어력을 2 감소.'},
   {id:'sk_cb_g', name:'힘을 담은 일격', icon:'💥', tag:'skill', tier:'gold', atk:0, def:0, n:0,
-   passiveDesc:'[사용] 전투 핸드에서 즉발: 적 HP-10 + 스턴 (보스 35%)',
-   desc:'사용: 전투 핸드에서 즉시 발동. 적 HP-10, 스턴 1라운드 (보스는 35% 확률).', use:'sk_cb_strike'},
+   passiveDesc:'[전투 전용] 전투 핸드에서 즉발: 적 HP-10 + 스턴 (보스 35%)',
+   desc:'[전투 전용] 전투 핸드에서 즉시 발동. 적 HP-10, 스턴 1라운드 (보스는 35% 확률).', use:'sk_cb_strike'},
 ];
 
 const ENEMIES={
@@ -4907,6 +4907,21 @@ function cbtCardClick(i){
     log(`💥 힘을 담은 일격: 적 HP-10${stunOk?' + 스턴!':' (보스 기절 저항)'}`, 'success');
     renderCombat(); return;
   }
+  // 선견지명: 덱 위 3장 보고 1장 선택해 핸드에 추가
+  if(c.tag==='skill'&&c.use==='sk_cu_peek'){
+    CBT.atkZone=CBT.atkZone.filter(x=>x.uid!==c.uid);
+    CBT.defZone=CBT.defZone.filter(x=>x.uid!==c.uid);
+    CBT.hand.splice(i,1);
+    G.disc.push({...c});
+    const peekCards=[];
+    for(let p=0;p<3;p++){
+      if(!G.deck.length){if(!G.disc.length)break;G.deck=shuffle(G.disc);G.disc=[];}
+      if(G.deck.length) peekCards.push(G.deck.pop());
+    }
+    if(!peekCards.length){log('👁️ 선견지명: 덱이 비어있다.','');renderCombat();return;}
+    _showCbtPeekPopup(peekCards);
+    return;
+  }
   const inA=CBT.atkZone.some(x=>x.uid===c.uid);
   const inD=CBT.defZone.some(x=>x.uid===c.uid);
   if(inA||inD){
@@ -4929,6 +4944,39 @@ function cbtCardClick(i){
       <button class="btn" onclick="document.getElementById('cbt-popup').remove()">취소</button>
     </div>`;
   document.body.appendChild(pop);
+}
+
+function _showCbtPeekPopup(cards){
+  const existing=document.getElementById('cbt-peek-pop'); if(existing) existing.remove();
+  const pop=document.createElement('div'); pop.id='cbt-peek-pop';
+  pop.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:14px;z-index:350;min-width:240px;text-align:center;';
+  const cardsHtml=cards.map((c,idx)=>`
+    <div class="c-card" style="cursor:pointer;border:1px solid var(--border2);border-radius:7px;padding:8px 6px;margin:4px 0;display:flex;align-items:center;gap:8px;text-align:left;"
+      onclick="_cbtPeekPick(${idx})">
+      <span style="font-size:18px;">${c.icon}</span>
+      <div style="flex:1;">
+        <div style="font-size:10px;font-family:var(--font-t);">${c.name}</div>
+        <div style="font-size:8px;color:var(--text3);font-family:var(--font-m);">ATK${c.atk} DEF${c.def}</div>
+      </div>
+    </div>`).join('');
+  pop.innerHTML=`<div style="font-size:11px;font-family:var(--font-t);margin-bottom:8px;">👁️ 선견지명 — 1장 선택</div>
+    <div style="font-size:8px;color:var(--text3);font-family:var(--font-m);margin-bottom:8px;">선택한 카드를 핸드에 추가, 나머지는 버림.</div>
+    ${cardsHtml}`;
+  pop._peekCards=cards;
+  document.body.appendChild(pop);
+}
+
+function _cbtPeekPick(idx){
+  const pop=document.getElementById('cbt-peek-pop'); if(!pop) return;
+  const cards=pop._peekCards;
+  const chosen=cards[idx];
+  const rest=cards.filter((_,i)=>i!==idx);
+  rest.forEach(c=>G.disc.push({...c}));
+  CBT.hand.push({...chosen, uid:chosen.uid||Date.now()+Math.random()});
+  autoAssignStatusCards();
+  pop.remove();
+  log(`👁️ 선견지명: ${chosen.icon}${chosen.name} 핸드 추가 (나머지 ${rest.length}장 버림)`,'success');
+  renderCombat();
 }
 
 function assignCard(i, zone){
@@ -5027,7 +5075,7 @@ function renderCombat(){
     const inA=CBT.atkZone.some(x=>x.uid===c.uid);
     const inD=CBT.defZone.some(x=>x.uid===c.uid);
     const div=document.createElement('div');
-    const isInert=c.atk<=0&&c.def<=0&&!c.cbtFx&&c.tag!=='action'&&c.use!=='sk_cb_strike';
+    const isInert=c.atk<=0&&c.def<=0&&!c.cbtFx&&c.tag!=='action'&&c.use!=='sk_cb_strike'&&c.use!=='sk_cu_peek';
     div.className='c-card'+(inA?' a-atk':inD?' a-def':'')+(c.tag==='action'?' a-action':'')+(isInert?' c-inert':'');
     if(!_prevCbtHandUIDs.has(c.uid)){
       div.classList.add('card-draw');

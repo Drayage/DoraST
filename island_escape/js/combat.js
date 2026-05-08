@@ -290,6 +290,21 @@ function cbtCardClick(i){
     log(`💥 힘을 담은 일격: 적 HP-10${stunOk?' + 스턴!':' (보스 기절 저항)'}`, 'success');
     renderCombat(); return;
   }
+  // 선견지명: 덱 위 3장 보고 1장 선택해 핸드에 추가
+  if(c.tag==='skill'&&c.use==='sk_cu_peek'){
+    CBT.atkZone=CBT.atkZone.filter(x=>x.uid!==c.uid);
+    CBT.defZone=CBT.defZone.filter(x=>x.uid!==c.uid);
+    CBT.hand.splice(i,1);
+    G.disc.push({...c});
+    const peekCards=[];
+    for(let p=0;p<3;p++){
+      if(!G.deck.length){if(!G.disc.length)break;G.deck=shuffle(G.disc);G.disc=[];}
+      if(G.deck.length) peekCards.push(G.deck.pop());
+    }
+    if(!peekCards.length){log('👁️ 선견지명: 덱이 비어있다.','');renderCombat();return;}
+    _showCbtPeekPopup(peekCards);
+    return;
+  }
   const inA=CBT.atkZone.some(x=>x.uid===c.uid);
   const inD=CBT.defZone.some(x=>x.uid===c.uid);
   if(inA||inD){
@@ -312,6 +327,39 @@ function cbtCardClick(i){
       <button class="btn" onclick="document.getElementById('cbt-popup').remove()">취소</button>
     </div>`;
   document.body.appendChild(pop);
+}
+
+function _showCbtPeekPopup(cards){
+  const existing=document.getElementById('cbt-peek-pop'); if(existing) existing.remove();
+  const pop=document.createElement('div'); pop.id='cbt-peek-pop';
+  pop.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:14px;z-index:350;min-width:240px;text-align:center;';
+  const cardsHtml=cards.map((c,idx)=>`
+    <div class="c-card" style="cursor:pointer;border:1px solid var(--border2);border-radius:7px;padding:8px 6px;margin:4px 0;display:flex;align-items:center;gap:8px;text-align:left;"
+      onclick="_cbtPeekPick(${idx})">
+      <span style="font-size:18px;">${c.icon}</span>
+      <div style="flex:1;">
+        <div style="font-size:10px;font-family:var(--font-t);">${c.name}</div>
+        <div style="font-size:8px;color:var(--text3);font-family:var(--font-m);">ATK${c.atk} DEF${c.def}</div>
+      </div>
+    </div>`).join('');
+  pop.innerHTML=`<div style="font-size:11px;font-family:var(--font-t);margin-bottom:8px;">👁️ 선견지명 — 1장 선택</div>
+    <div style="font-size:8px;color:var(--text3);font-family:var(--font-m);margin-bottom:8px;">선택한 카드를 핸드에 추가, 나머지는 버림.</div>
+    ${cardsHtml}`;
+  pop._peekCards=cards;
+  document.body.appendChild(pop);
+}
+
+function _cbtPeekPick(idx){
+  const pop=document.getElementById('cbt-peek-pop'); if(!pop) return;
+  const cards=pop._peekCards;
+  const chosen=cards[idx];
+  const rest=cards.filter((_,i)=>i!==idx);
+  rest.forEach(c=>G.disc.push({...c}));
+  CBT.hand.push({...chosen, uid:chosen.uid||Date.now()+Math.random()});
+  autoAssignStatusCards();
+  pop.remove();
+  log(`👁️ 선견지명: ${chosen.icon}${chosen.name} 핸드 추가 (나머지 ${rest.length}장 버림)`,'success');
+  renderCombat();
 }
 
 function assignCard(i, zone){
@@ -410,7 +458,7 @@ function renderCombat(){
     const inA=CBT.atkZone.some(x=>x.uid===c.uid);
     const inD=CBT.defZone.some(x=>x.uid===c.uid);
     const div=document.createElement('div');
-    const isInert=c.atk<=0&&c.def<=0&&!c.cbtFx&&c.tag!=='action'&&c.use!=='sk_cb_strike';
+    const isInert=c.atk<=0&&c.def<=0&&!c.cbtFx&&c.tag!=='action'&&c.use!=='sk_cb_strike'&&c.use!=='sk_cu_peek';
     div.className='c-card'+(inA?' a-atk':inD?' a-def':'')+(c.tag==='action'?' a-action':'')+(isInert?' c-inert':'');
     if(!_prevCbtHandUIDs.has(c.uid)){
       div.classList.add('card-draw');
