@@ -121,6 +121,11 @@ function clickTile(i){
   if(_mvS1Cnt) G.hp=Math.min(100,G.hp+_mvS1Cnt);
   if(_mvS2Cnt) G.san=Math.min(100,G.san+_mvS2Cnt);
   if(wasExplored&&_mvS3Cnt) G.ap=Math.min(G.maxAP+4,G.ap+_mvS3Cnt);
+  if(t.id==='thicket'&&!t.explored){
+    t.explored=true;
+    const _ambPool=['cbt_boar','cbt_boar','cbt_snake','cbt_snake','cbt_bat','cbt_ghost'];
+    setTimeout(()=>showThicketAmbush(_ambPool[Math.floor(Math.random()*_ambPool.length)]),300);
+  }
   getAdj(i).forEach(j=>{
     const wasRevealed=G.tiles[j].revealed;
     G.tiles[j].revealed=true;

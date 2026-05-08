@@ -47,7 +47,7 @@ function showTT(c, el){
   const cEl=document.getElementById('tt-cbt');
   if(c.cbtFx){
     cEl.style.display='';
-    const m2={pierce:'★ 관통: 적방어무시+4',block:'★ 완전방어: +5',stun:'★ 기절: 적피해0+ATK3',poison:'★ 독: 매라운드+3',armor:'★ 갑옷: 피해-2',cloak:'★ 망토: 도망HP-2',raw:'★ 방어무시: ATK 수치로 적 방어 무시'};
+    const m2={pierce:'★ 관통: 적방어무시+4',block:'★ 완전방어: +5',stun:'★ 기절: 적피해0+ATK3',poison:'★ 독: 매라운드+3',armor:'★ 갑옷: 피해-2',stone_armor:'★ 돌 조끼: 받는 피해 -3',cloak:'★ 망토: 도망HP-2',raw:'★ 방어무시: ATK 수치로 적 방어 무시'};
     cEl.textContent=m2[c.cbtFx]||'';
   } else cEl.style.display='none';
 
