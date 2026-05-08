@@ -120,10 +120,13 @@ function doSleep(){
     if(t.id==='shore')  { addCard('dew',campDouble?2:1); campCount.shore++; }
     if(t.id==='ruins')  { ruinsBonusAP+=campDouble?2:1; G.san=Math.max(0,G.san-(campDouble?4:2)); campCount.ruins++; }
   });
-  // 스킬 패시브: 취침 HP/SAN 보너스
-  if(allCards().some(c=>c.id==='sk_sl_s1')) hpR+=8;
-  if(allCards().some(c=>c.id==='sk_sl_s2')) sanR+=8;
-  if(inCampNow&&allCards().some(c=>c.id==='sk_cp_s1')) hpR+=5;
+  // 스킬 패시브: 취침 HP/SAN 보너스 (count 기반)
+  const _slS1Cnt=allCards().filter(c=>c.id==='sk_sl_s1').length;
+  const _slS2Cnt=allCards().filter(c=>c.id==='sk_sl_s2').length;
+  const _cpS1Cnt=allCards().filter(c=>c.id==='sk_cp_s1').length;
+  hpR+=8*_slS1Cnt;
+  sanR+=8*_slS2Cnt;
+  if(inCampNow) hpR+=5*_cpS1Cnt;
   const _cx=n=>n>1?`(x${n})`:'';
   if(campCount.cave)   log(`🪨 동굴캠프${_cx(campCount.cave)}: 취침 정신력+${(campDouble?6:3)*campCount.cave}${campDouble?' (🏰야영의 달인 ×2)':''}`,'success');
   if(campCount.forest) log(`🌲 숲캠프${_cx(campCount.forest)}: 작은 열매 🍒 ×${campDouble?campCount.forest*2:campCount.forest} 자동생성${campDouble?' (🏰×2)':''}`,'success');
@@ -287,10 +290,12 @@ function calcSleepEvtChance(early){
   const stN=allCards().filter(c=>c.tag==='status').length;
   c+=stN*6;
   if(G.hp<40) c+=10; if(G.hun<30) c+=8; if(G.thi<30) c+=8; if(G.ap<=2) c+=4;
-  // 스킬 패시브
-  if(allCards().some(c=>c.id==='sk_sl_b')) c-=15;
+  // 스킬 패시브 (count 기반)
+  const _slBCnt=allCards().filter(c=>c.id==='sk_sl_b').length;
+  const _cpS2Cnt=allCards().filter(c=>c.id==='sk_cp_s2').length;
+  c-=15*_slBCnt;
   const inCamp=G.camps.includes(G.pos);
-  if(inCamp&&allCards().some(c=>c.id==='sk_cp_s2')) return 0;
+  if(inCamp&&_cpS2Cnt) c-=10*_cpS2Cnt;
   return Math.min(Math.max(c,0),80);
 }
 

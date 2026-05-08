@@ -33,10 +33,11 @@ function showSkillEvent(cb){
   const typeNames={move:'이동',explore:'탐색',gather:'수집',camp:'캠프건설',
                    craft:'제작',carduse:'카드사용',sleep:'취침',combat:'전투'};
   const pool=SKILL_POOL[type]||[];
-  const pick1=_drawSkillCard(pool,[]);
-  const pick2=_drawSkillCard(pool,pick1?[pick1]:[]);
+  const ownedIds=allCards().filter(c=>c.tag==='skill'||c.id==='running').map(c=>c.id);
+  const pick1=_drawSkillCard(pool,ownedIds)||_drawSkillCard(pool,[]);
+  const pick2=_drawSkillCard(pool,[...ownedIds,pick1||''])||_drawSkillCard(pool,pick1?[pick1]:[]);
   const otherPool=Object.entries(SKILL_POOL).filter(([k])=>k!==type).flatMap(([,v])=>v);
-  const pick3=_drawSkillCard(otherPool,[]);
+  const pick3=_drawSkillCard(otherPool,ownedIds)||_drawSkillCard(otherPool,[]);
 
   const el=document.getElementById('skill-choices'); el.innerHTML='';
   const _tierLabels={bronze:'🥉브론즈',silver:'🥈실버',gold:'🥇골드'};

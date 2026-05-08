@@ -8,8 +8,9 @@ function openGather(){
   const opts=tile.gather||[];
   const cards=allCards();
   const avail=opts.filter(o=>cards.some(c=>c.id===o.tool));
-  // 성공률 표시에 스킬 보너스 반영
-  const skillGaBonus=allCards().some(c=>c.id==='sk_ga_b')?10:0;
+  // 성공률 표시에 스킬 보너스 반영 (count 기반)
+  const _gaGaBCnt=allCards().filter(c=>c.id==='sk_ga_b').length;
+  const skillGaBonus=10*_gaGaBCnt;
   if(!avail.length){
     const needed=opts.map(o=>CARD_MAP[o.tool]?.name||o.tool).join(', ');
     log(`수집 장비 없음. 필요: ${needed}`,''); render(); return;
@@ -58,7 +59,8 @@ function doGather(opt, key, rate){
     flashDamage();
     log(`🎒 수집 피해: ${hDmg?`허기HP-${hDmg} `:''}${tDmg?`갈증HP-${tDmg}`:''}`,'danger');
   }
-  const skillGaBonusNow=allCards().some(c=>c.id==='sk_ga_b')?10:0;
+  const _gaGaBCntNow=allCards().filter(c=>c.id==='sk_ga_b').length;
+  const skillGaBonusNow=10*_gaGaBCntNow;
   const effectiveRate = Math.min(95, rate+skillGaBonusNow);
   if(Math.random()*100 < effectiveRate){
     G.gatherCnt[key]=(G.gatherCnt[key]||0)+1;
@@ -66,8 +68,9 @@ function doGather(opt, key, rate){
     if(!G.actionCnt) G.actionCnt={move:0,explore:0,gather:0,camp:0,craft:0,carduse:0,sleep:0,combat:0};
     G.actionCnt.gather=(G.actionCnt.gather||0)+1;
     let n=Math.random()<0.28?2:1;
-    // 알뜰한 손: 성공 시 +1
-    if(allCards().some(c=>c.id==='sk_ga_s1')) n+=1;
+    // 알뜰한 손: 성공 시 count장 추가
+    const _gaS1Cnt=allCards().filter(c=>c.id==='sk_ga_s1').length;
+    n+=_gaS1Cnt;
     const d=CARD_MAP[opt.res];
     const items=[{id:opt.res,icon:d?.icon||'📦',name:d?.name||opt.res,n}];
     log(`🎒 ${opt.label} 성공! ${d?.icon||''}${d?.name||opt.res}×${n} (AP-3)`,'gather');
@@ -76,8 +79,9 @@ function doGather(opt, key, rate){
     });
   } else {
     G.gatherBonus[key]=(G.gatherBonus[key]||0)+5;
-    // 끈기: 실패 시 AP 환급
-    if(allCards().some(c=>c.id==='sk_ga_s2')){ G.ap=Math.min(G.maxAP+4,G.ap+1); log('⏰ 끈기: 수집 실패 AP+1 환급',''); }
+    // 끈기: 실패 시 AP 환급 (count 기반)
+    const _gaS2Cnt=allCards().filter(c=>c.id==='sk_ga_s2').length;
+    if(_gaS2Cnt){ G.ap=Math.min(G.maxAP+4,G.ap+_gaS2Cnt); log(`⏰ 끈기: 수집 실패 AP+${_gaS2Cnt} 환급`,''); }
     log(`🎒 ${opt.label} 실패... 빈손 (AP-3)`,'danger');
     checkSurvival(); render(); saveGame();
   }

@@ -136,8 +136,8 @@ function doJudgment(evt, ch){
   }
   let top;
   const hasCompass=hasTool('compass');
-  const hasSk_ex_s1=allCards().some(c=>c.id==='sk_ex_s1');
-  const numDraw=1+(hasCompass?1:0)+(hasSk_ex_s1?1:0);
+  const _exS1Cnt=allCards().filter(c=>c.id==='sk_ex_s1').length;
+  const numDraw=1+(hasCompass?1:0)+_exS1Cnt;
   const _score=c=>!c?-1:ch.greatCard&&c.id===ch.greatCard?3:ch.req&&c.tag===ch.req?2:ch.subReq&&(c.subTags||[]).includes(ch.subReq)?1:!ch.req&&!ch.subReq?1:0;
   const drawn=[];
   for(let _di=0;_di<Math.min(numDraw,G.deck.length);_di++) drawn.push(G.deck[G.deck.length-1-_di]);
@@ -207,11 +207,12 @@ function doJudgment(evt, ch){
       // 스킬 패시브: 천재적 직관 — 항상 성공
       let _skillForceSuccess=false;
       if(!success&&allCards().some(c=>c.id==='sk_ex_g')){ success=true; _skillForceSuccess=true; }
-      // 브론즈: 실패 시 10% 추가 기회
-      if(!success&&!_skillForceSuccess&&allCards().some(c=>c.id==='sk_ex_b')&&Math.random()<0.1){ success=true; bonLines.push('🔍 날카로운 눈: 실패 뒤집기 성공!'); }
+      // 브론즈: 실패 시 10% 추가 기회 (count 기반)
+      const _exBCnt=allCards().filter(c=>c.id==='sk_ex_b').length;
+      if(!success&&!_skillForceSuccess&&_exBCnt&&Math.random()<Math.min(0.5,0.1*_exBCnt)){ success=true; bonLines.push('🔍 날카로운 눈: 실패 뒤집기 성공!'); }
       if(_compassExtras.length){
         const extTxt=_compassExtras.map(c=>c.icon+c.name).join(', ');
-        if(hasCompass&&hasSk_ex_s1) bonLines.push(`🧭🕯️ 나침반+경험의 빛: ${numDraw}장 중 최선 선택 (버림: ${extTxt})`);
+        if(hasCompass&&_exS1Cnt) bonLines.push(`🧭🕯️ 나침반+경험의 빛: ${numDraw}장 중 최선 선택 (버림: ${extTxt})`);
         else if(hasCompass) bonLines.push(`🧭 나침반: 2장 중 유리한 카드 선택 (버림: ${extTxt})`);
         else bonLines.push(`🕯️ 경험의 빛: 2장 중 유리한 카드 선택 (버림: ${extTxt})`);
       }
@@ -242,8 +243,9 @@ function doJudgment(evt, ch){
       } else {
         resEl.className='jdg-res fail'; resEl.textContent='✗ 실패...';
         if(ch.failPen) applyPen(ch.failPen,lines); else lines.push('별다른 피해 없음');
-        // 꼼꼼한 탐색가: 실패 시 AP 환급
-        if(allCards().some(c=>c.id==='sk_ex_s2')){ G.ap=Math.min(G.maxAP+4,G.ap+1); bonLines.push('🎯 꼼꼼한 탐색가: AP+1 환급'); }
+        // 꼼꼼한 탐색가: 실패 시 AP 환급 (count 기반)
+        const _exS2Cnt=allCards().filter(c=>c.id==='sk_ex_s2').length;
+        if(_exS2Cnt){ G.ap=Math.min(G.maxAP+4,G.ap+_exS2Cnt); bonLines.push(`🎯 꼼꼼한 탐색가: AP+${_exS2Cnt} 환급`); }
       }
       // curseDeck: 선택 시 무조건 덱에 저주 카드 추가
       if(ch.curseDeck){
