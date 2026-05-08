@@ -5898,14 +5898,17 @@ function render(){
 
   // 캠프
   const ctBonus=campBonus(ct.id);
-  d.btnCamp.disabled=p.ap<8||p.over||ct.hasCamp;
+  const _campDisabled=(()=>{const bc=allCards().filter(c=>c.id==='sk_cp_b').length;return p.ap<Math.max(0,8-2*bc)||p.over||ct.hasCamp;})();
+  d.btnCamp.disabled=_campDisabled;
   const campRows=[
     {icon:'🏕️', text:'취침 이벤트 확률 대폭 감소', cls:'gain'},
     {icon:'🔨', text:'캠프 위치에서 제작 가능', cls:'info'},
   ];
   if(ctBonus) campRows.push({icon:'⭐', text:'지형 보너스: '+ctBonus, cls:'accent'});
   if(ct.hasCamp) campRows.push({icon:'✓', text:'이미 설치됨', cls:'info'});
-  d.btnCamp._att={title:'🏕️ 캠프 건설', cost:'AP 8', rows:campRows};
+  const _cpBCnt=allCards().filter(c=>c.id==='sk_cp_b').length;
+  const _campCostDisp=Math.max(0,8-2*_cpBCnt);
+  d.btnCamp._att={title:'🏕️ 캠프 건설', cost:`AP ${_campCostDisp}`, rows:campRows};
 
   // 제작
   d.btnCraft.disabled=p.over||!ct.hasCamp;
