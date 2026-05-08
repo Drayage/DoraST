@@ -85,6 +85,8 @@ function showSkillEvent(cb){
   const total=(G.skillEvtTotal||0);
   document.getElementById('skill-type-label').textContent=
     `✨ ${typeNames[type]||type} 스킬 획득! (게임 ${total+1}/2회)`;
+  const subEl=document.getElementById('skill-subtitle');
+  if(subEl) subEl.textContent='3개 중 1장을 선택하세요 (앞면 2 · 랜덤 1)';
   const skipBtn=document.getElementById('skill-skip');
   if(skipBtn){ skipBtn.style.display=''; skipBtn.onclick=()=>_skipSkillEvent(type,cb); }
   document.getElementById('skill-mo').style.display='flex';
@@ -135,7 +137,7 @@ function showStartSkillEvent(cb){
     const icon=isAction?'🏃':(c?.icon||'?');
     const name=isAction?'달리기':(c?.name||id);
     const descTxt=isAction?'즉시 사용: 카드 2장 드로우':(c?.passiveDesc||c?.desc||'');
-    const tierLabel=isAction?'🏃행동카드':'🥉브론즈';
+    const tierLabel='🥉브론즈';
 
     const div=document.createElement('div');
     div.className='skill-choice sk-tier-bronze skill-flip-in';
@@ -182,6 +184,8 @@ function showStartSkillEvent(cb){
   });
 
   updateLabel();
+  const subEl=document.getElementById('skill-subtitle');
+  if(subEl) subEl.textContent='5장 중 2장을 선택하세요 (모두 앞면)';
   const skipBtn=document.getElementById('skill-skip');
   if(skipBtn) skipBtn.style.display='none';
   document.getElementById('skill-mo').style.display='flex';
