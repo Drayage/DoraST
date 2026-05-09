@@ -109,18 +109,25 @@ function clickTile(i){
   G.tiles[G.pos].hasPlayer=false;
   const wasExplored=t.explored;
   G.pos=i; t.hasPlayer=true; G.ap-=cost; G.tilesMoved+=baseCost;
-  // 스킬 패시브: 이동 AP 환급 확률
+  // 스킬 패시브: 이동 AP 환급 (합산 확률, 1회만)
   const _mvGCnt=allCards().filter(c=>c.id==='sk_mv_g').length;
   const _mvBCnt=allCards().filter(c=>c.id==='sk_mv_b').length;
-  if(_mvGCnt&&Math.random()<Math.min(0.95,0.5*_mvGCnt)){ G.ap=Math.min(G.maxAP+4,G.ap+cost); log(`🦅 자유로운 영혼: 이동 AP${cost} 환급!`,'success'); }
-  else if(_mvBCnt&&Math.random()<Math.min(0.5,0.1*_mvBCnt)){ G.ap=Math.min(G.maxAP+4,G.ap+cost); log(`🥾 가벼운 발: 이동 AP${cost} 환급!`,'success'); }
-  // 스킬 패시브: 이동 후 효과
+  const _mvS3Cnt=allCards().filter(c=>c.id==='sk_mv_s3').length;
+  let refundChance=0;
+  if(_mvBCnt) refundChance+=0.1*_mvBCnt;
+  if(_mvGCnt) refundChance+=0.5*_mvGCnt;
+  if(wasExplored&&_mvS3Cnt) refundChance=1;
+  refundChance=Math.min(1,refundChance);
+  if(refundChance>0&&Math.random()<refundChance){
+    G.ap=Math.min(G.maxAP+4,G.ap+cost);
+    const tag=wasExplored&&_mvS3Cnt?'🧭 탐색자의 눈':_mvGCnt?'🦅 자유로운 영혼':'🥾 가벼운 발';
+    log(`${tag}: 이동 AP${cost} 환급! (${Math.round(refundChance*100)}%)`,'success');
+  }
+  // 스킬 패시브: 이동 후 HP/SAN 회복
   const _mvS1Cnt=allCards().filter(c=>c.id==='sk_mv_s1').length;
   const _mvS2Cnt=allCards().filter(c=>c.id==='sk_mv_s2').length;
-  const _mvS3Cnt=allCards().filter(c=>c.id==='sk_mv_s3').length;
   if(_mvS1Cnt) G.hp=Math.min(100,G.hp+_mvS1Cnt);
   if(_mvS2Cnt) G.san=Math.min(100,G.san+_mvS2Cnt);
-  if(wasExplored&&_mvS3Cnt) G.ap=Math.min(G.maxAP+4,G.ap+_mvS3Cnt);
   if(t.id==='thicket'&&!t.explored){
     t.explored=true;
     const _ambPool=['cbt_boar','cbt_boar','cbt_snake','cbt_snake','cbt_bat','cbt_ghost'];
