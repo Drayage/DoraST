@@ -234,7 +234,7 @@ const CARDS=[
    desc:'패시브: 수집 실패 시 AP 1 돌려받음.'},
   {id:'sk_ga_s3', name:'현장 채집', icon:'🎒', tag:'skill', tier:'silver', atk:0, def:0, n:0,
    passiveDesc:'[카드사용 전용] 현재 타일 즉시 수집 1회 (AP1)',
-   desc:'[카드사용 전용] 현재 위치에서 AP 1 소비로 즉시 수집 1회.', use:'sk_ga_spot'},
+   desc:'[카드사용 전용] AP 1 소비, 현재 위치 자원 무조건 1장 획득 (25% 확률로 2장).', use:'sk_ga_spot'},
   {id:'sk_ga_g', name:'황금 손', icon:'💰', tag:'skill', tier:'gold', atk:0, def:0, n:0,
    passiveDesc:'모든 카드 획득 2배 (상태이상 포함 — 양날의 검)',
    desc:'패시브: 모든 addCard 호출로 얻는 카드가 2배. 상태이상·잔해도 포함되는 양날의 검.'},

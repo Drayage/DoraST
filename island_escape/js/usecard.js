@@ -130,12 +130,12 @@ function ucUse(i){
     const t=G.tiles[G.pos]; const glist=t.gather||[];
     if(!glist.length){resEl.textContent='수집 가능한 자원 없음.';resEl.style.color='var(--text3)';return;}
     const opt=glist[Math.floor(Math.random()*glist.length)];
-    const rsCnt=allCards().filter(c=>c.tag==='resource').length;
-    const total=Math.max(1,allCards().length);
-    const ok=Math.random()<Math.min(0.9,rsCnt/total+0.3);
     const d=CARD_MAP[opt.res];
-    if(ok){addCard(opt.res,1);resEl.textContent=`🎒 현장채집: ${d?.name||opt.res}×1`;resEl.style.color='var(--green)';}
-    else {resEl.textContent='🎒 현장채집 실패.';resEl.style.color='var(--red)';}
+    const n=Math.random()<0.25?2:1;
+    addCard(opt.res,n);
+    resEl.textContent=`🎒 현장채집: ${d?.name||opt.res}×${n}${n>1?' (행운!)':''}`;
+    resEl.style.color='var(--green)';
+    log(`🎒 현장채집: ${d?.icon||''}${d?.name||opt.res}×${n}`,'success');
   } else if(card.use==='sk_cr_anywhere'){
     G.skillCraftBypass=true;
     resEl.textContent='🗂️ 이동 제작소: 다음 제작은 캠프 불필요';
