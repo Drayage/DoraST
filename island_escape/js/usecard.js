@@ -128,7 +128,7 @@ function ucUse(i){
     if(G.ap<1){resEl.textContent='AP 부족';resEl.style.color='var(--red)';return;}
     G.ap-=1;
     const t=G.tiles[G.pos]; const glist=t.gather||[];
-    if(!glist.length){resEl.textContent='수집 가능한 자원 없음.';resEl.style.color='var(--text3)';return;}
+    if(!glist.length){G.ap+=1;resEl.textContent='수집 가능한 자원 없음 (AP 환급)';resEl.style.color='var(--text3)';return;}
     const opt=glist[Math.floor(Math.random()*glist.length)];
     const d=CARD_MAP[opt.res];
     const n=Math.random()<0.25?2:1;
