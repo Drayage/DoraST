@@ -19,6 +19,7 @@
 <div id="title-scr">
   <button onclick="document.getElementById('patch-mo').style.display='flex'" style="position:absolute;top:14px;right:16px;font-size:9px;padding:4px 12px;" class="btn">📋 패치노트</button>
   <button onclick="showRecords()" style="position:absolute;top:14px;right:104px;font-size:9px;padding:4px 12px;" class="btn">📊 기록</button>
+  <button onclick="showAchievements()" style="position:absolute;top:14px;right:184px;font-size:9px;padding:4px 12px;" class="btn">🏆 업적</button>
   <div class="title-logo">🏝 무인도 탈출</div>
   <div class="title-sub">Island Escape · v0.2</div>
   <div class="title-story">
@@ -551,6 +552,17 @@
   </div>
 </div>
 
+<!-- ACHIEVEMENTS -->
+<div id="ach-mo" class="mo" onclick="if(event.target===this)this.style.display='none'" style="z-index:300;">
+  <div class="mb" style="width:460px;max-width:94vw;max-height:82vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="font-family:var(--font-t);font-size:17px;color:var(--accent);">🏆 업적</div>
+      <button class="btn" onclick="document.getElementById('ach-mo').style.display='none'">✕</button>
+    </div>
+    <div id="ach-body"></div>
+  </div>
+</div>
+
 <!-- PATCH NOTES -->
 <div id="patch-mo" class="mo" onclick="if(event.target===this)this.style.display='none'" style="z-index:300;">
   <div class="mb" style="width:460px;max-width:94vw;max-height:82vh;overflow-y:auto;">
@@ -717,6 +729,7 @@
 <script src="js/state.js"></script>
 <script src="js/helpers.js"></script>
 <script src="js/skills.js"></script>
+<script src="js/achievements.js"></script>
 <script src="js/survival.js"></script>
 <script src="js/tooltip.js"></script>
 <script src="js/mobile.js"></script>

@@ -114,6 +114,7 @@ function initGame(){
     skillEvtTotal:0,
     skillEvtTriggered:{},
     skillCraftBypass:false,
+    runMaxDeck:0, oblivionSeepCnt:0, deathCause:null,
     islandId,
   };
   _pendingItems=null; _itemCb=null; _pendingItemCards=null; _ucHand=[];

@@ -349,6 +349,7 @@ function revealRaft(el, type){
     } else {
       G.escape=Math.max(0,G.escape-10);
       G.raftFail=(G.raftFail||0)+1;
+      if(G.raftFail>=3&&typeof tryUnlockMid==='function') tryUnlockMid('ach_raft_fail3');
       let di=G.disc.findIndex(c=>c.id==='debris');
       if(di>=0){G.disc.splice(di,1);log('🪨 잔해 카드 1장 소멸','');}
       else{di=G.deck.findIndex(c=>c.id==='debris');if(di>=0){G.deck.splice(di,1);log('🪨 잔해 카드 1장 소멸','');}}

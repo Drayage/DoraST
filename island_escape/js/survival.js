@@ -2,8 +2,11 @@
 
 function checkSurvival(){
   G.hun=Math.max(0,G.hun); G.thi=Math.max(0,G.thi);
-  if(G.hp<=0)  triggerGameOver('체력이 소진되었습니다.');
-  if(G.san<=0) triggerGameOver('정신력이 무너졌습니다.');
+  if(G.hp<=0){
+    if(!G.deathCause) G.deathCause = (G.hun<=0?'starve':G.thi<=0?'thirst':'hp');
+    triggerGameOver('체력이 소진되었습니다.');
+  }
+  if(G.san<=0){ if(!G.deathCause) G.deathCause='sanity'; triggerGameOver('정신력이 무너졌습니다.'); }
 }
 
 function checkWin(){
@@ -248,7 +251,9 @@ function _saveRun(win, reason){
     if(win)  { if(!rec.best.winStreak ||rec.streak.count>rec.best.winStreak)  rec.best.winStreak =rec.streak.count; }
     else     { if(!rec.best.lossStreak||rec.streak.count>rec.best.lossStreak) rec.best.lossStreak=rec.streak.count; }
     localStorage.setItem('ie_records',JSON.stringify(rec));
-    return {count:rec.streak.count, type:curType};
+    const streakInfo={count:rec.streak.count, type:curType};
+    if(typeof checkAchievements==='function') checkAchievements(win, reason, streakInfo);
+    return streakInfo;
   }catch(e){ return {count:1, type:win?'win':'loss'}; }
 }
 

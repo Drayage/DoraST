@@ -28,6 +28,18 @@ function addCard(id, n){
     if(def.dur) card.curDur=def.dur;
     G.disc.push(card);
   }
+  // 업적 카운터: 망각 스며들기 + 덱 사이즈 최댓값
+  if(typeof tryUnlockMid==='function'&&G){
+    if(id==='amnesia'){
+      G.oblivionSeepCnt=(G.oblivionSeepCnt||0)+realN;
+      if(G.oblivionSeepCnt>=3) tryUnlockMid('ach_oblivion3');
+    }
+    const sz=(G.deck?G.deck.length:0)+(G.disc?G.disc.length:0);
+    if(sz>(G.runMaxDeck||0)){
+      G.runMaxDeck=sz;
+      if(sz>50) tryUnlockMid('ach_big_deck');
+    }
+  }
 }
 
 // 취침 시 덱 상단 n장을 버림더미로 이동 (덱 사이클링)
