@@ -25,6 +25,7 @@ function isIslandUnlocked(islandId){
   const ORDER=['mangrove','mycelium','caldera','station','beast'];
   if(islandId==='mangrove') return true;
   const p=getIslandProgress();
+  if(p[islandId]?.unlocked) return true;
   const idx=ORDER.indexOf(islandId);
   if(idx<=0) return false;
   return !!(p[ORDER[idx-1]]?.cleared);
@@ -132,12 +133,12 @@ function clearSave(){
 function devUnlockAll(){
   const ORDER=['mangrove','mycelium','caldera','station','beast'];
   const p=getIslandProgress();
-  // isIslandUnlocked() checks p[prevIsland].cleared — mark all as cleared to unlock chain
-  ORDER.forEach(id=>{ p[id]={...(p[id]||{}), cleared:true, locked:false}; });
+  ORDER.forEach(id=>{ p[id]={...(p[id]||{}), unlocked:true, cleared:true}; });
   localStorage.setItem('ie_islands_progress',JSON.stringify(p));
   renderIslandSelect();
   const btn=document.querySelector('[onclick="devUnlockAll()"]');
   if(btn){ btn.textContent='✅ 해금됨'; setTimeout(()=>{ btn.textContent='🔓 DEV'; },1500); }
+  console.log('[DEV] island progress:', JSON.parse(localStorage.getItem('ie_islands_progress')));
 }
 
 function devReset(){
