@@ -265,7 +265,7 @@ function _saveRun(win, reason){
     localStorage.setItem('ie_records',JSON.stringify(rec));
     const streakInfo={count:rec.streak.count, type:curType};
     if(win&&typeof markIslandCleared==='function') markIslandCleared(G.islandId||'mangrove', reason||'raft');
-    if(typeof checkAchievements==='function') checkAchievements(win, reason, streakInfo);
+    if(typeof checkAchievements==='function') checkAchievements(win, reason||'raft', streakInfo);
     return streakInfo;
   }catch(e){ return {count:1, type:win?'win':'loss'}; }
 }
