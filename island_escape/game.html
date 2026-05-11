@@ -1316,11 +1316,11 @@ const TILE_TYPES=[
   // ── 균사의 늪 (섬4) 전용 타일 ──
   {id:'swamp', name:'균사 늪', icon:'🍄', cls:'t-swamp',
    flavor:'균사가 뒤덮인 습한 늪. 달콤하고 낯선 냄새가 난다.',
-   events:['myc_gather','myc_purify','myc_hazard','nothing'],
+   events:['myc_gather','myc_purify','myc_hazard','cbt_swamp_frog','nothing'],
    gather:[]},
   {id:'fungal_spot', name:'균류 군락', icon:'🌫️', cls:'t-fungal',
    flavor:'거대한 버섯들이 군락을 이루고 있다. 안에서 뭔가 자라고 있는 것 같다.',
-   events:['myc_fungal'], gather:[], fungalDmgOnEnter:3},
+   events:['myc_fungal','cbt_spore_walker','myc_gather'], gather:[], fungalDmgOnEnter:3},
   {id:'spore_shrine', name:'포자 제단', icon:'🌀', cls:'t-shrine',
    flavor:'균사가 뒤엉킨 제단. 무언가 강력한 것이 여기서 자라고 있다.',
    events:['nothing'], gather:[]},
@@ -1604,9 +1604,8 @@ const CARDS=[
    desc:'[전투 전용] 전투 핸드에서 즉시 발동. 적 HP-10, 스턴 1라운드 (보스는 35% 확률).', use:'sk_cb_strike'},
 
   // ── 균사의 늪 (섬4) 전용 카드 ──
-  {id:'rotten_food', name:'썩은 음식', icon:'🤢', tag:'status', atk:-1, def:0, n:0, subTags:[],
-   use:'eat_rotten',
-   desc:'균사에 오염된 음식. 섭취 시 HP-5, 정신력-3.'},
+  {id:'rotten_food', name:'썩은 음식', icon:'🤢', tag:'status', atk:-1, def:0, n:0, dur:3, subTags:[], use:'eat_rotten',
+   desc:'균사에 오염된 음식. 허기+10 HP-5 정신력-3. 내구도 3회 사용 후 소멸.'},
   {id:'spore', name:'포자', icon:'💛', tag:'resource', atk:0, def:0, n:0, subTags:[],
    desc:'균사 관련 이벤트 재료.'},
   {id:'mycelium', name:'균사', icon:'🍄', tag:'resource', atk:0, def:1, n:0, subTags:[],
@@ -1614,6 +1613,12 @@ const CARDS=[
   {id:'spore_card', name:'포자 흡입', icon:'☁️', tag:'status', atk:-1, def:-1, n:0, subTags:[],
    passiveDesc:'포자 흡입: 판정 드로우 시 정신력-4',
    desc:'포자에 오염됐다. 탐색 판정 드로우 시 정신력-4.'},
+  {id:'myc_chunk', name:'균사 덩어리', icon:'🧫', tag:'resource', atk:0, def:0, n:0, dur:1, use:'eat_chunk', subTags:['고기'],
+   desc:'균사로 정화된 먹을거리. 허기+10. 썩지 않는다. 1회용.'},
+  {id:'myc_map_piece', name:'균사지도 조각', icon:'🍃', tag:'resource', atk:0, def:0, n:0, subTags:[],
+   desc:'포자 제단으로 이어지는 균사 흔적의 조각. 3개를 모아 지도를 만든다.'},
+  {id:'myc_map', name:'균사지도', icon:'🗺️', tag:'tool', atk:0, def:0, n:0, dur:1, subTags:[],
+   desc:'포자 제단 내부 구조 지도. 보유 중이면 포자 제단 페이즈 도전 가능. 사용 시 영구 해금.', use:'myc_map'},
 ];
 
 const ENEMIES={
@@ -1675,7 +1680,7 @@ const ENEMIES={
 
   // ── 균사의 늪 (섬4) 전용 몬스터 ──
   cbt_spore_walker:{name:'포자 인간',icon:'🧟',hp:24,atk:10,def:2,
-    mapDrop:true, pattern:'spore_infect',
+    mycMapDrop:true, pattern:'spore_infect',
     patternDesc:'공격 시 포자 카드를 덱에 주입',
     encDesc:'균사에 잠식된 인간의 잔해. 공격할 때마다 포자 카드가 덱에 섞인다.',
     observeReward:[{id:'spore',n:1}],
@@ -1684,7 +1689,7 @@ const ENEMIES={
     altCards:[[{id:'spore',n:2}],[{id:'herb',n:1}]],
     rewardDesc:'균사×1 + (포자×2 또는 약초×1)'},
   cbt_mycelium_beast:{name:'균사 수호수',icon:'🦬',hp:38,atk:14,def:4,
-    mapDrop:true, regenPerRound:6,
+    mycMapDrop:true, regenPerRound:6,
     patternDesc:'매 라운드 HP+6 재생',
     encDesc:'거대한 균사 덩어리가 형상을 이루었다. 매 라운드 체력을 재생한다.',
     observeReward:[{id:'mycelium',n:2}],
@@ -1693,7 +1698,7 @@ const ENEMIES={
     altCards:[[{id:'spore',n:2}],[{id:'herb',n:1}]],
     rewardDesc:'균사×2 + (포자×2 또는 약초×1)'},
   cbt_swamp_frog:{name:'늪 개구리',icon:'🐸',hp:18,atk:8,def:1,
-    mapDrop:true,
+    mycMapDrop:true,
     encDesc:'거대한 늪 개구리가 독액을 뱉는다.',
     observeReward:[{id:'herb',n:1},{id:'spore',n:1}],
     observeText:'개구리를 피해 약초와 포자를 채취했다.',
@@ -1705,6 +1710,16 @@ const ENEMIES={
     bossType:'mycelium_boss', noFlee:true, _phase2:false,
     encDesc:'섬의 균사 네트워크가 형상을 이루었다. HP 50% 이하에서 포자 폭발이 시작된다.',
     reward:{san:30}, altCards:[[{id:'mycelium',n:3}],[{id:'spore',n:3},{id:'herb',n:2}]]},
+  boss_rot_queen:{name:'부패의 여왕', icon:'🍄', hp:130, atk:15, def:5,
+    bossType:'rot_queen', noFlee:true, _phase2:false,
+    encDesc:'부패의 여왕이 모습을 드러냈다. 매 라운드 네 식량을 오염시키고, 오염된 것을 먹어 회복한다.',
+    patternDesc:'매 라운드 덱의 식량 1장→썩은음식 변환. 썩은음식이 ATK존에 있으면 적 HP+15',
+    reward:{san:25}, altCards:[[{id:'mycelium',n:3}],[{id:'myc_map_piece',n:1},{id:'spore',n:3}]]},
+  boss_spore_tyrant:{name:'포자 폭군', icon:'☁️', hp:160, atk:12, def:4,
+    bossType:'spore_tyrant', noFlee:true, _phase2:false, regenPerRound:4,
+    encDesc:'포자 폭군이 포자를 뿜어낸다. 매 라운드 독이 누적되고, 체력을 재생한다.',
+    patternDesc:'매 라운드 독 1스택 부여 + HP+4 재생. HP 40% 이하: 분노(ATK+6)',
+    reward:{san:25}, altCards:[[{id:'mycelium',n:3}],[{id:'myc_map_piece',n:1},{id:'herb',n:3}]]},
 };
 
 const EVENTS={
