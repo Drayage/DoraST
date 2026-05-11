@@ -107,6 +107,12 @@ function render(){
   const ruinsCampCnt=p.camps.filter(cp=>p.tiles[cp].id==='ruins').length;
   const extraPassives=[];
   if(ropeCnt>0) extraPassives.push(`🪢 밧줄 드로우 +${ropeCnt}`);
+  if(p.islandId==='mycelium'){
+    const sporeCnt=cards.filter(c=>c.id==='spore').length;
+    const rotCnt=cards.filter(c=>c.id==='rotten_food').length;
+    if(sporeCnt>0) extraPassives.push(`💛 포자 ${sporeCnt}개`);
+    if(rotCnt>0)   extraPassives.push(`🤢 썩은음식 ${rotCnt}장`);
+  }
   const passiveAll=[...passives, ...extraPassives];
   d.passiveInfo.textContent=passiveAll.length?passiveAll.join(' / '):'없음';
 
