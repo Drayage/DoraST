@@ -7,8 +7,8 @@ const MYCELIUM_DOOM_STORY=[
    detail:'⚠️ 균사 잠식 시작: 매 취침마다 식량 카드 25%가 썩은 음식으로 변질',
    doomAdd:1, rateAfter:2, nextPhase:1},
   {phase:1, minDay:6,
-   title:'🌫️ 포자 속으로',
-   story:'탐색 중 포자 구름을 통과했다.\n숨을 참았지만 늦었다.\n\n안개가 걷히자 방향을 잃었다.\n같은 나무를 세 번째 보고 있다는 걸\n네 번째가 되어서야 알아챘다.\n\n균사가 기억에도 손을 뻗는다.',
+   title:'☁️ 포자가 번진다',
+   story:'포자 구름이 폐 속까지 들어왔다.\n쓴맛이 혀 끝에 남는다.\n\n균사망이 섬 전체를 촘촘히 연결하고 있다.\n발바닥이 그 진동을 먼저 느꼈다.\n\n식량 냄새가 달라졌다.\n탈출 시간이 짧아지고 있다.',
    detail:'⚠️ DOOM 즉시 +15%p → 이후 매 취침마다 +3%p 자동 증가',
    doomAdd:15, rateAfter:3, nextPhase:2},
   {phase:2, minDay:11,
@@ -29,7 +29,7 @@ const MYCELIUM_ENDGAME_FL=[
   {txt:'잠결에 썩은 음식을 먹은 것 같다. 속이 불편하다.',hpPen:3,sanPen:4},
   {txt:'균사 나무가 점점 가까워지는 느낌이다. 아니면 내가 가까이 간 건가.',hpPen:1,sanPen:6},
   {txt:'포자 구름 속에서 사람의 형상을 봤다. 달려갔더니 균사 덩어리였다.',hpPen:0,sanPen:8},
-  {txt:'이 섬에서 처음 깨어났던 날이 기억나지 않는다.',hpPen:2,sanPen:6},
+  {txt:'균사가 발밑에서 올라온다. 이미 무릎까지 뻗어있는 것 같다.',hpPen:2,sanPen:6},
 ];
 
 // ── 망각의 맹그로브 섬 종말 시나리오 ──
@@ -191,7 +191,8 @@ function doSleep(){
   const sanDrain=(G.camps.length?2:5)+doomSanExtra;
   G.san=Math.min(100,Math.max(0,G.san+sanR-sanDrain+wD.san));
   const bonAP=early?2:0;
-  G.tomorrow=WEATHER[Math.floor(Math.random()*WEATHER.length)];
+  const _wPool=G.islandId==='mycelium'?WEATHER_MYCELIUM:WEATHER;
+  G.tomorrow=_wPool[Math.floor(Math.random()*_wPool.length)];
   G.ap=Math.max(1,G.maxAP+bonAP+ruinsBonusAP-fatigueN*2+wD.ap);
   if(wD.fog) log(`${G.weather.icon} ${G.weather.name}: 안개가 짙어졌다.`,'danger');
   if(G.day>5){
@@ -278,10 +279,15 @@ function _processDoom(early){
     if(G.doom>=100){
       G.doomPhase=5; // 반복 모달 방지
       checkSurvival(); if(G.over) return;
-      _showDoomModal('🌫️ 완전한 망각',fl.txt+'\n\n안개가 100%에 도달했다.\n이제 탈출 의지 자체가 흐릿해진다.\n다음 취침부터 생사의 복권이 시작된다.',`DOOM ${G.doom}%`,()=>_afterDoom(early));
+      const doom100Txt=G.islandId==='mycelium'
+        ?fl.txt+'\n\n포자 잠식이 100%에 도달했다.\n모든 식량이 균사에 물들었다.\n다음 취침부터 생사의 복권이 시작된다.'
+        :fl.txt+'\n\n안개가 100%에 도달했다.\n이제 탈출 의지 자체가 흐릿해진다.\n다음 취침부터 생사의 복권이 시작된다.';
+      const doom100Title=G.islandId==='mycelium'?'🍄 완전 잠식':'🌫️ 완전한 망각';
+      _showDoomModal(doom100Title,doom100Txt,`DOOM ${G.doom}%`,()=>_afterDoom(early));
       return;
     }
-    _showDoomModal('🌫️ 망각의 진행',fl.txt+`\n\n정신력 -${fl.sanPen}${fl.hpPen>0?` · 체력 -${fl.hpPen}`:''}`,`종말 +${add}% → ${G.doom}%`,()=>_afterDoom(early));
+    const doomProgressTitle=G.islandId==='mycelium'?'🍄 균사 잠식':'🌫️ 망각의 진행';
+    _showDoomModal(doomProgressTitle,fl.txt+`\n\n정신력 -${fl.sanPen}${fl.hpPen>0?` · 체력 -${fl.hpPen}`:''}`,`종말 +${add}% → ${G.doom}%`,()=>_afterDoom(early));
     return;
   }
   _afterDoom(early);

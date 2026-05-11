@@ -622,6 +622,21 @@ function _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,will
   resEl.style.display='block';
   resEl.innerHTML=lines.map(l=>`<div class="rl ${l.cls}">${l.t}</div>`).join('');
 
+  // 흡혈(drain): 플레이어 피해 일부를 적 HP로 회복
+  if(e.drainRatio && dmgP>0 && e.curHp>0){
+    const drain=Math.ceil(dmgP*e.drainRatio);
+    e.curHp=Math.min(e.hp,e.curHp+drain);
+    resEl.innerHTML+=`<div class="rl bad">🪱 흡혈: 피해 흡수 → 적 HP+${drain} (현재 ${e.curHp})</div>`;
+    log(`🪱 균사 거머리 흡혈: HP+${drain}`,'danger');
+  }
+  // 포자 폭발: HP 50% 이하 진입 시 spore_card×2 (1회)
+  if(e.sporeBurstAt && !e._sporeBursted && e.curHp>0 && e.curHp<=Math.floor(e.hp*e.sporeBurstAt)){
+    e._sporeBursted=true;
+    addCard('spore_card',2);
+    resEl.innerHTML+=`<div class="rl bad">🌿 포자 폭발! 포자 흡입 카드×2가 덱에 침투했다!</div>`;
+    log('🌿 포자 버섯 포자 폭발: spore_card×2 덱 침투','danger');
+  }
+
   if(e.curHp<=0){
     // 승리 처리 — 기본 보상 + 랜덤 추가 전리품
     const rewardItems=[];
@@ -729,6 +744,12 @@ function _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,will
       addCard('spore_card',1);
       resEl.innerHTML+=`<div class="rl bad">🌡️ 포자 감염! spore_card가 덱에 추가됐다</div>`;
       log('🌡️ 포자 인간 공격 — 포자 흡입 카드 추가','danger');
+    }
+    // 균사 슬라임: 매 라운드 ATK 성장
+    if(e.growAtkPerRound && e.curHp>0){
+      e.atk=Math.min(e.growAtkMax||16, e.atk+e.growAtkPerRound);
+      resEl.innerHTML+=`<div class="rl bad">🫧 재성형: ATK → ${e.atk} (방치할수록 위험)</div>`;
+      log(`🫧 균사 슬라임 재성형: ATK→${e.atk}`,'danger');
     }
     // 부패의 여왕: 매 라운드 덱의 food/berry/herb 1장 → rotten_food 변환
     if(e.bossType==='rot_queen' && e.curHp>0){

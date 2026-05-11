@@ -120,7 +120,9 @@ function _endHeadline(win, reason){
       return {main:'구조 성공', sub:`${G.day}일 만에 ${scTxt} 구조선을 불러냈다.`};
     }
     if(reason==='mycelium'){
-      return {main:'균사 격파', sub:`${G.day}일 만에 대균사를 쓰러뜨리고 포자 구름이 걷혔다.`};
+      const bossNames={boss_rot_queen:'부패의 여왕', boss_spore_tyrant:'포자 폭군'};
+      const bossName=bossNames[G.mycBoss]||'대균사';
+      return {main:'균사의 늪 탈출', sub:`${G.day}일 만에 포자 제단 3단계를 돌파하고 ${bossName}을 쓰러뜨렸다. 포자 구름이 일시에 걷히며 탈출로가 열렸다.`};
     }
     let main='탈출 성공';
     if(G.hp>=70&&G.san>=70&&G.day<=15) main='완벽한 생존';
@@ -175,7 +177,11 @@ function _endHighlights(win, reason){
     h.push(`🎆 무려 ${G.signalCollected}발의 신호탄을 쏜 끝에 구조를 불렀다`);
   }
   if(win&&reason==='mycelium'){
-    h.push(`🌀 포자 제단의 3단계를 모두 돌파하고 대균사를 쓰러뜨렸다`);
+    const bossNames={boss_rot_queen:'부패의 여왕', boss_spore_tyrant:'포자 폭군'};
+    const bossName=bossNames[G.mycBoss]||'대균사';
+    h.push(`🌀 포자 제단 3단계 돌파 — ${bossName} 처치로 탈출`);
+    const mapPiecesCnt=Object.keys(G.mycMapDrops||{}).length;
+    if(mapPiecesCnt>=3) h.push(`🍃 필드에서 균사지도 조각 ${mapPiecesCnt}종을 수집해 제단에 도전했다`);
   }
 
   // 골드 스킬 보유

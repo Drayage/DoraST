@@ -1316,11 +1316,11 @@ const TILE_TYPES=[
   // ── 균사의 늪 (섬4) 전용 타일 ──
   {id:'swamp', name:'균사 늪', icon:'🍄', cls:'t-swamp',
    flavor:'균사가 뒤덮인 습한 늪. 달콤하고 낯선 냄새가 난다.',
-   events:['myc_gather','myc_purify','myc_hazard','cbt_swamp_frog','nothing'],
+   events:['myc_gather','myc_purify','myc_hazard','cbt_swamp_frog','cbt_myc_leech','cbt_myc_slime','nothing','nothing'],
    gather:[]},
   {id:'fungal_spot', name:'균류 군락', icon:'🌫️', cls:'t-fungal',
    flavor:'거대한 버섯들이 군락을 이루고 있다. 안에서 뭔가 자라고 있는 것 같다.',
-   events:['myc_fungal','myc_gather','nothing'], gather:[], fungalDmgOnEnter:3},
+   events:['myc_fungal','myc_gather','cbt_spore_puff','nothing'], gather:[], fungalDmgOnEnter:3},
   {id:'spore_shrine', name:'포자 제단', icon:'🌀', cls:'t-shrine',
    flavor:'균사가 뒤엉킨 제단. 무언가 강력한 것이 여기서 자라고 있다.',
    events:['nothing'], gather:[]},
@@ -1339,6 +1339,15 @@ const WEATHER=[
   {id:'heat',  name:'폭염',    icon:'🔥', eff:'thi_-14'},
   {id:'fog',   name:'짙은안개',icon:'🌫️',eff:'fog'},
   {id:'storm', name:'폭풍',    icon:'⛈️', eff:'hp_-10'},
+];
+const WEATHER_MYCELIUM=[
+  {id:'cloudy', name:'흐림',      icon:'☁️', eff:'thi_+5'},
+  {id:'cloudy', name:'흐림',      icon:'☁️', eff:'thi_+5'},
+  {id:'rain',   name:'습한 비',   icon:'🌧️',eff:'ap_-1'},
+  {id:'rain',   name:'습한 비',   icon:'🌧️',eff:'ap_-1'},
+  {id:'overcast',name:'무거운 하늘',icon:'🌑',eff:'san_-2'},
+  {id:'storm',  name:'뇌우',      icon:'⛈️', eff:'hp_-8'},
+  {id:'fog',    name:'포자 안개', icon:'🌫️',eff:'fog'},
 ];
 
 // dur: n회 사용 후 덱에서 영구 제거. 인스턴스에 curDur 추가
@@ -1702,13 +1711,44 @@ const ENEMIES={
     rewardDesc:'균사×2 + (포자×2 또는 약초×1)'},
   cbt_swamp_frog:{name:'늪 개구리',icon:'🐸',hp:18,atk:8,def:1,
     mycMapDrop:true,
-    encDesc:'거대한 늪 개구리가 독액을 뱉는다.',
+    patternDesc:'피해 시 poison_status 카드 덱 추가 (1회)',
+    encDesc:'거대한 늪 개구리가 독액을 뱉는다. 피해를 입으면 독 카드가 덱에 섞인다.',
     observeReward:[{id:'herb',n:1},{id:'spore',n:1}],
     observeText:'개구리를 피해 약초와 포자를 채취했다.',
     reward:{cards:[{id:'food',n:1}]},
     altCards:[[{id:'herb',n:1},{id:'venom',n:1}],[{id:'spore',n:1}]],
     rewardDesc:'식량×1 + (약초+독낭 또는 포자×1)',
-    penalty:{card:'poison_status',desc:'개구리 독에 중독됐다'}},
+    penalty:{card:'poison_status',desc:'🐸 개구리 독: poison_status 카드가 덱에 추가됐다'}},
+  cbt_myc_leech:{name:'균사 거머리',icon:'🪱',hp:22,atk:10,def:2,
+    mycMapDrop:true,
+    drainRatio:0.5,
+    patternDesc:'흡혈: 플레이어가 입힌 피해의 50% 회복',
+    encDesc:'균사에 기생하는 거대 거머리. 피해를 받을수록 자신을 회복한다. 빠르게 높은 피해가 핵심.',
+    observeReward:[{id:'mycelium',n:1}],
+    observeText:'거머리 주위에서 균사를 채취했다.',
+    reward:{cards:[{id:'mycelium',n:1}]},
+    altCards:[[{id:'mycelium',n:2}],[{id:'herb',n:1},{id:'spore',n:1}]],
+    rewardDesc:'균사×1 + (균사×2 또는 약초+포자)'},
+  cbt_spore_puff:{name:'포자 버섯',icon:'🌿',hp:20,atk:6,def:4,
+    mycMapDrop:true,
+    sporeBurstAt:0.5,
+    patternDesc:'포자 폭발: HP 50% 이하 진입 시 spore_card×2 덱 침투 (1회)',
+    encDesc:'방어력이 높은 거대 버섯. HP가 절반 이하로 떨어지면 포자를 폭발적으로 분출한다.',
+    observeReward:[{id:'spore',n:2}],
+    observeText:'버섯 주변에서 포자를 조심히 채취했다.',
+    reward:{cards:[{id:'spore',n:1}]},
+    altCards:[[{id:'mycelium',n:1},{id:'spore',n:2}],[{id:'herb',n:1}]],
+    rewardDesc:'포자×1 + (균사+포자×2 또는 약초)'},
+  cbt_myc_slime:{name:'균사 슬라임',icon:'🫧',hp:26,atk:7,def:3,
+    mycMapDrop:true,
+    growAtkPerRound:1, growAtkMax:16,
+    patternDesc:'재성형: 매 라운드 ATK+1 (최대 16) — 오래 싸울수록 위험',
+    encDesc:'형태 없는 균사 덩어리. 매 라운드 재성형하며 강해진다. 방치하면 손 쓸 수 없어진다.',
+    observeReward:[{id:'mycelium',n:2}],
+    observeText:'슬라임을 피해 균사를 채취했다.',
+    reward:{cards:[{id:'mycelium',n:1}]},
+    altCards:[[{id:'mycelium',n:2}],[{id:'spore',n:1},{id:'mycelium',n:1}]],
+    rewardDesc:'균사×1 + (균사×2 또는 포자+균사)'},
   boss_great_mycelium:{name:'대균사',icon:'🌀',hp:140,atk:18,def:6,
     bossType:'mycelium_boss', noFlee:true, _phase2:false,
     encDesc:'섬의 균사 네트워크가 형상을 이루었다. HP 50% 이하에서 포자 폭발이 시작된다.',
@@ -2329,8 +2369,8 @@ const ISLANDS = {
     id: 'mycelium',
     name: '균사의 늪',
     icon: '🍄',
-    subtitle: '포자가 기억을 바꾸는 섬',
-    story: '눈을 떴을 때, 달콤하고 낯선 냄새가 코를 찔렀다.\n\n온 사방이 습기와 균사로 뒤덮여 있다. 발을 내딛을 때마다 포자가 피어오른다.\n\n식량을 구했는데, 밤새 곰팡이가 폈다.\n믿었던 것이 독이 되는 섬.\n\n빠져나가야 한다. 이 균사가 기억까지 바꾸기 전에.',
+    subtitle: '식량이 썩어가는 균사 습지',
+    story: '눈을 떴을 때, 달콤하면서도 썩은 냄새가 코를 찔렀다.\n\n온 사방이 습기와 균사로 뒤덮여 있다. 발을 내딛을 때마다 노란 포자가 피어오른다.\n\n밤새 식량에 곰팡이가 폈다. 덱이 오염되기 시작했다.\n믿었던 식량이 독이 되는 섬.\n\n빠져나가야 한다. 포자가 덱까지 완전히 잠식하기 전에.',
     mechanic: '🍄 균사 잠식\n매 취침마다 덱의 식량 카드 25%가 썩은 음식으로 변질된다.\n변질된 음식을 섭취하면 HP-5, 정신력-3.\nDOOM 60% 이후 포자 카드가 덱에 침투한다.',
     doomName: '균사 잠식',
     doomIcon: '🍄',
@@ -3343,7 +3383,9 @@ function _endHeadline(win, reason){
       return {main:'구조 성공', sub:`${G.day}일 만에 ${scTxt} 구조선을 불러냈다.`};
     }
     if(reason==='mycelium'){
-      return {main:'균사 격파', sub:`${G.day}일 만에 대균사를 쓰러뜨리고 포자 구름이 걷혔다.`};
+      const bossNames={boss_rot_queen:'부패의 여왕', boss_spore_tyrant:'포자 폭군'};
+      const bossName=bossNames[G.mycBoss]||'대균사';
+      return {main:'균사의 늪 탈출', sub:`${G.day}일 만에 포자 제단 3단계를 돌파하고 ${bossName}을 쓰러뜨렸다. 포자 구름이 일시에 걷히며 탈출로가 열렸다.`};
     }
     let main='탈출 성공';
     if(G.hp>=70&&G.san>=70&&G.day<=15) main='완벽한 생존';
@@ -3398,7 +3440,11 @@ function _endHighlights(win, reason){
     h.push(`🎆 무려 ${G.signalCollected}발의 신호탄을 쏜 끝에 구조를 불렀다`);
   }
   if(win&&reason==='mycelium'){
-    h.push(`🌀 포자 제단의 3단계를 모두 돌파하고 대균사를 쓰러뜨렸다`);
+    const bossNames={boss_rot_queen:'부패의 여왕', boss_spore_tyrant:'포자 폭군'};
+    const bossName=bossNames[G.mycBoss]||'대균사';
+    h.push(`🌀 포자 제단 3단계 돌파 — ${bossName} 처치로 탈출`);
+    const mapPiecesCnt=Object.keys(G.mycMapDrops||{}).length;
+    if(mapPiecesCnt>=3) h.push(`🍃 필드에서 균사지도 조각 ${mapPiecesCnt}종을 수집해 제단에 도전했다`);
   }
 
   // 골드 스킬 보유
@@ -4920,8 +4966,8 @@ const MYCELIUM_DOOM_STORY=[
    detail:'⚠️ 균사 잠식 시작: 매 취침마다 식량 카드 25%가 썩은 음식으로 변질',
    doomAdd:1, rateAfter:2, nextPhase:1},
   {phase:1, minDay:6,
-   title:'🌫️ 포자 속으로',
-   story:'탐색 중 포자 구름을 통과했다.\n숨을 참았지만 늦었다.\n\n안개가 걷히자 방향을 잃었다.\n같은 나무를 세 번째 보고 있다는 걸\n네 번째가 되어서야 알아챘다.\n\n균사가 기억에도 손을 뻗는다.',
+   title:'☁️ 포자가 번진다',
+   story:'포자 구름이 폐 속까지 들어왔다.\n쓴맛이 혀 끝에 남는다.\n\n균사망이 섬 전체를 촘촘히 연결하고 있다.\n발바닥이 그 진동을 먼저 느꼈다.\n\n식량 냄새가 달라졌다.\n탈출 시간이 짧아지고 있다.',
    detail:'⚠️ DOOM 즉시 +15%p → 이후 매 취침마다 +3%p 자동 증가',
    doomAdd:15, rateAfter:3, nextPhase:2},
   {phase:2, minDay:11,
@@ -4942,7 +4988,7 @@ const MYCELIUM_ENDGAME_FL=[
   {txt:'잠결에 썩은 음식을 먹은 것 같다. 속이 불편하다.',hpPen:3,sanPen:4},
   {txt:'균사 나무가 점점 가까워지는 느낌이다. 아니면 내가 가까이 간 건가.',hpPen:1,sanPen:6},
   {txt:'포자 구름 속에서 사람의 형상을 봤다. 달려갔더니 균사 덩어리였다.',hpPen:0,sanPen:8},
-  {txt:'이 섬에서 처음 깨어났던 날이 기억나지 않는다.',hpPen:2,sanPen:6},
+  {txt:'균사가 발밑에서 올라온다. 이미 무릎까지 뻗어있는 것 같다.',hpPen:2,sanPen:6},
 ];
 
 // ── 망각의 맹그로브 섬 종말 시나리오 ──
@@ -5104,7 +5150,8 @@ function doSleep(){
   const sanDrain=(G.camps.length?2:5)+doomSanExtra;
   G.san=Math.min(100,Math.max(0,G.san+sanR-sanDrain+wD.san));
   const bonAP=early?2:0;
-  G.tomorrow=WEATHER[Math.floor(Math.random()*WEATHER.length)];
+  const _wPool=G.islandId==='mycelium'?WEATHER_MYCELIUM:WEATHER;
+  G.tomorrow=_wPool[Math.floor(Math.random()*_wPool.length)];
   G.ap=Math.max(1,G.maxAP+bonAP+ruinsBonusAP-fatigueN*2+wD.ap);
   if(wD.fog) log(`${G.weather.icon} ${G.weather.name}: 안개가 짙어졌다.`,'danger');
   if(G.day>5){
@@ -5191,10 +5238,15 @@ function _processDoom(early){
     if(G.doom>=100){
       G.doomPhase=5; // 반복 모달 방지
       checkSurvival(); if(G.over) return;
-      _showDoomModal('🌫️ 완전한 망각',fl.txt+'\n\n안개가 100%에 도달했다.\n이제 탈출 의지 자체가 흐릿해진다.\n다음 취침부터 생사의 복권이 시작된다.',`DOOM ${G.doom}%`,()=>_afterDoom(early));
+      const doom100Txt=G.islandId==='mycelium'
+        ?fl.txt+'\n\n포자 잠식이 100%에 도달했다.\n모든 식량이 균사에 물들었다.\n다음 취침부터 생사의 복권이 시작된다.'
+        :fl.txt+'\n\n안개가 100%에 도달했다.\n이제 탈출 의지 자체가 흐릿해진다.\n다음 취침부터 생사의 복권이 시작된다.';
+      const doom100Title=G.islandId==='mycelium'?'🍄 완전 잠식':'🌫️ 완전한 망각';
+      _showDoomModal(doom100Title,doom100Txt,`DOOM ${G.doom}%`,()=>_afterDoom(early));
       return;
     }
-    _showDoomModal('🌫️ 망각의 진행',fl.txt+`\n\n정신력 -${fl.sanPen}${fl.hpPen>0?` · 체력 -${fl.hpPen}`:''}`,`종말 +${add}% → ${G.doom}%`,()=>_afterDoom(early));
+    const doomProgressTitle=G.islandId==='mycelium'?'🍄 균사 잠식':'🌫️ 망각의 진행';
+    _showDoomModal(doomProgressTitle,fl.txt+`\n\n정신력 -${fl.sanPen}${fl.hpPen>0?` · 체력 -${fl.hpPen}`:''}`,`종말 +${add}% → ${G.doom}%`,()=>_afterDoom(early));
     return;
   }
   _afterDoom(early);
@@ -6091,6 +6143,21 @@ function _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,will
   resEl.style.display='block';
   resEl.innerHTML=lines.map(l=>`<div class="rl ${l.cls}">${l.t}</div>`).join('');
 
+  // 흡혈(drain): 플레이어 피해 일부를 적 HP로 회복
+  if(e.drainRatio && dmgP>0 && e.curHp>0){
+    const drain=Math.ceil(dmgP*e.drainRatio);
+    e.curHp=Math.min(e.hp,e.curHp+drain);
+    resEl.innerHTML+=`<div class="rl bad">🪱 흡혈: 피해 흡수 → 적 HP+${drain} (현재 ${e.curHp})</div>`;
+    log(`🪱 균사 거머리 흡혈: HP+${drain}`,'danger');
+  }
+  // 포자 폭발: HP 50% 이하 진입 시 spore_card×2 (1회)
+  if(e.sporeBurstAt && !e._sporeBursted && e.curHp>0 && e.curHp<=Math.floor(e.hp*e.sporeBurstAt)){
+    e._sporeBursted=true;
+    addCard('spore_card',2);
+    resEl.innerHTML+=`<div class="rl bad">🌿 포자 폭발! 포자 흡입 카드×2가 덱에 침투했다!</div>`;
+    log('🌿 포자 버섯 포자 폭발: spore_card×2 덱 침투','danger');
+  }
+
   if(e.curHp<=0){
     // 승리 처리 — 기본 보상 + 랜덤 추가 전리품
     const rewardItems=[];
@@ -6198,6 +6265,12 @@ function _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,will
       addCard('spore_card',1);
       resEl.innerHTML+=`<div class="rl bad">🌡️ 포자 감염! spore_card가 덱에 추가됐다</div>`;
       log('🌡️ 포자 인간 공격 — 포자 흡입 카드 추가','danger');
+    }
+    // 균사 슬라임: 매 라운드 ATK 성장
+    if(e.growAtkPerRound && e.curHp>0){
+      e.atk=Math.min(e.growAtkMax||16, e.atk+e.growAtkPerRound);
+      resEl.innerHTML+=`<div class="rl bad">🫧 재성형: ATK → ${e.atk} (방치할수록 위험)</div>`;
+      log(`🫧 균사 슬라임 재성형: ATK→${e.atk}`,'danger');
     }
     // 부패의 여왕: 매 라운드 덱의 food/berry/herb 1장 → rotten_food 변환
     if(e.bossType==='rot_queen' && e.curHp>0){
