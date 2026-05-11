@@ -116,7 +116,9 @@ function clickTile(i){
   }
   if(t.id==='thicket'&&!t.explored){
     t.explored=true;
-    const _ambPool=['cbt_boar','cbt_boar','cbt_snake','cbt_snake','cbt_bat','cbt_ghost'];
+    const _ambPool=G.islandId==='mycelium'
+      ?['cbt_spore_walker','cbt_mycelium_beast','cbt_swamp_frog','cbt_swamp_frog']
+      :['cbt_boar','cbt_boar','cbt_snake','cbt_snake','cbt_bat','cbt_ghost'];
     setTimeout(()=>showThicketAmbush(_ambPool[Math.floor(Math.random()*_ambPool.length)]),300);
   }
   getAdj(i).forEach(j=>{
@@ -124,7 +126,9 @@ function clickTile(i){
     G.tiles[j].revealed=true;
     if(!wasRevealed && G.tiles[j].id==='thicket' && !G.tiles[j].explored){
       G.tiles[j].explored=true;
-      const _ambPool=['cbt_boar','cbt_boar','cbt_snake','cbt_snake','cbt_bat','cbt_ghost'];
+      const _ambPool=G.islandId==='mycelium'
+        ?['cbt_spore_walker','cbt_mycelium_beast','cbt_swamp_frog','cbt_swamp_frog']
+        :['cbt_boar','cbt_boar','cbt_snake','cbt_snake','cbt_bat','cbt_ghost'];
       const ambEvt=_ambPool[Math.floor(Math.random()*_ambPool.length)];
       setTimeout(()=>showThicketAmbush(ambEvt),300);
     }

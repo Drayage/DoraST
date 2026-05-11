@@ -557,8 +557,9 @@ function resolveCombat(){
     if(G._templeBonus.def){ pD+=G._templeBonus.def; lines.push({t:`🏛️ 제단 DEF+${G._templeBonus.def}`,cls:'good'}); }
   }
 
-  const poisonDmg=CBT.poisoned?3:0;
+  const poisonDmg=(CBT.poisoned?3:0)+(CBT.poisonStacks||0)*3;
   if(CBT.poisoned) lines.push({t:`☠️ 독 지속피해: 적 -3`,cls:'good'});
+  if(CBT.poisonStacks) lines.push({t:`☁️ 포자 독 누적 ${CBT.poisonStacks}스택: 적 -${(CBT.poisonStacks)*3}`,cls:'good'});
   const bleedDmg=(e._bleedStacks||0)*2;
   if(e._bleedStacks) lines.push({t:`🦴 출혈 지속피해: 적 -${bleedDmg}`,cls:'good'});
 
@@ -642,6 +643,17 @@ function _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,will
         resEl.innerHTML+=`<div class="rl neutral">🗺️ 이 종류 몬스터에선 이미 조각을 획득했다</div>`;
       }
     }
+    if(e.mycMapDrop){
+      const dropKey='myc_'+(CBT._evtId||e.name);
+      if(!G.mycMapDrops) G.mycMapDrops={};
+      if(!G.mycMapDrops[dropKey]){
+        G.mycMapDrops[dropKey]=true;
+        rewardItems.push({id:'myc_map_piece',icon:'🍃',name:'균사지도 조각',n:1});
+        resEl.innerHTML+=`<div class="rl good">🍃 균사지도 조각 획득! (이 종류에서 첫 드롭)</div>`;
+      } else {
+        resEl.innerHTML+=`<div class="rl neutral">🍃 이 종류 몬스터에선 이미 조각을 획득했다</div>`;
+      }
+    }
     resEl.innerHTML+=`<div class="rl good" style="font-size:13px;margin-top:5px;">🏆 ${e.name} 처치!</div>`;
     resEl.innerHTML+=`<div class="rl good">💎 전리품: ${rewardItems.map(r=>r.icon+r.name+'×'+r.n).join(' ')} — 클릭해서 선택 획득</div>`;
     G.kills++; CBT.resolved=true;
@@ -717,6 +729,38 @@ function _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,will
       addCard('spore_card',1);
       resEl.innerHTML+=`<div class="rl bad">🌡️ 포자 감염! spore_card가 덱에 추가됐다</div>`;
       log('🌡️ 포자 인간 공격 — 포자 흡입 카드 추가','danger');
+    }
+    // 부패의 여왕: 매 라운드 덱의 food/berry/herb 1장 → rotten_food 변환
+    if(e.bossType==='rot_queen' && e.curHp>0){
+      const foodIds=['food','berry','herb'];
+      const rotDef=CARDS.find(d=>d.id==='rotten_food');
+      if(rotDef){
+        const fi=G.deck.findIndex(c=>foodIds.includes(c.id));
+        if(fi>=0){ G.deck[fi]={...rotDef,uid:uid()}; resEl.innerHTML+=`<div class="rl bad">🍄 부패의 여왕: 식량 1장이 썩은 음식으로 변했다!</div>`; log('🍄 부패의 여왕: 덱의 식량→썩은음식','danger'); }
+      }
+      // 썩은음식이 ATK존에 있으면 보스 회복
+      const rotInAtk=CBT.atkZone.filter(c=>c.id==='rotten_food').length;
+      if(rotInAtk>0){
+        const heal=15*rotInAtk; e.curHp=Math.min(e.hp,e.curHp+heal);
+        resEl.innerHTML+=`<div class="rl bad">🍄 부패의 여왕: 썩은 음식을 먹어 HP+${heal} 회복!</div>`; log(`🍄 썩은음식 섭취 회복: +${heal}`,'danger');
+      }
+      // phase2: HP 50% 이하, 2장 변환
+      if(!e._phase2&&e.curHp>0&&e.curHp<=Math.floor(e.hp*0.5)){
+        e._phase2=true;
+        const foodIds2=['food','berry','herb'];
+        const rotDef2=CARDS.find(d=>d.id==='rotten_food');
+        if(rotDef2){ const fi2=G.deck.findIndex(c=>foodIds2.includes(c.id)); if(fi2>=0){ G.deck[fi2]={...rotDef2,uid:uid()}; } }
+        resEl.innerHTML+=`<div class="rl bad">🍄 부패의 여왕 2단계! 변환 속도 증가!</div>`; e.atk+=3; log('🍄 부패의 여왕 2단계: ATK+3','danger');
+      }
+    }
+    // 포자 폭군: 매 라운드 독 1스택 + phase2
+    if(e.bossType==='spore_tyrant' && e.curHp>0){
+      CBT.poisonStacks=(CBT.poisonStacks||0)+1;
+      resEl.innerHTML+=`<div class="rl bad">☁️ 포자 폭군: 독 1스택 누적 (총 ${CBT.poisonStacks}스택 = 매라운드 HP-${CBT.poisonStacks*3})</div>`;
+      if(!e._phase2&&e.curHp>0&&e.curHp<=Math.floor(e.hp*0.4)){
+        e._phase2=true; e.atk+=6; e.regenPerRound=8;
+        resEl.innerHTML+=`<div class="rl bad">☁️ 포자 폭군 분노! ATK+6, 재생 증가!</div>`; log('☁️ 포자 폭군 분노 돌입','danger');
+      }
     }
     // 대균사 보스: HP 50% 이하 전환 (한 번만)
     if(e.bossType==='mycelium_boss'&&!e._phase2&&e.curHp>0&&e.curHp<=Math.floor(e.hp*0.5)){

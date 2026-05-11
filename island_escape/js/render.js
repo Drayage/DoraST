@@ -296,6 +296,8 @@ function render(){
       }
     } else if(ct.id==='spore_shrine'&&ct.explored){
       const sph=p.mycPhase||0;
+      const hasMap=cards.some(c=>c.id==='myc_map')||p.mycMapUsed;
+      const sporeCnt=cards.filter(c=>c.id==='spore').length;
       specEl.style.display='';
       if(sph>=3){
         specEl.innerHTML=`<div style="font-size:9px;color:var(--green);font-family:var(--font-m);">🌀 대균사 격파 — 균사 루트 탈출 완료</div>`;
@@ -303,12 +305,18 @@ function render(){
         const sphLabel=['🌀 포자 제단 진입','🌀 균사 2페이즈','🌀 대균사 결전'];
         const sphAP=[3,3,4];
         const prevDoneSp=sph>0?`<div style="font-size:8px;color:var(--green);margin-top:2px;">✓ ${sph}페이즈 완료</div>`:'';
+        const mapBtn=hasMap
+          ?`<button class="btn full" style="border-color:#774499;color:#cc88ee;font-size:10px;margin-top:5px;"
+              onclick="doSporeShrine()" ${p.ap<sphAP[sph]||p.over?'disabled':''}>
+              ${sphLabel[sph]}<span class="apb" style="margin-left:4px;">AP${sphAP[sph]}</span>
+            </button>${prevDoneSp}`
+          :`<div style="font-size:8px;color:var(--text3);font-family:var(--font-m);margin-top:4px;">🗺️ 균사지도 필요 — 지도 없이는 길을 헤맴</div>`;
         specEl.innerHTML=`<div style="font-size:9px;color:#cc88ee;font-family:var(--font-m);margin-bottom:5px;">🌀 포자 제단 (${sph}/2 완료)</div>
-          <button class="btn full" style="border-color:#774499;color:#cc88ee;font-size:10px;"
-            onclick="doSporeShrine()" ${p.ap<sphAP[sph]||p.over?'disabled':''}>
-            ${sphLabel[sph]}<span class="apb" style="margin-left:4px;">AP${sphAP[sph]}</span>
+          <button class="btn full" style="border-color:#553366;color:#aa88cc;font-size:10px;"
+            onclick="doSporeShrineExchange()" ${!sporeCnt||p.over?'disabled':''}>
+            🌱 포자 제물 교환<span style="font-size:8px;color:var(--text3);margin-left:4px;">(포자${sporeCnt}개 보유)</span>
           </button>
-          ${prevDoneSp}`;
+          ${mapBtn}`;
       }
     } else if(ct.id==='oblivion_lake'&&ct.explored){
       const coolDays=3-(p.day-(p.lastOblivion||-99));

@@ -1,5 +1,37 @@
 // ═══════════════ SLEEP ═══════════════
 
+const MYCELIUM_DOOM_STORY=[
+  {phase:0,
+   title:'🍄 최초의 포자',
+   story:'첫 번째 밤이 지나고, 배낭 안을 열었더니\n식량 하나에 하얀 균사가 피어 있었다.\n\n달콤하고 낯선 냄새.\n먹을 수 없다.\n\n이 섬의 균사는 살아있다 —\n네 음식에 손을 뻗기 시작했다.',
+   detail:'⚠️ 균사 잠식 시작: 매 취침마다 식량 카드 25%가 썩은 음식으로 변질',
+   doomAdd:1, rateAfter:2, nextPhase:1},
+  {phase:1, minDay:6,
+   title:'🌫️ 포자 속으로',
+   story:'탐색 중 포자 구름을 통과했다.\n숨을 참았지만 늦었다.\n\n안개가 걷히자 방향을 잃었다.\n같은 나무를 세 번째 보고 있다는 걸\n네 번째가 되어서야 알아챘다.\n\n균사가 기억에도 손을 뻗는다.',
+   detail:'⚠️ DOOM 즉시 +15%p → 이후 매 취침마다 +3%p 자동 증가',
+   doomAdd:15, rateAfter:3, nextPhase:2},
+  {phase:2, minDay:11,
+   title:'🍄 잠식의 가속',
+   story:'음식 냄새가 이상하다.\n꺼내보면 멀쩡해 보이는데,\n먹고 나면 속이 뒤집힌다.\n\n균사가 내 안에서도 자라는 것 같다.\n꿈에서도 균사 냄새가 났다.\n\n식량을 믿을 수가 없다.',
+   detail:'⚠️ DOOM 즉시 +25%p | 식량 변질 확률 25%→50% | 포자 카드 덱 침투 시작',
+   doomAdd:25, rateAfter:4, nextPhase:3},
+  {phase:3, minDay:16,
+   title:'🌑 완전 잠식',
+   story:'섬 전체가 균사로 뒤덮이고 있다.\n\n아침에 일어났을 때\n무엇을 먹었는지 기억이 없었다.\n잠에서 깨면 손에 썩은 것들이 쥐어져 있다.\n\n탈출하지 않으면 —\n이 섬의 일부가 된다.',
+   detail:'⚠️ DOOM 강제로 80%p 도달 | 매 취침 생사의 복권 시작',
+   doomSet:80, rateAfter:0, nextPhase:4},
+];
+
+const MYCELIUM_ENDGAME_FL=[
+  {txt:'균사 뿌리가 발목 근처까지 뻗어있다. 잘라냈지만 내일도 자라날 것이다.',hpPen:2,sanPen:5},
+  {txt:'식량을 꺼냈더니 손가락에 포자가 묻었다. 씻어내는 데 오래 걸렸다.',hpPen:0,sanPen:7},
+  {txt:'잠결에 썩은 음식을 먹은 것 같다. 속이 불편하다.',hpPen:3,sanPen:4},
+  {txt:'균사 나무가 점점 가까워지는 느낌이다. 아니면 내가 가까이 간 건가.',hpPen:1,sanPen:6},
+  {txt:'포자 구름 속에서 사람의 형상을 봤다. 달려갔더니 균사 덩어리였다.',hpPen:0,sanPen:8},
+  {txt:'이 섬에서 처음 깨어났던 날이 기억나지 않는다.',hpPen:2,sanPen:6},
+];
+
 // ── 망각의 맹그로브 섬 종말 시나리오 ──
 const DOOM_STORY=[
   {phase:0,
@@ -203,7 +235,8 @@ function doSleep(){
 function _processDoom(early){
   const _di=(ISLANDS[G.islandId]||ISLANDS.mangrove).doomIcon||'🌫️';
   // 스토리 이벤트 확인
-  const storyEvt=DOOM_STORY.find(e=>e.phase===G.doomPhase&&(e.minDay===undefined||G.day>=e.minDay));
+  const storyArr=(G.islandId==='mycelium')?MYCELIUM_DOOM_STORY:DOOM_STORY;
+  const storyEvt=storyArr.find(e=>e.phase===G.doomPhase&&(e.minDay===undefined||G.day>=e.minDay));
   if(storyEvt){
     if(storyEvt.doomSet!==undefined) G.doom=storyEvt.doomSet;
     else G.doom=Math.min(100,G.doom+(storyEvt.doomAdd||0));
@@ -226,12 +259,20 @@ function _processDoom(early){
   if(G.doomPhase===4){
     const add=2+Math.floor(Math.random()*2);
     G.doom=Math.min(100,G.doom+add);
-    const fl=DOOM_ENDGAME_FL[Math.floor(Math.random()*DOOM_ENDGAME_FL.length)];
+    const flArr=(G.islandId==='mycelium')?MYCELIUM_ENDGAME_FL:DOOM_ENDGAME_FL;
+    const fl=flArr[Math.floor(Math.random()*flArr.length)];
     G.hp=Math.max(0,G.hp-fl.hpPen); G.san=Math.max(0,G.san-fl.sanPen);
     if(fl.hpPen>0) flashDamage();
-    if(G.san<50&&Math.random()*100<(40-G.san*0.5)){
-      addCard('amnesia',1);
-      log('🌀 잠결에 환각이 스며들었다. 망각 카드가 덱에 추가됐다.','danger');
+    if(G.islandId==='mycelium'){
+      if(G.san<50&&Math.random()*100<(40-G.san*0.5)){
+        addCard('spore_card',1);
+        log('🌡️ 포자 흡입: 포자 카드가 스며들었다','danger');
+      }
+    } else {
+      if(G.san<50&&Math.random()*100<(40-G.san*0.5)){
+        addCard('amnesia',1);
+        log('🌀 잠결에 환각이 스며들었다. 망각 카드가 덱에 추가됐다.','danger');
+      }
     }
     log(`${_di} ${fl.txt} 정신력-${fl.sanPen}${fl.hpPen>0?` HP-${fl.hpPen}`:''}  DOOM+${add}(${G.doom}%)`,'danger');
     if(G.doom>=100){

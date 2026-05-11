@@ -892,6 +892,74 @@ const EVENTS={
        reward:{san:10},
        desc:'무조건. 신비한 감각. 정신력+10.'},
     ]},
+  myc_shrine_ev0:{
+    name:'포자 제단의 속삭임',
+    flavor:'제단 앞에서 균사 덩어리가 형상을 이루더니 속삭인다. 무언가를 느낄 수 있다.',
+    choices:[
+      {label:'균사를 바쳐 탐색',icon:'🍄',req:'resource',
+       reward:{san:10},failPen:{san:-5},
+       desc:'자원판정. 성공:정신력+10 + 보스 정보 획득 / 실패:정신력-5'},
+      {label:'그냥 살핀다',icon:'👁️',req:null,reward:{san:5},
+       desc:'무조건. 정신력+5. 보스 정보도 간략하게 얻는다.'},
+    ]},
+  myc_shrine_ev1:{
+    name:'균사의 첫 번째 문',
+    flavor:'제단 안쪽 통로에 균사가 빼곡하게 얽혀 있다. 길이 보이지 않는다. 지도를 꺼내 확인한다.',
+    choices:[
+      {label:'균사 사이를 헤치며',icon:'💪',req:'tool',
+       reward:{san:8},failPen:{hp:-10},
+       desc:'도구판정. 성공:정신력+8 + ATK+2 버프 / 실패:HP-10'},
+      {label:'포자 마시며 강행',icon:'💨',req:null,
+       reward:{san:5},failPen:{hp:-5,san:-5},
+       desc:'무조건 통과. HP-5 정신력-5.'},
+    ]},
+  myc_shrine_ev2:{
+    name:'균사의 두 번째 방',
+    flavor:'방 한가운데 거대한 균사 덩어리가 맥박처럼 뛰고 있다. 다가가면 뭔가가 달라질 것 같다.',
+    choices:[
+      {label:'균사를 흡수한다',icon:'🧫',req:null,subReq:'고기',
+       reward:{hp:15,san:5},failPen:{san:-8},
+       desc:'#고기 판정. 성공:HP+15 정신력+5 / 실패:정신력-8'},
+      {label:'조심스럽게 채취',icon:'🍄',req:'tool',
+       reward:{card:'mycelium',n:3},failPen:{hp:-8},
+       desc:'도구판정. 성공:균사×3 / 실패:HP-8'},
+    ]},
+  myc_boss_rot_intro:{
+    name:'부패의 여왕 — 경고',
+    flavor:'깊은 곳에서 달콤한 썩음 냄새가 올라온다.\n균사가 속삭인다: "먹을 것을 가져왔구나. 내 것이 될 것들을."\n\n⚠️ 보스 특성: 매 라운드 네 덱의 식량 1장이 썩은 음식으로 변한다.\n썩은 음식을 공격존에 배치하면 적이 그것을 먹고 회복한다.\n균사 덩어리를 충분히 준비하고 오는 것이 좋다.',
+    choices:[
+      {label:'균사 덩어리로 배를 채운다',icon:'🧫',req:null,subReq:'고기',
+       reward:{hp:20,hun:20},failPen:{hun:-5},
+       desc:'#고기 판정. 성공:HP+20 허기+20 / 실패:허기-5'},
+      {label:'정신을 집중한다',icon:'🧘',req:null,reward:{san:12},
+       desc:'무조건. 정신력+12.'},
+    ]},
+  myc_boss_spore_intro:{
+    name:'포자 폭군 — 경고',
+    flavor:'깊은 곳에서 짙은 보라색 포자 구름이 밀려온다.\n균사가 속삭인다: "독은 이미 네 폐 속에 있다."\n\n⚠️ 보스 특성: 매 라운드 독이 1스택 누적된다(매라운드 HP-3씩 증가).\n체력도 매 라운드 재생한다. 빠르고 강하게 치는 것이 핵심.\n약초와 해독 아이템을 준비하면 유리하다.',
+    choices:[
+      {label:'약초로 해독 준비',icon:'🌿',req:'resource',
+       reward:{hp:12,san:5},failPen:{san:-5},
+       desc:'자원판정. 성공:HP+12 정신력+5 / 실패:정신력-5'},
+      {label:'정신을 집중한다',icon:'🧘',req:null,reward:{san:12},
+       desc:'무조건. 정신력+12.'},
+    ]},
+  myc_spore_exchange:{
+    name:'포자 제단 — 제물 교환',
+    flavor:'균사가 천천히 움직이며 무언가를 원하는 것 같다. 포자를 바치면 섬의 자원을 내어줄 것 같다.',
+    choices:[
+      {label:'포자 → 목재',icon:'🪵',req:null,devourCard:'spore',
+       reward:{card:'wood',n:2},
+       desc:'포자 1개 소멸 → 목재×2'},
+      {label:'포자 → 고철',icon:'⚙️',req:null,devourCard:'spore',
+       reward:{card:'metal',n:2},
+       desc:'포자 1개 소멸 → 고철×2'},
+      {label:'포자 → 돌',icon:'🪨',req:null,devourCard:'spore',
+       reward:{card:'stone',n:2},
+       desc:'포자 1개 소멸 → 돌×2'},
+      {label:'그냥 간다',icon:'↩️',req:null,reward:{},
+       desc:'무조건. 빈손.'},
+    ]},
 };
 
 const RECIPES=[
@@ -917,6 +985,12 @@ const RECIPES=[
   {id:'r_curse_blade',cat:'전투',name:'저주의 칼',    icon:'🌑',result:'curse_blade',   rn:1,ap:1,cost:[{id:'venom',n:1},{id:'shard',n:1}],                     desc:'weaken: 적 ATK영구-4. ATK4. 독낭+파편.'},
   {id:'r_shatter_blow',cat:'전투',name:'파쇄 해머',   icon:'🔨',result:'shattering_blow',rn:1,ap:1,cost:[{id:'stone',n:2},{id:'metal',n:1}],                   desc:'shatter: 적 DEF영구-6. ATK3. 돌×2 고철×1.'},
   {id:'r_temple_map', cat:'탈출',name:'사원지도',     icon:'🏛️',result:'temple_map',    rn:1,ap:1,cost:[{id:'temple_map_piece',n:3}],                           desc:'사원의 위치를 밝힌다. 조각×3.'},
+  {id:'r_myc_chunk', cat:'균사', name:'균사 덩어리', icon:'🧫', result:'myc_chunk', rn:1, ap:1,
+   cost:[{id:'mycelium',n:1},{id:'rotten_food',n:1}],
+   desc:'균사로 썩은음식 정화. 균사×1+썩은음식×1 → 균사덩어리(허기+10, 썩지않음).'},
+  {id:'r_myc_map', cat:'균사', name:'균사지도', icon:'🗺️', result:'myc_map', rn:1, ap:1,
+   cost:[{id:'myc_map_piece',n:3}],
+   desc:'균사지도 조각×3 → 포자 제단 페이즈 도전 해금 지도.'},
   {id:'r_lure',    cat:'수집',name:'유인 미끼',  icon:'🪤',result:'lure',          rn:1,ap:1,cost:[{id:'food',n:1},{id:'wood',n:1}],   desc:'야생 동물 유인 → 회피불가 강제 전투. 내구도1. 식량×1 목재×1.'},
   {id:'r_flare_kit', cat:'탈출', name:'신호탄 키트', icon:'🧨', result:'flare_kit', rn:1, ap:1,
    cost:[{id:'metal',n:1},{id:'wood',n:1}],
