@@ -195,13 +195,16 @@ function ucUse(i){
     _showPeekChoices(peekCards);
     return;
   } else if(card.use==='sk_cu_discard'){
-    if(!_ucHand.length){resEl.textContent='손패에 카드가 없다.';resEl.style.color='var(--text3)';return;}
-    const tgtIdx=Math.floor(Math.random()*_ucHand.length);
+    const otherIdxs=_ucHand.map((_,idx)=>idx).filter(idx=>idx!==i);
+    if(!otherIdxs.length){resEl.textContent='손패에 소멸할 다른 카드가 없다.';resEl.style.color='var(--text3)';return;}
+    const tgtIdx=otherIdxs[Math.floor(Math.random()*otherIdxs.length)];
     const tgt=_ucHand[tgtIdx];
     _ucHand.splice(tgtIdx,1);
+    const newI=tgtIdx<i?i-1:i;
+    G.disc.push(..._ucHand.splice(newI,1));
     resEl.textContent=`🌀 소멸: ${tgt.icon}${tgt.name}`;
     resEl.style.color='var(--accent)';
-    log(`🌀 신속한 손: ${tgt.icon}${tgt.name} 소멸`,'success');
+    log(`🌀 신속한 손: ${tgt.icon}${tgt.name} 소멸 (스킬 → 버림더미)`,'success');
     renderUcCards(); checkSurvival(); render(); return;
   } else if(card.use==='sk_sl_wake'){
     G.ap=Math.min(G.maxAP+4,G.ap+10);

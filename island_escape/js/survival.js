@@ -64,6 +64,7 @@ function goToTitle(){
   document.getElementById('title-scr').style.display='flex';
   document.body.classList.add('game-inactive');
   if(typeof updateContinueBtn==='function') updateContinueBtn();
+  if(typeof renderIslandSelect==='function') renderIslandSelect();
 }
 
 function triggerGameOver(reason){

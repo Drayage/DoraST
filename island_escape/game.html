@@ -3326,6 +3326,7 @@ function goToTitle(){
   document.getElementById('title-scr').style.display='flex';
   document.body.classList.add('game-inactive');
   if(typeof updateContinueBtn==='function') updateContinueBtn();
+  if(typeof renderIslandSelect==='function') renderIslandSelect();
 }
 
 function triggerGameOver(reason){
@@ -4878,13 +4879,16 @@ function ucUse(i){
     _showPeekChoices(peekCards);
     return;
   } else if(card.use==='sk_cu_discard'){
-    if(!_ucHand.length){resEl.textContent='손패에 카드가 없다.';resEl.style.color='var(--text3)';return;}
-    const tgtIdx=Math.floor(Math.random()*_ucHand.length);
+    const otherIdxs=_ucHand.map((_,idx)=>idx).filter(idx=>idx!==i);
+    if(!otherIdxs.length){resEl.textContent='손패에 소멸할 다른 카드가 없다.';resEl.style.color='var(--text3)';return;}
+    const tgtIdx=otherIdxs[Math.floor(Math.random()*otherIdxs.length)];
     const tgt=_ucHand[tgtIdx];
     _ucHand.splice(tgtIdx,1);
+    const newI=tgtIdx<i?i-1:i;
+    G.disc.push(..._ucHand.splice(newI,1));
     resEl.textContent=`🌀 소멸: ${tgt.icon}${tgt.name}`;
     resEl.style.color='var(--accent)';
-    log(`🌀 신속한 손: ${tgt.icon}${tgt.name} 소멸`,'success');
+    log(`🌀 신속한 손: ${tgt.icon}${tgt.name} 소멸 (스킬 → 버림더미)`,'success');
     renderUcCards(); checkSurvival(); render(); return;
   } else if(card.use==='sk_sl_wake'){
     G.ap=Math.min(G.maxAP+4,G.ap+10);
@@ -5329,7 +5333,7 @@ function calcSleepEvtChance(early){
     else if(minD===2) c=early?5:10;
     else              c=early?5+(minD-2)*5:10+(minD-2)*8;
   }
-  const stN=allCards().filter(c=>c.tag==='status').length;
+  const stN=allCards().filter(c=>c.tag==='status'&&c.id!=='rotten_food').length;
   c+=stN*6;
   if(G.hp<40) c+=10; if(G.hun<30) c+=8; if(G.thi<30) c+=8; if(G.ap<=2) c+=4;
   // 스킬 패시브 (count 기반)
@@ -5338,6 +5342,9 @@ function calcSleepEvtChance(early){
   c-=15*_slBCnt;
   const inCamp=G.camps.includes(G.pos);
   if(inCamp&&_cpS2Cnt) c=0;
+  // 균사늪 캠프: 취침이벤트 확률 -5%
+  const curTile=G.tiles&&G.tiles[G.pos];
+  if(inCamp&&G.islandId==='mycelium'&&curTile&&curTile.id==='swamp') c=Math.max(0,c-5);
   return Math.min(Math.max(c,0),80);
 }
 
@@ -5464,7 +5471,7 @@ function revealDoomLottery(el,type){
 }
 
 function showSleepEvt(){
-  const stN=allCards().filter(c=>c.tag==='status').length;
+  const stN=allCards().filter(c=>c.tag==='status'&&c.id!=='rotten_food').length;
   const bad=(G.hp<40||G.hun<20||G.thi<20||G.ap<=2);
   let okN=3, failN=1, badN=1;
   if(stN>=2||bad){ okN=2; failN=1; badN=2; }

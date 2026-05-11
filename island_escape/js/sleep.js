@@ -369,7 +369,7 @@ function calcSleepEvtChance(early){
     else if(minD===2) c=early?5:10;
     else              c=early?5+(minD-2)*5:10+(minD-2)*8;
   }
-  const stN=allCards().filter(c=>c.tag==='status').length;
+  const stN=allCards().filter(c=>c.tag==='status'&&c.id!=='rotten_food').length;
   c+=stN*6;
   if(G.hp<40) c+=10; if(G.hun<30) c+=8; if(G.thi<30) c+=8; if(G.ap<=2) c+=4;
   // 스킬 패시브 (count 기반)
@@ -378,6 +378,9 @@ function calcSleepEvtChance(early){
   c-=15*_slBCnt;
   const inCamp=G.camps.includes(G.pos);
   if(inCamp&&_cpS2Cnt) c=0;
+  // 균사늪 캠프: 취침이벤트 확률 -5%
+  const curTile=G.tiles&&G.tiles[G.pos];
+  if(inCamp&&G.islandId==='mycelium'&&curTile&&curTile.id==='swamp') c=Math.max(0,c-5);
   return Math.min(Math.max(c,0),80);
 }
 
@@ -504,7 +507,7 @@ function revealDoomLottery(el,type){
 }
 
 function showSleepEvt(){
-  const stN=allCards().filter(c=>c.tag==='status').length;
+  const stN=allCards().filter(c=>c.tag==='status'&&c.id!=='rotten_food').length;
   const bad=(G.hp<40||G.hun<20||G.thi<20||G.ap<=2);
   let okN=3, failN=1, badN=1;
   if(stN>=2||bad){ okN=2; failN=1; badN=2; }
