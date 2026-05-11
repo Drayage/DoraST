@@ -190,6 +190,8 @@ function ucUse(i){
       if(G.deck.length) peekCards.push(G.deck.pop());
     }
     if(!peekCards.length){resEl.textContent='덱이 비어있다.';resEl.style.color='var(--text3)';return;}
+    // peek 카드 수집 완료 후 스킬 카드를 버림더미로 이동 (수집 루프 내 shuffle 오염 방지)
+    G.disc.push(..._ucHand.splice(i,1));
     resEl.textContent='👁️ 선견지명: 카드를 선택하세요';
     resEl.style.color='var(--accent)';
     _showPeekChoices(peekCards);
