@@ -15,7 +15,7 @@ function checkWin(){
   if(G.escape>=85&&!G.escMile[85]){ G.escMile[85]=true; showEscapeMilestone(15); }
   if(G.escape>=100&&!G.over){
     G.over=true;
-    const escMethod=G.templeEscape?'temple':G.signalEscape?'signal':null;
+    const escMethod=G.mycEscape?'mycelium':G.templeEscape?'temple':G.signalEscape?'signal':null;
     showVictoryFanfare(()=>showEnding(true, escMethod));
   }
 }
@@ -119,6 +119,9 @@ function _endHeadline(win, reason){
       const scTxt=sc>3?`${sc}발의 신호탄을 쏘아 올린 끝에`:`${sc}발의 신호탄으로`;
       return {main:'구조 성공', sub:`${G.day}일 만에 ${scTxt} 구조선을 불러냈다.`};
     }
+    if(reason==='mycelium'){
+      return {main:'균사 격파', sub:`${G.day}일 만에 대균사를 쓰러뜨리고 포자 구름이 걷혔다.`};
+    }
     let main='탈출 성공';
     if(G.hp>=70&&G.san>=70&&G.day<=15) main='완벽한 생존';
     else if(G.hp<20||G.san<20)         main='간신히 살아남았다';
@@ -170,6 +173,9 @@ function _endHighlights(win, reason){
   if(!win&&G.templePhase>0) h.push(`🏛️ 사원 ${G.templePhase}페이즈까지 진입했다가 쓰러졌다`);
   if(win&&reason==='signal'&&(G.signalCollected||0)>3){
     h.push(`🎆 무려 ${G.signalCollected}발의 신호탄을 쏜 끝에 구조를 불렀다`);
+  }
+  if(win&&reason==='mycelium'){
+    h.push(`🌀 포자 제단의 3단계를 모두 돌파하고 대균사를 쓰러뜨렸다`);
   }
 
   // 골드 스킬 보유
@@ -252,6 +258,7 @@ function _saveRun(win, reason){
     else     { if(!rec.best.lossStreak||rec.streak.count>rec.best.lossStreak) rec.best.lossStreak=rec.streak.count; }
     localStorage.setItem('ie_records',JSON.stringify(rec));
     const streakInfo={count:rec.streak.count, type:curType};
+    if(win&&typeof markIslandCleared==='function') markIslandCleared(G.islandId||'mangrove', reason||'raft');
     if(typeof checkAchievements==='function') checkAchievements(win, reason, streakInfo);
     return streakInfo;
   }catch(e){ return {count:1, type:win?'win':'loss'}; }

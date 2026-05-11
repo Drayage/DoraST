@@ -43,6 +43,24 @@ const TILE_TYPES=[
   {id:'thicket', name:'수풀', icon:'🌿', cls:'t-thicket',
    flavor:'빽빽한 덤불. 무언가 숨어있을 것 같다.',
    events:['cbt_boar','cbt_snake'], gather:[], ambushOnReveal:true},
+
+  // ── 균사의 늪 (섬4) 전용 타일 ──
+  {id:'swamp', name:'균사 늪', icon:'🍄', cls:'t-swamp',
+   flavor:'균사가 뒤덮인 습한 늪. 달콤하고 낯선 냄새가 난다.',
+   events:['myc_gather','myc_purify','myc_hazard','nothing'],
+   gather:[]},
+  {id:'fungal_spot', name:'균류 군락', icon:'🌫️', cls:'t-fungal',
+   flavor:'거대한 버섯들이 군락을 이루고 있다. 안에서 뭔가 자라고 있는 것 같다.',
+   events:['myc_fungal'], gather:[], fungalDmgOnEnter:3},
+  {id:'spore_shrine', name:'포자 제단', icon:'🌀', cls:'t-shrine',
+   flavor:'균사가 뒤엉킨 제단. 무언가 강력한 것이 여기서 자라고 있다.',
+   events:['nothing'], gather:[]},
+  {id:'mycelium_tree', name:'균사 나무', icon:'🌳', cls:'t-myctree',
+   flavor:'거대한 균사 나무. 뿌리가 섬 전체를 감싸는 것 같다.',
+   events:['myc_tree'], gather:[]},
+  {id:'swamp_watch', name:'늪 전망대', icon:'🗼', cls:'t-lookout',
+   flavor:'늪 위에 세워진 낡은 전망대. 여기서 신호를 보낼 수 있을 것 같다.',
+   events:['nothing'], gather:[]},
 ];
 
 const WEATHER=[
@@ -315,6 +333,18 @@ const CARDS=[
   {id:'sk_cb_g', name:'힘을 담은 일격', icon:'💥', tag:'skill', tier:'gold', atk:0, def:0, n:0,
    passiveDesc:'[전투 전용] 전투 핸드에서 즉발: 적 HP-10 + 스턴 (보스 35%)',
    desc:'[전투 전용] 전투 핸드에서 즉시 발동. 적 HP-10, 스턴 1라운드 (보스는 35% 확률).', use:'sk_cb_strike'},
+
+  // ── 균사의 늪 (섬4) 전용 카드 ──
+  {id:'rotten_food', name:'썩은 음식', icon:'🤢', tag:'status', atk:-1, def:0, n:0, subTags:[],
+   use:'eat_rotten',
+   desc:'균사에 오염된 음식. 섭취 시 HP-5, 정신력-3.'},
+  {id:'spore', name:'포자', icon:'💛', tag:'resource', atk:0, def:0, n:0, subTags:[],
+   desc:'균사 관련 이벤트 재료.'},
+  {id:'mycelium', name:'균사', icon:'🍄', tag:'resource', atk:0, def:1, n:0, subTags:[],
+   desc:'치유와 독의 이중성 재료.'},
+  {id:'spore_card', name:'포자 흡입', icon:'☁️', tag:'status', atk:-1, def:-1, n:0, subTags:[],
+   passiveDesc:'포자 흡입: 판정 드로우 시 정신력-4',
+   desc:'포자에 오염됐다. 탐색 판정 드로우 시 정신력-4.'},
 ];
 
 const ENEMIES={
@@ -373,6 +403,39 @@ const ENEMIES={
     bossType:'charge', chargeAtk:28, normalAtk:6, _charging:true, noFlee:true,
     encDesc:'붉은 눈이 에너지를 모은다. 충전 중에는 약하지만, 방출하면 치명적이다.',
     reward:{san:30}, altCards:[[{id:'shard',n:3}],[{id:'feather',n:3},{id:'venom',n:2}]]},
+
+  // ── 균사의 늪 (섬4) 전용 몬스터 ──
+  cbt_spore_walker:{name:'포자 인간',icon:'🧟',hp:24,atk:10,def:2,
+    mapDrop:true, pattern:'spore_infect',
+    patternDesc:'공격 시 포자 카드를 덱에 주입',
+    encDesc:'균사에 잠식된 인간의 잔해. 공격할 때마다 포자 카드가 덱에 섞인다.',
+    observeReward:[{id:'spore',n:1}],
+    observeText:'포자 인간을 피해 포자를 채취했다.',
+    reward:{cards:[{id:'mycelium',n:1}]},
+    altCards:[[{id:'spore',n:2}],[{id:'herb',n:1}]],
+    rewardDesc:'균사×1 + (포자×2 또는 약초×1)'},
+  cbt_mycelium_beast:{name:'균사 수호수',icon:'🦬',hp:38,atk:14,def:4,
+    mapDrop:true, regenPerRound:6,
+    patternDesc:'매 라운드 HP+6 재생',
+    encDesc:'거대한 균사 덩어리가 형상을 이루었다. 매 라운드 체력을 재생한다.',
+    observeReward:[{id:'mycelium',n:2}],
+    observeText:'수호수가 잠시 멈춘 틈에 균사를 채취했다.',
+    reward:{cards:[{id:'mycelium',n:2}]},
+    altCards:[[{id:'spore',n:2}],[{id:'herb',n:1}]],
+    rewardDesc:'균사×2 + (포자×2 또는 약초×1)'},
+  cbt_swamp_frog:{name:'늪 개구리',icon:'🐸',hp:18,atk:8,def:1,
+    mapDrop:true,
+    encDesc:'거대한 늪 개구리가 독액을 뱉는다.',
+    observeReward:[{id:'herb',n:1},{id:'spore',n:1}],
+    observeText:'개구리를 피해 약초와 포자를 채취했다.',
+    reward:{cards:[{id:'food',n:1}]},
+    altCards:[[{id:'herb',n:1},{id:'venom',n:1}],[{id:'spore',n:1}]],
+    rewardDesc:'식량×1 + (약초+독낭 또는 포자×1)',
+    penalty:{card:'poison_status',desc:'개구리 독에 중독됐다'}},
+  boss_great_mycelium:{name:'대균사',icon:'🌀',hp:140,atk:18,def:6,
+    bossType:'mycelium_boss', noFlee:true, _phase2:false,
+    encDesc:'섬의 균사 네트워크가 형상을 이루었다. HP 50% 이하에서 포자 폭발이 시작된다.',
+    reward:{san:30}, altCards:[[{id:'mycelium',n:3}],[{id:'spore',n:3},{id:'herb',n:2}]]},
 };
 
 const EVENTS={
@@ -750,6 +813,70 @@ const EVENTS={
        reward:{},
        desc:'무조건. 빈손.'},
     ]},
+
+  // ── 균사의 늪 (섬4) 전용 이벤트 ──
+  myc_gather:{
+    name:'균사 밭',
+    flavor:'습지 깊숙이 균사가 가득 퍼져있다. 위험하지만 유용한 재료가 될 것 같다.',
+    choices:[
+      {label:'조심히 수확한다',icon:'🍄',req:'tool',
+       reward:{card:'mycelium',n:2},failPen:{hp:-8},
+       desc:'도구판정. 성공:균사×2 / 실패:HP-8'},
+      {label:'맨손으로 캔다',icon:'🤲',req:null,
+       reward:{card:'spore',n:1},
+       desc:'무조건. 포자×1 획득.'},
+      {label:'통과한다',icon:'↩️',req:null,
+       reward:{},
+       desc:'무조건. 빈손.'},
+    ]},
+  myc_purify:{
+    name:'정화 의식',
+    flavor:'늪 한가운데 수정처럼 맑은 구역이 있다. 균사가 정화될 것 같다.',
+    choices:[
+      {label:'정화 의식을 치른다',icon:'✨',req:'resource',
+       reward:{removeCard:'rotten_food',san:8},failPen:{san:-5},
+       desc:'자원판정. 성공:덱의 썩은음식 1장 제거+정신력+8 / 실패:정신력-5'},
+      {label:'그냥 지나친다',icon:'↩️',req:null,
+       reward:{},
+       desc:'무조건. 빈손.'},
+    ]},
+  myc_hazard:{
+    name:'독성 포자 구름',
+    flavor:'노란 포자 구름이 피어오른다. 피해야 한다.',
+    choices:[
+      {label:'방어구로 막는다',icon:'🛡️',req:null,subReq:'방어구',
+       reward:{san:5},failPen:{san:-4},
+       desc:'#방어구 판정. 성공:정신력+5 / 실패:정신력-4'},
+      {label:'빠르게 통과한다',icon:'💨',req:null,
+       reward:{},failPen:{hp:-6,san:-3},
+       fixed:true,
+       desc:'무조건. HP-6, 정신력-3.'},
+    ]},
+  myc_fungal:{
+    name:'균류 군락',
+    flavor:'거대한 버섯들이 가득하다. 먹을 수 있을까?',
+    choices:[
+      {label:'열매 지식으로 감별',icon:'🫐',req:null,subReq:'열매',
+       reward:{cards:[{id:'food',n:1},{id:'mycelium',n:1}]},failPen:{},
+       desc:'#열매 판정. 성공:식량×1+균사×1 / 실패:빈손'},
+      {label:'조금만 뜯어먹는다',icon:'🍽️',req:'resource',
+       reward:{hp:5},failPen:{hp:-10,san:-5},
+       desc:'자원판정. 성공:HP+5 / 실패:HP-10+정신력-5'},
+      {label:'통과한다',icon:'↩️',req:null,
+       reward:{},
+       desc:'무조건. 빈손.'},
+    ]},
+  myc_tree:{
+    name:'균사 나무',
+    flavor:'뿌리가 맵 전체를 감싸는 듯한 거대한 나무. 균사가 가득 맺혀있다.',
+    choices:[
+      {label:'균사를 채집한다',icon:'🍄',req:'tool',
+       reward:{card:'mycelium',n:3,san:5},failPen:{hp:-6},
+       desc:'도구판정. 성공:균사×3+정신력+5 / 실패:HP-6'},
+      {label:'나무에 귀를 기울인다',icon:'👂',req:null,
+       reward:{san:10},
+       desc:'무조건. 신비한 감각. 정신력+10.'},
+    ]},
 };
 
 const RECIPES=[
@@ -823,5 +950,36 @@ const ISLANDS = {
     doomName: '망각의 안개',
     doomIcon: '🌫️',
     startLog: '🌿 망각의 맹그로브 섬에 홀로 깨어났다. 기억이 흐릿하다.',
+    mapConfig: {
+      baseTiles: ['beach','forest','cave','ruins','shore'],
+      specialTiles: [
+        {id:'lookout',     count:1,   minDist:5, group:'escape'},
+        {id:'oblivion_lake',count:1,  minDist:3},
+        {id:'oblivion_swamp',count:2, minDist:3},
+        {id:'temple',      count:1,   minDist:5, group:'escape'},
+        {id:'thicket',     count:[0,2],minDist:2},
+      ],
+    },
+  },
+  mycelium: {
+    id: 'mycelium',
+    name: '균사의 늪',
+    icon: '🍄',
+    subtitle: '포자가 기억을 바꾸는 섬',
+    story: '눈을 떴을 때, 달콤하고 낯선 냄새가 코를 찔렀다.\n\n온 사방이 습기와 균사로 뒤덮여 있다. 발을 내딛을 때마다 포자가 피어오른다.\n\n식량을 구했는데, 밤새 곰팡이가 폈다.\n믿었던 것이 독이 되는 섬.\n\n빠져나가야 한다. 이 균사가 기억까지 바꾸기 전에.',
+    mechanic: '🍄 균사 잠식\n매 취침마다 덱의 식량 카드 25%가 썩은 음식으로 변질된다.\n변질된 음식을 섭취하면 HP-5, 정신력-3.\nDOOM 60% 이후 포자 카드가 덱에 침투한다.',
+    doomName: '균사 잠식',
+    doomIcon: '🍄',
+    startLog: '🍄 균사의 늪에서 눈을 떴다. 습한 공기에서 달콤하고 낯선 냄새가 난다.',
+    mapConfig: {
+      baseTiles: ['swamp','swamp','swamp','forest','shore','shore','cave','beach'],
+      specialTiles: [
+        {id:'swamp_watch',  count:1,   minDist:5, group:'escape'},
+        {id:'fungal_spot',  count:4,   minDist:2},
+        {id:'spore_shrine', count:1,   minDist:5, group:'escape'},
+        {id:'mycelium_tree',count:1,   minDist:3},
+        {id:'thicket',      count:[0,1],minDist:2},
+      ],
+    },
   },
 };

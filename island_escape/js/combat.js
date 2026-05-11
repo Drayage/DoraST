@@ -662,6 +662,18 @@ function _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,will
         log(`🏛️ ${G.templePhase-1}페이즈 완료`, 'success');
       }
     }
+    // 균사 페이즈 진행
+    if(e._mycNextPhase!==undefined){
+      G.mycPhase=e._mycNextPhase;
+      if(G.mycPhase>=3){
+        G.mycEscape=true; G.escape=Math.min(100,G.escape+100);
+        resEl.innerHTML+=`<div class="rl good" style="font-size:11px;">🌀 대균사 격파! 포자 구름이 걷혔다!</div>`;
+        log(`🌀 대균사 처치! 균사의 늪을 탈출할 수 있다.`, 'success');
+      } else {
+        resEl.innerHTML+=`<div class="rl good">🌀 포자 제단 ${G.mycPhase-1}페이즈 완료 — 정비 후 다음 단계 진입 가능</div>`;
+        log(`🌀 포자 제단 ${G.mycPhase-1}페이즈 완료`, 'success');
+      }
+    }
     log(`⚔️ ${e.name} 처치! 전리품 선택 획득 가능`,'success');
     document.getElementById('btn-cbt-resolve').style.display='none';
     document.getElementById('btn-cbt-flee').style.display='none';
@@ -695,6 +707,26 @@ function _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,will
     CBT.atkZone=[]; CBT.defZone=[];
     G.disc.push(...CBT.hand.filter(c=>!c._temp)); CBT.hand=[];
     // 보스 패턴 (다음 라운드 진입 직전)
+    // 균사 수호수: 매 라운드 HP 재생
+    if(e.regenPerRound&&e.curHp>0){
+      const reg=Math.min(e.regenPerRound, e.hp-e.curHp);
+      if(reg>0){ e.curHp+=reg; resEl.innerHTML+=`<div class="rl bad">🐻 균사 수호수 재생: 적 HP+${reg}</div>`; log(`🐻 균사 재생: 적 HP+${reg}`,'danger'); }
+    }
+    // 포자 인간: 공격 시 spore_card 침투
+    if(e.pattern==='spore_infect'&&dmgP>0){
+      addCard('spore_card',1);
+      resEl.innerHTML+=`<div class="rl bad">🌡️ 포자 감염! spore_card가 덱에 추가됐다</div>`;
+      log('🌡️ 포자 인간 공격 — 포자 흡입 카드 추가','danger');
+    }
+    // 대균사 보스: HP 50% 이하 전환 (한 번만)
+    if(e.bossType==='mycelium_boss'&&!e._phase2&&e.curHp>0&&e.curHp<=Math.floor(e.hp*0.5)){
+      e._phase2=true;
+      const sporeBurst=Math.floor(Math.random()*2)+1;
+      for(let i=0;i<sporeBurst;i++) addCard('spore_card',1);
+      resEl.innerHTML+=`<div class="rl bad">🌀 대균사: 포자 대방출! spore_card ${sporeBurst}장 추가 · ATK+4</div>`;
+      e.atk+=4;
+      log(`🌀 대균사 2단계! 포자 ${sporeBurst}장 추가, ATK+4`,'danger');
+    }
     if(e.bossType==='escalate'){
       e.atk+=e.atkPerRound;
       resEl.innerHTML+=`<div class="rl bad">🗿 수호신의 분노: ATK→${e.atk}</div>`;

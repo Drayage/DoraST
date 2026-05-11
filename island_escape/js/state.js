@@ -6,11 +6,70 @@ let _mobTab='map';
 const _tabMap={map:'map-col',deck:'ctr-col',stat:'rgt-col',help:'rgt-col'};
 let _pendingItems=null, _itemCb=null, _pendingItemCards=null;
 
-function startGame(){
+function startGame(islandId){
   clearSave();
+  if(islandId && ISLANDS[islandId]) G={islandId};
+  else G={islandId: G?.islandId || 'mangrove'};
   document.getElementById('title-scr').style.display='none';
   document.body.classList.remove('game-inactive');
   initGame();
+}
+
+// ── 섬 진행 저장/로드 ──
+function getIslandProgress(){
+  try{ return JSON.parse(localStorage.getItem('ie_islands_progress')||'{}'); }
+  catch(e){ return {}; }
+}
+
+function isIslandUnlocked(islandId){
+  const ORDER=['mangrove','mycelium','caldera','station','beast'];
+  if(islandId==='mangrove') return true;
+  const p=getIslandProgress();
+  const idx=ORDER.indexOf(islandId);
+  if(idx<=0) return false;
+  return !!(p[ORDER[idx-1]]?.cleared);
+}
+
+function markIslandCleared(islandId, method){
+  try{
+    const p=getIslandProgress();
+    if(!p[islandId]?.cleared){
+      p[islandId]={cleared:true, method: method||'raft',
+        date:new Date().toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'})};
+      const ORDER=['mangrove','mycelium','caldera','station','beast'];
+      const idx=ORDER.indexOf(islandId);
+      if(idx>=0 && idx<ORDER.length-1){
+        const next=ORDER[idx+1];
+        if(!p[next]) p[next]={locked:false};
+      }
+      localStorage.setItem('ie_islands_progress',JSON.stringify(p));
+    }
+  }catch(e){}
+}
+
+function renderIslandSelect(){
+  const el=document.getElementById('island-select');
+  if(!el) return;
+  const ORDER=['mangrove','mycelium','caldera','station','beast'];
+  const p=getIslandProgress();
+  let html='<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:10px 0;">';
+  ORDER.forEach(id=>{
+    const isl=ISLANDS[id];
+    if(!isl) return;
+    const unlocked=isIslandUnlocked(id);
+    const cleared=!!(p[id]?.cleared);
+    const active=(G?.islandId===id);
+    html+=`<div class="island-card${unlocked?'':' locked'}${active?' active':''}"
+      onclick="${unlocked?`startGame('${id}')`:''}">
+      <div style="font-size:22px;">${isl.icon}</div>
+      <div class="island-name">${isl.name}</div>
+      <div class="island-sub">${isl.subtitle}</div>
+      ${cleared?`<div class="island-badge">✅ 클리어</div>`
+               :unlocked?'':'<div class="island-badge locked-badge">🔒</div>'}
+    </div>`;
+  });
+  html+='</div>';
+  el.innerHTML=html;
 }
 
 function continueGame(){
@@ -93,7 +152,7 @@ function updateContinueBtn(){
 }
 
 function initGame(){
-  const islandId = (G && G.islandId) ? G.islandId : 'mangrove';
+  const islandId = (G && G.islandId && ISLANDS[G.islandId]) ? G.islandId : 'mangrove';
   G={
     day:1, ap:10, maxAP:10,
     hp:100, san:90, hun:80, thi:80,
@@ -115,6 +174,7 @@ function initGame(){
     skillEvtTriggered:{},
     skillCraftBypass:false,
     runMaxDeck:0, oblivionSeepCnt:0, deathCause:null,
+    mycPhase:0, mycEscape:false,
     islandId,
   };
   _pendingItems=null; _itemCb=null; _pendingItemCards=null; _ucHand=[];

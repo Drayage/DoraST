@@ -174,6 +174,24 @@ function doSleep(){
   }
   G.deck=shuffle(G.deck.concat(G.disc)); G.disc=[];
 
+  // ── 균사의 늪: 취침 시 식량 카드 변질 ──
+  if(G.islandId==='mycelium'){
+    const foodIds=['food','berry','herb'];
+    const rate=G.doomPhase>=3?0.5:0.25;
+    const rottenDef=CARDS.find(d=>d.id==='rotten_food');
+    if(rottenDef){
+      let rottenCnt=0;
+      G.deck=G.deck.map(c=>{
+        if(foodIds.includes(c.id)&&Math.random()<rate){
+          rottenCnt++;
+          return {...rottenDef,uid:uid()};
+        }
+        return c;
+      });
+      if(rottenCnt>0) log(`🍄 균사가 식량 ${rottenCnt}장을 오염시켰다.`,'danger');
+    }
+  }
+
   const sanNet=sanR-sanDrain+wD.san;
   const _di=(ISLANDS[G.islandId]||ISLANDS.mangrove).doomIcon||'🌫️';
   const doomHint=G.doomRate>0?` | ${_di}DOOM+${G.doomRate}/일(${G.doom}%)`:G.doomPhase>=4?` | ${_di}DOOM ${G.doom}%`:'';
@@ -197,6 +215,12 @@ function _processDoom(early){
   }
   // 일일 수동 증가
   if(G.doomRate>0 && G.doomPhase<4) G.doom=Math.min(100,G.doom+G.doomRate);
+
+  // ── 균사의 늪: doom 단계 3+ 포자 카드 침투 ──
+  if(G.islandId==='mycelium'&&G.doomPhase>=3){
+    addCard('spore_card',1);
+    log('🌡️ 포자가 가득하다. 포자 흡입 카드가 덱에 스며들었다.','danger');
+  }
 
   // 망각 단계 (80%+)
   if(G.doomPhase===4){

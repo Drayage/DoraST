@@ -236,7 +236,7 @@ function render(){
   // 특수 타일 액션 패널
   const specEl=document.getElementById('act-special');
   if(specEl){
-    if(ct.id==='lookout'&&ct.explored){
+    if((ct.id==='lookout'||ct.id==='swamp_watch')&&ct.explored){
       const hasKit=cards.some(c=>c.id==='flare_kit');
       const sigCnt=cards.filter(c=>c.id==='signal').length;
       const N=cards.length;
@@ -260,7 +260,8 @@ function render(){
       if(N>=3&&sigCnt>=3) sigProb=Math.round(sigCnt*(sigCnt-1)*(sigCnt-2)/(N*(N-1)*(N-2))*100);
       const probCol=p=>p>=60?'var(--green)':p>=30?'var(--accent)':'var(--red)';
       specEl.style.display='';
-      specEl.innerHTML=`<div style="font-size:9px;color:#aecbae;font-family:var(--font-m);margin-bottom:5px;">🗼 전망대 전용 행동</div>
+      const _lookoutLabel=ct.id==='swamp_watch'?'🗼 늪 전망대 전용 행동':'🗼 전망대 전용 행동';
+      specEl.innerHTML=`<div style="font-size:9px;color:#aecbae;font-family:var(--font-m);margin-bottom:5px;">${_lookoutLabel}</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
           <button class="btn" style="border-color:#4a8a5a;color:#aecbae;font-size:10px;"
             onclick="doFlareSearch()" ${p.ap<2||p.over?'disabled':''}>
@@ -292,6 +293,22 @@ function render(){
             ${phLabel[ph]}<span class="apb" style="margin-left:4px;">AP${apArr[ph]}</span>
           </button>
           ${prevDone}${bossHint}`;
+      }
+    } else if(ct.id==='spore_shrine'&&ct.explored){
+      const sph=p.mycPhase||0;
+      specEl.style.display='';
+      if(sph>=3){
+        specEl.innerHTML=`<div style="font-size:9px;color:var(--green);font-family:var(--font-m);">🌀 대균사 격파 — 균사 루트 탈출 완료</div>`;
+      } else {
+        const sphLabel=['🌀 포자 제단 진입','🌀 균사 2페이즈','🌀 대균사 결전'];
+        const sphAP=[3,3,4];
+        const prevDoneSp=sph>0?`<div style="font-size:8px;color:var(--green);margin-top:2px;">✓ ${sph}페이즈 완료</div>`:'';
+        specEl.innerHTML=`<div style="font-size:9px;color:#cc88ee;font-family:var(--font-m);margin-bottom:5px;">🌀 포자 제단 (${sph}/2 완료)</div>
+          <button class="btn full" style="border-color:#774499;color:#cc88ee;font-size:10px;"
+            onclick="doSporeShrine()" ${p.ap<sphAP[sph]||p.over?'disabled':''}>
+            ${sphLabel[sph]}<span class="apb" style="margin-left:4px;">AP${sphAP[sph]}</span>
+          </button>
+          ${prevDoneSp}`;
       }
     } else if(ct.id==='oblivion_lake'&&ct.explored){
       const coolDays=3-(p.day-(p.lastOblivion||-99));

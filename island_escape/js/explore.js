@@ -195,6 +195,13 @@ function doJudgment(evt, ch){
           bonLines.push('🌀 환각이 퍼진다: 망각 카드 추가');
         }
       }
+      // 포자 흡입 카드 효과 (균사 습지)
+      if(top&&top.id==='spore_card'){
+        G.san=Math.max(0,G.san-4);
+        flashDamage();
+        bonLines.push('🌡️ 포자를 흡입했다. 정신력-4');
+        log('🌡️ 포자 흡입: 판정 드로우 시 정신력-4','danger');
+      }
       if(G.doomPhase>=4&&G.san<40){
         const hRate=15+Math.max(0,40-G.san)*0.8;
         if(Math.random()*100<hRate){

@@ -1,30 +1,31 @@
 // ═══════════════ MAP ═══════════════
 // 7×7 = 49 타일, 시작위치 24 (행3 열3, 중앙)
 
-// 랜덤 생성에 쓸 기본 5종 타일만 추출
-const BASE_TILE_IDS=['beach','forest','cave','ruins','shore'];
-
 function _placeTile(idx, id){
   const def=TILE_TYPES.find(t=>t.id===id);
   if(def) G.tiles[idx]={...def,revealed:false,hasPlayer:false,hasCamp:false,explored:false};
 }
 
 function buildMap(){
-  const baseTiles=TILE_TYPES.filter(t=>BASE_TILE_IDS.includes(t.id));
+  const cfg=(ISLANDS[G.islandId]||ISLANDS.mangrove).mapConfig;
+  const baseTileIds=cfg.baseTiles;
+  const baseTiles=baseTileIds.map(id=>TILE_TYPES.find(t=>t.id===id)).filter(Boolean);
   G.tiles=[];
   for(let i=0;i<49;i++){
     const t=baseTiles[Math.floor(Math.random()*baseTiles.length)];
     G.tiles.push({...t, revealed:false, hasPlayer:false, hasCamp:false, explored:false});
   }
 
-  // 시작 위치(24) 반경 2 이내에 forest/beach/cave 보장
+  // 시작 위치(24) 반경 2 이내에 다양한 타일 보장 (기본 타일 풀에서)
+  const uniqueBaseTiles=[...new Set(baseTileIds)];
+  const guaranteedNear=uniqueBaseTiles.slice(0,3);
   const near=[];
   for(let i=0;i<49;i++){
     if(i!==G.pos && tileDist(i,G.pos)<=2) near.push(i);
   }
-  ['forest','beach','cave'].forEach(tid=>{
+  guaranteedNear.forEach(tid=>{
     if(!near.some(i=>G.tiles[i].id===tid)){
-      const candidates=near.filter(i=>!['forest','beach','cave'].includes(G.tiles[i].id));
+      const candidates=near.filter(i=>!guaranteedNear.includes(G.tiles[i].id));
       if(candidates.length){
         const idx=candidates[Math.floor(Math.random()*candidates.length)];
         _placeTile(idx, tid);
@@ -32,54 +33,33 @@ function buildMap(){
     }
   });
 
-  // 특수 타일 배치 — 이미 특수 타일이 없는 칸에만 덮어씀
-  const specialIds=['lookout','oblivion_lake','oblivion_swamp'];
-  const isSpecial=i=>specialIds.includes(G.tiles[i].id);
+  // 특수 타일 배치 — mapConfig.specialTiles 기반으로 일반화
+  const placedSpecialIds=new Set();
+  const isSpecialPlaced=i=>placedSpecialIds.has(i);
 
-  // 전망대(lookout) 1개: 시작 거리 5 이상
-  const lookoutPool=shuffle(Array.from({length:49},(_,i)=>i)
-    .filter(i=>tileDist(i,G.pos)>=5 && !isSpecial(i)));
-  if(lookoutPool.length) _placeTile(lookoutPool[0], 'lookout');
+  for(const spec of cfg.specialTiles){
+    const count=Array.isArray(spec.count)
+      ? spec.count[0]+Math.floor(Math.random()*(spec.count[1]-spec.count[0]+1))
+      : spec.count;
+    const minDist=spec.minDist||3;
 
-  // 망각의 호수(oblivion_lake) 1개: 시작 거리 3 이상, lookout과 거리 2 이상
-  const lookoutIdx=G.tiles.findIndex(t=>t.id==='lookout');
-  const lakePool=shuffle(Array.from({length:49},(_,i)=>i)
-    .filter(i=>tileDist(i,G.pos)>=3 && !isSpecial(i)
-            && (lookoutIdx<0||tileDist(i,lookoutIdx)>=2)));
-  if(lakePool.length) _placeTile(lakePool[0], 'oblivion_lake');
+    const pool=shuffle(Array.from({length:49},(_,i)=>i)
+      .filter(i=>tileDist(i,G.pos)>=minDist && !isSpecialPlaced(i)));
 
-  // 망각의 늪(oblivion_swamp) 2개: 시작 거리 3 이상, 특수 타일과 거리 2 이상, 서로 거리 3 이상
-  const swampBase=shuffle(Array.from({length:49},(_,i)=>i)
-    .filter(i=>tileDist(i,G.pos)>=3 && !isSpecial(i)));
-  let placed=0;
-  let firstSwampIdx=-1;
-  for(const i of swampBase){
-    if(placed===0){
-      _placeTile(i,'oblivion_swamp'); firstSwampIdx=i; placed++;
-    } else if(placed===1){
-      if(tileDist(i,firstSwampIdx)>=3){ _placeTile(i,'oblivion_swamp'); placed++; break; }
-    }
-  }
-
-  // 고대 사원(temple) 1개: 시작 거리 5 이상, lookout과 거리 3 이상
-  const allSpecialIds=[...specialIds,'temple','thicket'];
-  const isAnySpecial=i=>allSpecialIds.includes(G.tiles[i].id);
-  const templePool=shuffle(Array.from({length:49},(_,i)=>i)
-    .filter(i=>tileDist(i,G.pos)>=5 && !isAnySpecial(i)
-            && (lookoutIdx<0||tileDist(i,lookoutIdx)>=3)));
-  if(templePool.length) _placeTile(templePool[0],'temple');
-
-  // 수풀(thicket) 0~2개: 시작 거리 2 이상, 서로 거리 3 이상
-  const thicketCount=Math.floor(Math.random()*3);
-  const thicketBase=shuffle(Array.from({length:49},(_,i)=>i)
-    .filter(i=>tileDist(i,G.pos)>=2 && !isAnySpecial(i)));
-  let thicketPlaced=0, firstThicketIdx=-1;
-  for(const i of thicketBase){
-    if(thicketPlaced>=thicketCount) break;
-    if(thicketPlaced===0){
-      _placeTile(i,'thicket'); firstThicketIdx=i; thicketPlaced++;
-    } else {
-      if(tileDist(i,firstThicketIdx)>=3){ _placeTile(i,'thicket'); thicketPlaced++; }
+    let n=0, prevIdx=-1;
+    for(const i of pool){
+      if(n>=count) break;
+      if(n>0 && prevIdx>=0 && tileDist(i,prevIdx)<3) continue;
+      // 같은 group의 이미 배치된 타일과 거리 3 이상 보장
+      const groupConflict=spec.group && [...placedSpecialIds].some(pi=>{
+        const pt=G.tiles[pi];
+        const pspec=cfg.specialTiles.find(s=>s.id===pt?.id);
+        return pspec?.group===spec.group && tileDist(i,pi)<3;
+      });
+      if(groupConflict) continue;
+      _placeTile(i, spec.id);
+      placedSpecialIds.add(i);
+      prevIdx=i; n++;
     }
   }
 
@@ -128,6 +108,12 @@ function clickTile(i){
   const _mvS2Cnt=allCards().filter(c=>c.id==='sk_mv_s2').length;
   if(_mvS1Cnt) G.hp=Math.min(100,G.hp+_mvS1Cnt);
   if(_mvS2Cnt) G.san=Math.min(100,G.san+_mvS2Cnt);
+  // 균류 군락: 첫 진입 시 HP-3
+  if(t.id==='fungal_spot'&&!wasExplored){
+    G.hp=Math.max(0,G.hp-3);
+    flashDamage();
+    log('🌫️ 균류 군락: 균사가 살갗을 파고든다. HP-3','danger');
+  }
   if(t.id==='thicket'&&!t.explored){
     t.explored=true;
     const _ambPool=['cbt_boar','cbt_boar','cbt_snake','cbt_snake','cbt_bat','cbt_ghost'];

@@ -34,7 +34,7 @@ function renderUcCards(){
     const kBoost=hasTool('knife')?8:0;
     const durStr=card.dur?`<div style="font-size:8px;color:var(--accent);font-family:var(--font-m);">🔋${card.curDur||card.dur}/${card.dur}</div>`:'';
     const gsHp=allCards().some(c=>c.id==='sk_cp_s3')?20:10, gsSan=allCards().some(c=>c.id==='sk_cp_s3')?16:8;
-    const useLabels={eat:`🍗허기+${22+kBoost}`,drink:'💧갈증+28',heal:'🌿HP+10',good_sleep:`😪HP+${gsHp}·정신력+${gsSan}`,temple_map:'🏛️사원 위치 표시',lure:'🪤야생 동물 유인 → 전투!',_action:'🏃2장 드로우',sk_ex_reexplore:'📖재탐색 활성화',sk_ga_spot:'🎒현장채집(AP1)',sk_cr_anywhere:'🗂️이동 제작소',sk_cu_peek:'👁️덱 미리보기',sk_cu_discard:'🌀손 카드 1장 소멸',sk_sl_wake:'⏰AP+10(1회용)',sk_cb_strike:'💥전투에서만 사용 가능'};
+    const useLabels={eat_rotten:'🤢HP-5·정신력-3',eat:`🍗허기+${22+kBoost}`,drink:'💧갈증+28',heal:'🌿HP+10',good_sleep:`😪HP+${gsHp}·정신력+${gsSan}`,temple_map:'🏛️사원 위치 표시',lure:'🪤야생 동물 유인 → 전투!',_action:'🏃2장 드로우',sk_ex_reexplore:'📖재탐색 활성화',sk_ga_spot:'🎒현장채집(AP1)',sk_cr_anywhere:'🗂️이동 제작소',sk_cu_peek:'👁️덱 미리보기',sk_cu_discard:'🌀손 카드 1장 소멸',sk_sl_wake:'⏰AP+10(1회용)',sk_cb_strike:'💥전투에서만 사용 가능'};
     const div=document.createElement('div');
     div.style.cssText=`background:var(--bg3);border:1px solid ${usable?'var(--green2)':'var(--border)'};border-radius:9px;padding:10px 8px;width:90px;text-align:center;cursor:${usable?'pointer':'default'};opacity:${usable?1:0.5};transition:all .12s;`;
     if(!_prevUcHandUIDs.has(card.uid)){
@@ -80,7 +80,13 @@ function ucUse(i){
   const kBoost=hasTool('knife')?8:0;
   const _cuS2Cnt=allCards().filter(c=>c.id==='sk_cu_s2').length;
   const foodBonus=8*_cuS2Cnt;
-  if(card.use==='eat'){
+  if(card.use==='eat_rotten'){
+    G.hp=Math.max(0,G.hp-5); G.san=Math.max(0,G.san-3);
+    flashDamage();
+    resEl.textContent='🤢 썩은 음식 — HP-5, 정신력-3 (균사에 오염됐다)';
+    resEl.style.color='var(--red)';
+    log('🤢 썩은 음식 섭취. HP-5, 정신력-3','danger');
+  } else if(card.use==='eat'){
     const g=22+kBoost+foodBonus; G.hun=Math.min(100,G.hun+g);
     resEl.textContent=`🍗 ${card.name} — 허기+${g}${kBoost?` (🔪+${kBoost})`:''}${foodBonus?` (🍴+${foodBonus})`:''}`;
     resEl.style.color='var(--accent)';

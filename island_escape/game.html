@@ -519,6 +519,17 @@ body.game-inactive #mob-tabs{
 @keyframes smIn{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 @keyframes smOut{to{opacity:0;transform:translateX(-50%) translateY(-10px)}}
 
+/* ══ ISLAND SELECT CARDS ══ */
+.island-card{background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:10px 8px;text-align:center;cursor:pointer;transition:border-color .15s,transform .15s,box-shadow .15s;min-width:90px;max-width:110px;display:flex;flex-direction:column;align-items:center;gap:3px;}
+.island-card:not(.locked):hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.3);}
+.island-card.active{border-color:var(--accent2);background:rgba(0,200,150,.08);}
+.island-card.locked{opacity:.5;cursor:not-allowed;filter:grayscale(.6);}
+.island-name{font-family:var(--font-t);font-size:10px;font-weight:700;color:var(--text);}
+.island-sub{font-size:7px;color:var(--text3);font-family:var(--font-m);line-height:1.3;}
+.island-badge{font-size:7px;font-family:var(--font-m);margin-top:2px;}
+.island-badge.locked-badge{color:var(--text3);}
+.island-badge:not(.locked-badge){color:var(--green);}
+
 </style>
   <link rel="manifest" href="/DoraST/manifest.json">
 <script>
@@ -568,8 +579,10 @@ body.game-inactive #mob-tabs{
       </div>
     </div>
   </div>
+  <!-- 섬 선택 UI -->
+  <div style="font-size:8px;color:var(--text3);font-family:var(--font-m);text-transform:uppercase;letter-spacing:.12em;margin:10px 0 4px;">섬 선택</div>
+  <div id="island-select" style="margin-bottom:8px;"></div>
   <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;align-items:flex-start;">
-    <button class="btn primary" style="font-size:14px;padding:12px 28px;" onclick="startGame()">🆕 새 게임</button>
     <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
       <button id="btn-continue" class="btn" style="font-size:14px;padding:12px 28px;" onclick="continueGame()">▶ 계속하기</button>
       <span id="btn-continue-info" style="font-size:8px;color:var(--text3);font-family:var(--font-m);">저장된 게임 없음</span>
@@ -1298,6 +1311,24 @@ const TILE_TYPES=[
   {id:'thicket', name:'수풀', icon:'🌿', cls:'t-thicket',
    flavor:'빽빽한 덤불. 무언가 숨어있을 것 같다.',
    events:['cbt_boar','cbt_snake'], gather:[], ambushOnReveal:true},
+
+  // ── 균사의 늪 (섬4) 전용 타일 ──
+  {id:'swamp', name:'균사 늪', icon:'🍄', cls:'t-swamp',
+   flavor:'균사가 뒤덮인 습한 늪. 달콤하고 낯선 냄새가 난다.',
+   events:['myc_gather','myc_purify','myc_hazard','nothing'],
+   gather:[]},
+  {id:'fungal_spot', name:'균류 군락', icon:'🌫️', cls:'t-fungal',
+   flavor:'거대한 버섯들이 군락을 이루고 있다. 안에서 뭔가 자라고 있는 것 같다.',
+   events:['myc_fungal'], gather:[], fungalDmgOnEnter:3},
+  {id:'spore_shrine', name:'포자 제단', icon:'🌀', cls:'t-shrine',
+   flavor:'균사가 뒤엉킨 제단. 무언가 강력한 것이 여기서 자라고 있다.',
+   events:['nothing'], gather:[]},
+  {id:'mycelium_tree', name:'균사 나무', icon:'🌳', cls:'t-myctree',
+   flavor:'거대한 균사 나무. 뿌리가 섬 전체를 감싸는 것 같다.',
+   events:['myc_tree'], gather:[]},
+  {id:'swamp_watch', name:'늪 전망대', icon:'🗼', cls:'t-lookout',
+   flavor:'늪 위에 세워진 낡은 전망대. 여기서 신호를 보낼 수 있을 것 같다.',
+   events:['nothing'], gather:[]},
 ];
 
 const WEATHER=[
@@ -1570,6 +1601,18 @@ const CARDS=[
   {id:'sk_cb_g', name:'힘을 담은 일격', icon:'💥', tag:'skill', tier:'gold', atk:0, def:0, n:0,
    passiveDesc:'[전투 전용] 전투 핸드에서 즉발: 적 HP-10 + 스턴 (보스 35%)',
    desc:'[전투 전용] 전투 핸드에서 즉시 발동. 적 HP-10, 스턴 1라운드 (보스는 35% 확률).', use:'sk_cb_strike'},
+
+  // ── 균사의 늪 (섬4) 전용 카드 ──
+  {id:'rotten_food', name:'썩은 음식', icon:'🤢', tag:'status', atk:-1, def:0, n:0, subTags:[],
+   use:'eat_rotten',
+   desc:'균사에 오염된 음식. 섭취 시 HP-5, 정신력-3.'},
+  {id:'spore', name:'포자', icon:'💛', tag:'resource', atk:0, def:0, n:0, subTags:[],
+   desc:'균사 관련 이벤트 재료.'},
+  {id:'mycelium', name:'균사', icon:'🍄', tag:'resource', atk:0, def:1, n:0, subTags:[],
+   desc:'치유와 독의 이중성 재료.'},
+  {id:'spore_card', name:'포자 흡입', icon:'☁️', tag:'status', atk:-1, def:-1, n:0, subTags:[],
+   passiveDesc:'포자 흡입: 판정 드로우 시 정신력-4',
+   desc:'포자에 오염됐다. 탐색 판정 드로우 시 정신력-4.'},
 ];
 
 const ENEMIES={
@@ -1628,6 +1671,39 @@ const ENEMIES={
     bossType:'charge', chargeAtk:28, normalAtk:6, _charging:true, noFlee:true,
     encDesc:'붉은 눈이 에너지를 모은다. 충전 중에는 약하지만, 방출하면 치명적이다.',
     reward:{san:30}, altCards:[[{id:'shard',n:3}],[{id:'feather',n:3},{id:'venom',n:2}]]},
+
+  // ── 균사의 늪 (섬4) 전용 몬스터 ──
+  cbt_spore_walker:{name:'포자 인간',icon:'🧟',hp:24,atk:10,def:2,
+    mapDrop:true, pattern:'spore_infect',
+    patternDesc:'공격 시 포자 카드를 덱에 주입',
+    encDesc:'균사에 잠식된 인간의 잔해. 공격할 때마다 포자 카드가 덱에 섞인다.',
+    observeReward:[{id:'spore',n:1}],
+    observeText:'포자 인간을 피해 포자를 채취했다.',
+    reward:{cards:[{id:'mycelium',n:1}]},
+    altCards:[[{id:'spore',n:2}],[{id:'herb',n:1}]],
+    rewardDesc:'균사×1 + (포자×2 또는 약초×1)'},
+  cbt_mycelium_beast:{name:'균사 수호수',icon:'🦬',hp:38,atk:14,def:4,
+    mapDrop:true, regenPerRound:6,
+    patternDesc:'매 라운드 HP+6 재생',
+    encDesc:'거대한 균사 덩어리가 형상을 이루었다. 매 라운드 체력을 재생한다.',
+    observeReward:[{id:'mycelium',n:2}],
+    observeText:'수호수가 잠시 멈춘 틈에 균사를 채취했다.',
+    reward:{cards:[{id:'mycelium',n:2}]},
+    altCards:[[{id:'spore',n:2}],[{id:'herb',n:1}]],
+    rewardDesc:'균사×2 + (포자×2 또는 약초×1)'},
+  cbt_swamp_frog:{name:'늪 개구리',icon:'🐸',hp:18,atk:8,def:1,
+    mapDrop:true,
+    encDesc:'거대한 늪 개구리가 독액을 뱉는다.',
+    observeReward:[{id:'herb',n:1},{id:'spore',n:1}],
+    observeText:'개구리를 피해 약초와 포자를 채취했다.',
+    reward:{cards:[{id:'food',n:1}]},
+    altCards:[[{id:'herb',n:1},{id:'venom',n:1}],[{id:'spore',n:1}]],
+    rewardDesc:'식량×1 + (약초+독낭 또는 포자×1)',
+    penalty:{card:'poison_status',desc:'개구리 독에 중독됐다'}},
+  boss_great_mycelium:{name:'대균사',icon:'🌀',hp:140,atk:18,def:6,
+    bossType:'mycelium_boss', noFlee:true, _phase2:false,
+    encDesc:'섬의 균사 네트워크가 형상을 이루었다. HP 50% 이하에서 포자 폭발이 시작된다.',
+    reward:{san:30}, altCards:[[{id:'mycelium',n:3}],[{id:'spore',n:3},{id:'herb',n:2}]]},
 };
 
 const EVENTS={
@@ -2005,6 +2081,70 @@ const EVENTS={
        reward:{},
        desc:'무조건. 빈손.'},
     ]},
+
+  // ── 균사의 늪 (섬4) 전용 이벤트 ──
+  myc_gather:{
+    name:'균사 밭',
+    flavor:'습지 깊숙이 균사가 가득 퍼져있다. 위험하지만 유용한 재료가 될 것 같다.',
+    choices:[
+      {label:'조심히 수확한다',icon:'🍄',req:'tool',
+       reward:{card:'mycelium',n:2},failPen:{hp:-8},
+       desc:'도구판정. 성공:균사×2 / 실패:HP-8'},
+      {label:'맨손으로 캔다',icon:'🤲',req:null,
+       reward:{card:'spore',n:1},
+       desc:'무조건. 포자×1 획득.'},
+      {label:'통과한다',icon:'↩️',req:null,
+       reward:{},
+       desc:'무조건. 빈손.'},
+    ]},
+  myc_purify:{
+    name:'정화 의식',
+    flavor:'늪 한가운데 수정처럼 맑은 구역이 있다. 균사가 정화될 것 같다.',
+    choices:[
+      {label:'정화 의식을 치른다',icon:'✨',req:'resource',
+       reward:{removeCard:'rotten_food',san:8},failPen:{san:-5},
+       desc:'자원판정. 성공:덱의 썩은음식 1장 제거+정신력+8 / 실패:정신력-5'},
+      {label:'그냥 지나친다',icon:'↩️',req:null,
+       reward:{},
+       desc:'무조건. 빈손.'},
+    ]},
+  myc_hazard:{
+    name:'독성 포자 구름',
+    flavor:'노란 포자 구름이 피어오른다. 피해야 한다.',
+    choices:[
+      {label:'방어구로 막는다',icon:'🛡️',req:null,subReq:'방어구',
+       reward:{san:5},failPen:{san:-4},
+       desc:'#방어구 판정. 성공:정신력+5 / 실패:정신력-4'},
+      {label:'빠르게 통과한다',icon:'💨',req:null,
+       reward:{},failPen:{hp:-6,san:-3},
+       fixed:true,
+       desc:'무조건. HP-6, 정신력-3.'},
+    ]},
+  myc_fungal:{
+    name:'균류 군락',
+    flavor:'거대한 버섯들이 가득하다. 먹을 수 있을까?',
+    choices:[
+      {label:'열매 지식으로 감별',icon:'🫐',req:null,subReq:'열매',
+       reward:{cards:[{id:'food',n:1},{id:'mycelium',n:1}]},failPen:{},
+       desc:'#열매 판정. 성공:식량×1+균사×1 / 실패:빈손'},
+      {label:'조금만 뜯어먹는다',icon:'🍽️',req:'resource',
+       reward:{hp:5},failPen:{hp:-10,san:-5},
+       desc:'자원판정. 성공:HP+5 / 실패:HP-10+정신력-5'},
+      {label:'통과한다',icon:'↩️',req:null,
+       reward:{},
+       desc:'무조건. 빈손.'},
+    ]},
+  myc_tree:{
+    name:'균사 나무',
+    flavor:'뿌리가 맵 전체를 감싸는 듯한 거대한 나무. 균사가 가득 맺혀있다.',
+    choices:[
+      {label:'균사를 채집한다',icon:'🍄',req:'tool',
+       reward:{card:'mycelium',n:3,san:5},failPen:{hp:-6},
+       desc:'도구판정. 성공:균사×3+정신력+5 / 실패:HP-6'},
+      {label:'나무에 귀를 기울인다',icon:'👂',req:null,
+       reward:{san:10},
+       desc:'무조건. 신비한 감각. 정신력+10.'},
+    ]},
 };
 
 const RECIPES=[
@@ -2078,6 +2218,37 @@ const ISLANDS = {
     doomName: '망각의 안개',
     doomIcon: '🌫️',
     startLog: '🌿 망각의 맹그로브 섬에 홀로 깨어났다. 기억이 흐릿하다.',
+    mapConfig: {
+      baseTiles: ['beach','forest','cave','ruins','shore'],
+      specialTiles: [
+        {id:'lookout',     count:1,   minDist:5, group:'escape'},
+        {id:'oblivion_lake',count:1,  minDist:3},
+        {id:'oblivion_swamp',count:2, minDist:3},
+        {id:'temple',      count:1,   minDist:5, group:'escape'},
+        {id:'thicket',     count:[0,2],minDist:2},
+      ],
+    },
+  },
+  mycelium: {
+    id: 'mycelium',
+    name: '균사의 늪',
+    icon: '🍄',
+    subtitle: '포자가 기억을 바꾸는 섬',
+    story: '눈을 떴을 때, 달콤하고 낯선 냄새가 코를 찔렀다.\n\n온 사방이 습기와 균사로 뒤덮여 있다. 발을 내딛을 때마다 포자가 피어오른다.\n\n식량을 구했는데, 밤새 곰팡이가 폈다.\n믿었던 것이 독이 되는 섬.\n\n빠져나가야 한다. 이 균사가 기억까지 바꾸기 전에.',
+    mechanic: '🍄 균사 잠식\n매 취침마다 덱의 식량 카드 25%가 썩은 음식으로 변질된다.\n변질된 음식을 섭취하면 HP-5, 정신력-3.\nDOOM 60% 이후 포자 카드가 덱에 침투한다.',
+    doomName: '균사 잠식',
+    doomIcon: '🍄',
+    startLog: '🍄 균사의 늪에서 눈을 떴다. 습한 공기에서 달콤하고 낯선 냄새가 난다.',
+    mapConfig: {
+      baseTiles: ['swamp','swamp','swamp','forest','shore','shore','cave','beach'],
+      specialTiles: [
+        {id:'swamp_watch',  count:1,   minDist:5, group:'escape'},
+        {id:'fungal_spot',  count:4,   minDist:2},
+        {id:'spore_shrine', count:1,   minDist:5, group:'escape'},
+        {id:'mycelium_tree',count:1,   minDist:3},
+        {id:'thicket',      count:[0,1],minDist:2},
+      ],
+    },
   },
 };
 
@@ -2091,11 +2262,70 @@ let _mobTab='map';
 const _tabMap={map:'map-col',deck:'ctr-col',stat:'rgt-col',help:'rgt-col'};
 let _pendingItems=null, _itemCb=null, _pendingItemCards=null;
 
-function startGame(){
+function startGame(islandId){
   clearSave();
+  if(islandId && ISLANDS[islandId]) G={islandId};
+  else G={islandId: G?.islandId || 'mangrove'};
   document.getElementById('title-scr').style.display='none';
   document.body.classList.remove('game-inactive');
   initGame();
+}
+
+// ── 섬 진행 저장/로드 ──
+function getIslandProgress(){
+  try{ return JSON.parse(localStorage.getItem('ie_islands_progress')||'{}'); }
+  catch(e){ return {}; }
+}
+
+function isIslandUnlocked(islandId){
+  const ORDER=['mangrove','mycelium','caldera','station','beast'];
+  if(islandId==='mangrove') return true;
+  const p=getIslandProgress();
+  const idx=ORDER.indexOf(islandId);
+  if(idx<=0) return false;
+  return !!(p[ORDER[idx-1]]?.cleared);
+}
+
+function markIslandCleared(islandId, method){
+  try{
+    const p=getIslandProgress();
+    if(!p[islandId]?.cleared){
+      p[islandId]={cleared:true, method: method||'raft',
+        date:new Date().toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'})};
+      const ORDER=['mangrove','mycelium','caldera','station','beast'];
+      const idx=ORDER.indexOf(islandId);
+      if(idx>=0 && idx<ORDER.length-1){
+        const next=ORDER[idx+1];
+        if(!p[next]) p[next]={locked:false};
+      }
+      localStorage.setItem('ie_islands_progress',JSON.stringify(p));
+    }
+  }catch(e){}
+}
+
+function renderIslandSelect(){
+  const el=document.getElementById('island-select');
+  if(!el) return;
+  const ORDER=['mangrove','mycelium','caldera','station','beast'];
+  const p=getIslandProgress();
+  let html='<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:10px 0;">';
+  ORDER.forEach(id=>{
+    const isl=ISLANDS[id];
+    if(!isl) return;
+    const unlocked=isIslandUnlocked(id);
+    const cleared=!!(p[id]?.cleared);
+    const active=(G?.islandId===id);
+    html+=`<div class="island-card${unlocked?'':' locked'}${active?' active':''}"
+      onclick="${unlocked?`startGame('${id}')`:''}">
+      <div style="font-size:22px;">${isl.icon}</div>
+      <div class="island-name">${isl.name}</div>
+      <div class="island-sub">${isl.subtitle}</div>
+      ${cleared?`<div class="island-badge">✅ 클리어</div>`
+               :unlocked?'':'<div class="island-badge locked-badge">🔒</div>'}
+    </div>`;
+  });
+  html+='</div>';
+  el.innerHTML=html;
 }
 
 function continueGame(){
@@ -2178,7 +2408,7 @@ function updateContinueBtn(){
 }
 
 function initGame(){
-  const islandId = (G && G.islandId) ? G.islandId : 'mangrove';
+  const islandId = (G && G.islandId && ISLANDS[G.islandId]) ? G.islandId : 'mangrove';
   G={
     day:1, ap:10, maxAP:10,
     hp:100, san:90, hun:80, thi:80,
@@ -2200,6 +2430,7 @@ function initGame(){
     skillEvtTriggered:{},
     skillCraftBypass:false,
     runMaxDeck:0, oblivionSeepCnt:0, deathCause:null,
+    mycPhase:0, mycEscape:false,
     islandId,
   };
   _pendingItems=null; _itemCb=null; _pendingItemCards=null; _ucHand=[];
@@ -2892,7 +3123,7 @@ function checkWin(){
   if(G.escape>=85&&!G.escMile[85]){ G.escMile[85]=true; showEscapeMilestone(15); }
   if(G.escape>=100&&!G.over){
     G.over=true;
-    const escMethod=G.templeEscape?'temple':G.signalEscape?'signal':null;
+    const escMethod=G.mycEscape?'mycelium':G.templeEscape?'temple':G.signalEscape?'signal':null;
     showVictoryFanfare(()=>showEnding(true, escMethod));
   }
 }
@@ -2996,6 +3227,9 @@ function _endHeadline(win, reason){
       const scTxt=sc>3?`${sc}발의 신호탄을 쏘아 올린 끝에`:`${sc}발의 신호탄으로`;
       return {main:'구조 성공', sub:`${G.day}일 만에 ${scTxt} 구조선을 불러냈다.`};
     }
+    if(reason==='mycelium'){
+      return {main:'균사 격파', sub:`${G.day}일 만에 대균사를 쓰러뜨리고 포자 구름이 걷혔다.`};
+    }
     let main='탈출 성공';
     if(G.hp>=70&&G.san>=70&&G.day<=15) main='완벽한 생존';
     else if(G.hp<20||G.san<20)         main='간신히 살아남았다';
@@ -3047,6 +3281,9 @@ function _endHighlights(win, reason){
   if(!win&&G.templePhase>0) h.push(`🏛️ 사원 ${G.templePhase}페이즈까지 진입했다가 쓰러졌다`);
   if(win&&reason==='signal'&&(G.signalCollected||0)>3){
     h.push(`🎆 무려 ${G.signalCollected}발의 신호탄을 쏜 끝에 구조를 불렀다`);
+  }
+  if(win&&reason==='mycelium'){
+    h.push(`🌀 포자 제단의 3단계를 모두 돌파하고 대균사를 쓰러뜨렸다`);
   }
 
   // 골드 스킬 보유
@@ -3129,6 +3366,7 @@ function _saveRun(win, reason){
     else     { if(!rec.best.lossStreak||rec.streak.count>rec.best.lossStreak) rec.best.lossStreak=rec.streak.count; }
     localStorage.setItem('ie_records',JSON.stringify(rec));
     const streakInfo={count:rec.streak.count, type:curType};
+    if(win&&typeof markIslandCleared==='function') markIslandCleared(G.islandId||'mangrove', reason||'raft');
     if(typeof checkAchievements==='function') checkAchievements(win, reason, streakInfo);
     return streakInfo;
   }catch(e){ return {count:1, type:win?'win':'loss'}; }
@@ -3490,30 +3728,31 @@ window.addEventListener('resize', ()=>{
 // ═══════════════ MAP ═══════════════
 // 7×7 = 49 타일, 시작위치 24 (행3 열3, 중앙)
 
-// 랜덤 생성에 쓸 기본 5종 타일만 추출
-const BASE_TILE_IDS=['beach','forest','cave','ruins','shore'];
-
 function _placeTile(idx, id){
   const def=TILE_TYPES.find(t=>t.id===id);
   if(def) G.tiles[idx]={...def,revealed:false,hasPlayer:false,hasCamp:false,explored:false};
 }
 
 function buildMap(){
-  const baseTiles=TILE_TYPES.filter(t=>BASE_TILE_IDS.includes(t.id));
+  const cfg=(ISLANDS[G.islandId]||ISLANDS.mangrove).mapConfig;
+  const baseTileIds=cfg.baseTiles;
+  const baseTiles=baseTileIds.map(id=>TILE_TYPES.find(t=>t.id===id)).filter(Boolean);
   G.tiles=[];
   for(let i=0;i<49;i++){
     const t=baseTiles[Math.floor(Math.random()*baseTiles.length)];
     G.tiles.push({...t, revealed:false, hasPlayer:false, hasCamp:false, explored:false});
   }
 
-  // 시작 위치(24) 반경 2 이내에 forest/beach/cave 보장
+  // 시작 위치(24) 반경 2 이내에 다양한 타일 보장 (기본 타일 풀에서)
+  const uniqueBaseTiles=[...new Set(baseTileIds)];
+  const guaranteedNear=uniqueBaseTiles.slice(0,3);
   const near=[];
   for(let i=0;i<49;i++){
     if(i!==G.pos && tileDist(i,G.pos)<=2) near.push(i);
   }
-  ['forest','beach','cave'].forEach(tid=>{
+  guaranteedNear.forEach(tid=>{
     if(!near.some(i=>G.tiles[i].id===tid)){
-      const candidates=near.filter(i=>!['forest','beach','cave'].includes(G.tiles[i].id));
+      const candidates=near.filter(i=>!guaranteedNear.includes(G.tiles[i].id));
       if(candidates.length){
         const idx=candidates[Math.floor(Math.random()*candidates.length)];
         _placeTile(idx, tid);
@@ -3521,54 +3760,33 @@ function buildMap(){
     }
   });
 
-  // 특수 타일 배치 — 이미 특수 타일이 없는 칸에만 덮어씀
-  const specialIds=['lookout','oblivion_lake','oblivion_swamp'];
-  const isSpecial=i=>specialIds.includes(G.tiles[i].id);
+  // 특수 타일 배치 — mapConfig.specialTiles 기반으로 일반화
+  const placedSpecialIds=new Set();
+  const isSpecialPlaced=i=>placedSpecialIds.has(i);
 
-  // 전망대(lookout) 1개: 시작 거리 5 이상
-  const lookoutPool=shuffle(Array.from({length:49},(_,i)=>i)
-    .filter(i=>tileDist(i,G.pos)>=5 && !isSpecial(i)));
-  if(lookoutPool.length) _placeTile(lookoutPool[0], 'lookout');
+  for(const spec of cfg.specialTiles){
+    const count=Array.isArray(spec.count)
+      ? spec.count[0]+Math.floor(Math.random()*(spec.count[1]-spec.count[0]+1))
+      : spec.count;
+    const minDist=spec.minDist||3;
 
-  // 망각의 호수(oblivion_lake) 1개: 시작 거리 3 이상, lookout과 거리 2 이상
-  const lookoutIdx=G.tiles.findIndex(t=>t.id==='lookout');
-  const lakePool=shuffle(Array.from({length:49},(_,i)=>i)
-    .filter(i=>tileDist(i,G.pos)>=3 && !isSpecial(i)
-            && (lookoutIdx<0||tileDist(i,lookoutIdx)>=2)));
-  if(lakePool.length) _placeTile(lakePool[0], 'oblivion_lake');
+    const pool=shuffle(Array.from({length:49},(_,i)=>i)
+      .filter(i=>tileDist(i,G.pos)>=minDist && !isSpecialPlaced(i)));
 
-  // 망각의 늪(oblivion_swamp) 2개: 시작 거리 3 이상, 특수 타일과 거리 2 이상, 서로 거리 3 이상
-  const swampBase=shuffle(Array.from({length:49},(_,i)=>i)
-    .filter(i=>tileDist(i,G.pos)>=3 && !isSpecial(i)));
-  let placed=0;
-  let firstSwampIdx=-1;
-  for(const i of swampBase){
-    if(placed===0){
-      _placeTile(i,'oblivion_swamp'); firstSwampIdx=i; placed++;
-    } else if(placed===1){
-      if(tileDist(i,firstSwampIdx)>=3){ _placeTile(i,'oblivion_swamp'); placed++; break; }
-    }
-  }
-
-  // 고대 사원(temple) 1개: 시작 거리 5 이상, lookout과 거리 3 이상
-  const allSpecialIds=[...specialIds,'temple','thicket'];
-  const isAnySpecial=i=>allSpecialIds.includes(G.tiles[i].id);
-  const templePool=shuffle(Array.from({length:49},(_,i)=>i)
-    .filter(i=>tileDist(i,G.pos)>=5 && !isAnySpecial(i)
-            && (lookoutIdx<0||tileDist(i,lookoutIdx)>=3)));
-  if(templePool.length) _placeTile(templePool[0],'temple');
-
-  // 수풀(thicket) 0~2개: 시작 거리 2 이상, 서로 거리 3 이상
-  const thicketCount=Math.floor(Math.random()*3);
-  const thicketBase=shuffle(Array.from({length:49},(_,i)=>i)
-    .filter(i=>tileDist(i,G.pos)>=2 && !isAnySpecial(i)));
-  let thicketPlaced=0, firstThicketIdx=-1;
-  for(const i of thicketBase){
-    if(thicketPlaced>=thicketCount) break;
-    if(thicketPlaced===0){
-      _placeTile(i,'thicket'); firstThicketIdx=i; thicketPlaced++;
-    } else {
-      if(tileDist(i,firstThicketIdx)>=3){ _placeTile(i,'thicket'); thicketPlaced++; }
+    let n=0, prevIdx=-1;
+    for(const i of pool){
+      if(n>=count) break;
+      if(n>0 && prevIdx>=0 && tileDist(i,prevIdx)<3) continue;
+      // 같은 group의 이미 배치된 타일과 거리 3 이상 보장
+      const groupConflict=spec.group && [...placedSpecialIds].some(pi=>{
+        const pt=G.tiles[pi];
+        const pspec=cfg.specialTiles.find(s=>s.id===pt?.id);
+        return pspec?.group===spec.group && tileDist(i,pi)<3;
+      });
+      if(groupConflict) continue;
+      _placeTile(i, spec.id);
+      placedSpecialIds.add(i);
+      prevIdx=i; n++;
     }
   }
 
@@ -3617,6 +3835,12 @@ function clickTile(i){
   const _mvS2Cnt=allCards().filter(c=>c.id==='sk_mv_s2').length;
   if(_mvS1Cnt) G.hp=Math.min(100,G.hp+_mvS1Cnt);
   if(_mvS2Cnt) G.san=Math.min(100,G.san+_mvS2Cnt);
+  // 균류 군락: 첫 진입 시 HP-3
+  if(t.id==='fungal_spot'&&!wasExplored){
+    G.hp=Math.max(0,G.hp-3);
+    flashDamage();
+    log('🌫️ 균류 군락: 균사가 살갗을 파고든다. HP-3','danger');
+  }
   if(t.id==='thicket'&&!t.explored){
     t.explored=true;
     const _ambPool=['cbt_boar','cbt_boar','cbt_snake','cbt_snake','cbt_bat','cbt_ghost'];
@@ -3834,6 +4058,13 @@ function doJudgment(evt, ch){
           addCard('amnesia',1);
           bonLines.push('🌀 환각이 퍼진다: 망각 카드 추가');
         }
+      }
+      // 포자 흡입 카드 효과 (균사 습지)
+      if(top&&top.id==='spore_card'){
+        G.san=Math.max(0,G.san-4);
+        flashDamage();
+        bonLines.push('🌡️ 포자를 흡입했다. 정신력-4');
+        log('🌡️ 포자 흡입: 판정 드로우 시 정신력-4','danger');
       }
       if(G.doomPhase>=4&&G.san<40){
         const hRate=15+Math.max(0,40-G.san)*0.8;
@@ -4329,7 +4560,7 @@ function renderUcCards(){
     const kBoost=hasTool('knife')?8:0;
     const durStr=card.dur?`<div style="font-size:8px;color:var(--accent);font-family:var(--font-m);">🔋${card.curDur||card.dur}/${card.dur}</div>`:'';
     const gsHp=allCards().some(c=>c.id==='sk_cp_s3')?20:10, gsSan=allCards().some(c=>c.id==='sk_cp_s3')?16:8;
-    const useLabels={eat:`🍗허기+${22+kBoost}`,drink:'💧갈증+28',heal:'🌿HP+10',good_sleep:`😪HP+${gsHp}·정신력+${gsSan}`,temple_map:'🏛️사원 위치 표시',lure:'🪤야생 동물 유인 → 전투!',_action:'🏃2장 드로우',sk_ex_reexplore:'📖재탐색 활성화',sk_ga_spot:'🎒현장채집(AP1)',sk_cr_anywhere:'🗂️이동 제작소',sk_cu_peek:'👁️덱 미리보기',sk_cu_discard:'🌀손 카드 1장 소멸',sk_sl_wake:'⏰AP+10(1회용)',sk_cb_strike:'💥전투에서만 사용 가능'};
+    const useLabels={eat_rotten:'🤢HP-5·정신력-3',eat:`🍗허기+${22+kBoost}`,drink:'💧갈증+28',heal:'🌿HP+10',good_sleep:`😪HP+${gsHp}·정신력+${gsSan}`,temple_map:'🏛️사원 위치 표시',lure:'🪤야생 동물 유인 → 전투!',_action:'🏃2장 드로우',sk_ex_reexplore:'📖재탐색 활성화',sk_ga_spot:'🎒현장채집(AP1)',sk_cr_anywhere:'🗂️이동 제작소',sk_cu_peek:'👁️덱 미리보기',sk_cu_discard:'🌀손 카드 1장 소멸',sk_sl_wake:'⏰AP+10(1회용)',sk_cb_strike:'💥전투에서만 사용 가능'};
     const div=document.createElement('div');
     div.style.cssText=`background:var(--bg3);border:1px solid ${usable?'var(--green2)':'var(--border)'};border-radius:9px;padding:10px 8px;width:90px;text-align:center;cursor:${usable?'pointer':'default'};opacity:${usable?1:0.5};transition:all .12s;`;
     if(!_prevUcHandUIDs.has(card.uid)){
@@ -4375,7 +4606,13 @@ function ucUse(i){
   const kBoost=hasTool('knife')?8:0;
   const _cuS2Cnt=allCards().filter(c=>c.id==='sk_cu_s2').length;
   const foodBonus=8*_cuS2Cnt;
-  if(card.use==='eat'){
+  if(card.use==='eat_rotten'){
+    G.hp=Math.max(0,G.hp-5); G.san=Math.max(0,G.san-3);
+    flashDamage();
+    resEl.textContent='🤢 썩은 음식 — HP-5, 정신력-3 (균사에 오염됐다)';
+    resEl.style.color='var(--red)';
+    log('🤢 썩은 음식 섭취. HP-5, 정신력-3','danger');
+  } else if(card.use==='eat'){
     const g=22+kBoost+foodBonus; G.hun=Math.min(100,G.hun+g);
     resEl.textContent=`🍗 ${card.name} — 허기+${g}${kBoost?` (🔪+${kBoost})`:''}${foodBonus?` (🍴+${foodBonus})`:''}`;
     resEl.style.color='var(--accent)';
@@ -4704,6 +4941,24 @@ function doSleep(){
   }
   G.deck=shuffle(G.deck.concat(G.disc)); G.disc=[];
 
+  // ── 균사의 늪: 취침 시 식량 카드 변질 ──
+  if(G.islandId==='mycelium'){
+    const foodIds=['food','berry','herb'];
+    const rate=G.doomPhase>=3?0.5:0.25;
+    const rottenDef=CARDS.find(d=>d.id==='rotten_food');
+    if(rottenDef){
+      let rottenCnt=0;
+      G.deck=G.deck.map(c=>{
+        if(foodIds.includes(c.id)&&Math.random()<rate){
+          rottenCnt++;
+          return {...rottenDef,uid:uid()};
+        }
+        return c;
+      });
+      if(rottenCnt>0) log(`🍄 균사가 식량 ${rottenCnt}장을 오염시켰다.`,'danger');
+    }
+  }
+
   const sanNet=sanR-sanDrain+wD.san;
   const _di=(ISLANDS[G.islandId]||ISLANDS.mangrove).doomIcon||'🌫️';
   const doomHint=G.doomRate>0?` | ${_di}DOOM+${G.doomRate}/일(${G.doom}%)`:G.doomPhase>=4?` | ${_di}DOOM ${G.doom}%`:'';
@@ -4727,6 +4982,12 @@ function _processDoom(early){
   }
   // 일일 수동 증가
   if(G.doomRate>0 && G.doomPhase<4) G.doom=Math.min(100,G.doom+G.doomRate);
+
+  // ── 균사의 늪: doom 단계 3+ 포자 카드 침투 ──
+  if(G.islandId==='mycelium'&&G.doomPhase>=3){
+    addCard('spore_card',1);
+    log('🌡️ 포자가 가득하다. 포자 흡입 카드가 덱에 스며들었다.','danger');
+  }
 
   // 망각 단계 (80%+)
   if(G.doomPhase===4){
@@ -5683,6 +5944,18 @@ function _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,will
         log(`🏛️ ${G.templePhase-1}페이즈 완료`, 'success');
       }
     }
+    // 균사 페이즈 진행
+    if(e._mycNextPhase!==undefined){
+      G.mycPhase=e._mycNextPhase;
+      if(G.mycPhase>=3){
+        G.mycEscape=true; G.escape=Math.min(100,G.escape+100);
+        resEl.innerHTML+=`<div class="rl good" style="font-size:11px;">🌀 대균사 격파! 포자 구름이 걷혔다!</div>`;
+        log(`🌀 대균사 처치! 균사의 늪을 탈출할 수 있다.`, 'success');
+      } else {
+        resEl.innerHTML+=`<div class="rl good">🌀 포자 제단 ${G.mycPhase-1}페이즈 완료 — 정비 후 다음 단계 진입 가능</div>`;
+        log(`🌀 포자 제단 ${G.mycPhase-1}페이즈 완료`, 'success');
+      }
+    }
     log(`⚔️ ${e.name} 처치! 전리품 선택 획득 가능`,'success');
     document.getElementById('btn-cbt-resolve').style.display='none';
     document.getElementById('btn-cbt-flee').style.display='none';
@@ -5716,6 +5989,26 @@ function _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,will
     CBT.atkZone=[]; CBT.defZone=[];
     G.disc.push(...CBT.hand.filter(c=>!c._temp)); CBT.hand=[];
     // 보스 패턴 (다음 라운드 진입 직전)
+    // 균사 수호수: 매 라운드 HP 재생
+    if(e.regenPerRound&&e.curHp>0){
+      const reg=Math.min(e.regenPerRound, e.hp-e.curHp);
+      if(reg>0){ e.curHp+=reg; resEl.innerHTML+=`<div class="rl bad">🐻 균사 수호수 재생: 적 HP+${reg}</div>`; log(`🐻 균사 재생: 적 HP+${reg}`,'danger'); }
+    }
+    // 포자 인간: 공격 시 spore_card 침투
+    if(e.pattern==='spore_infect'&&dmgP>0){
+      addCard('spore_card',1);
+      resEl.innerHTML+=`<div class="rl bad">🌡️ 포자 감염! spore_card가 덱에 추가됐다</div>`;
+      log('🌡️ 포자 인간 공격 — 포자 흡입 카드 추가','danger');
+    }
+    // 대균사 보스: HP 50% 이하 전환 (한 번만)
+    if(e.bossType==='mycelium_boss'&&!e._phase2&&e.curHp>0&&e.curHp<=Math.floor(e.hp*0.5)){
+      e._phase2=true;
+      const sporeBurst=Math.floor(Math.random()*2)+1;
+      for(let i=0;i<sporeBurst;i++) addCard('spore_card',1);
+      resEl.innerHTML+=`<div class="rl bad">🌀 대균사: 포자 대방출! spore_card ${sporeBurst}장 추가 · ATK+4</div>`;
+      e.atk+=4;
+      log(`🌀 대균사 2단계! 포자 ${sporeBurst}장 추가, ATK+4`,'danger');
+    }
     if(e.bossType==='escalate'){
       e.atk+=e.atkPerRound;
       resEl.innerHTML+=`<div class="rl bad">🗿 수호신의 분노: ATK→${e.atk}</div>`;
@@ -5875,6 +6168,11 @@ function _sfFinish(msg,color,label,onOk){
   const btn=document.getElementById('sf-ok');
   btn.textContent=label||'확인'; btn.style.display='';
   btn.onclick=()=>{ document.getElementById('signal-flip-mo').style.display='none'; if(onOk)onOk(); };
+}
+
+// ── 섬별 신호 전망대 타일 ID ──
+function getSignalTileId(){
+  return (G.islandId==='mycelium') ? 'swamp_watch' : 'lookout';
 }
 
 // ── 전망대: 신호탄 탐색 ──
@@ -6097,6 +6395,39 @@ function _startTempleCombat(evtId, nextPhase){
   const enemy={...base};
   enemy._templeNextPhase=nextPhase;
   startCombat(evtId, false, false, enemy);
+}
+
+</script></script>
+<script>
+// ═══════════════ MYCELIUM ESCAPE ═══════════════
+
+function doSporeShrine(){
+  if(G.over) return;
+  const ph=G.mycPhase||0;
+  if(ph>=3){ log('🌀 대균사는 이미 쓰러뜨렸다.',''); return; }
+  const apArr=[3,3,4];
+  const apCost=apArr[ph];
+  if(G.ap<apCost){ log(`AP부족 (포자 제단 ${ph+1}페이즈:AP${apCost})`,'danger'); render(); return; }
+  G.ap-=apCost;
+
+  if(ph===0){
+    log(`🌀 포자 제단 진입... 포자 인간이 나타났다! (AP-${apCost})`,'danger');
+    _startMycCombat('cbt_spore_walker', 1);
+  } else if(ph===1){
+    log(`🌀 균사 수호수가 몸을 드러냈다! (AP-${apCost})`,'danger');
+    _startMycCombat('cbt_mycelium_beast', 2);
+  } else if(ph===2){
+    log(`🌀 대균사의 심층부에 도달했다! (AP-${apCost})`,'danger');
+    _startMycCombat('boss_great_mycelium', 3);
+  }
+  render();
+}
+
+function _startMycCombat(enemyId, nextPhase){
+  const base=ENEMIES[enemyId];
+  if(!base){ log('균사 전투 데이터 오류','danger'); return; }
+  const enemy={...base, _mycNextPhase:nextPhase};
+  startCombat(enemyId, false, false, enemy);
 }
 
 </script></script>
@@ -6339,7 +6670,7 @@ function render(){
   // 특수 타일 액션 패널
   const specEl=document.getElementById('act-special');
   if(specEl){
-    if(ct.id==='lookout'&&ct.explored){
+    if((ct.id==='lookout'||ct.id==='swamp_watch')&&ct.explored){
       const hasKit=cards.some(c=>c.id==='flare_kit');
       const sigCnt=cards.filter(c=>c.id==='signal').length;
       const N=cards.length;
@@ -6363,7 +6694,8 @@ function render(){
       if(N>=3&&sigCnt>=3) sigProb=Math.round(sigCnt*(sigCnt-1)*(sigCnt-2)/(N*(N-1)*(N-2))*100);
       const probCol=p=>p>=60?'var(--green)':p>=30?'var(--accent)':'var(--red)';
       specEl.style.display='';
-      specEl.innerHTML=`<div style="font-size:9px;color:#aecbae;font-family:var(--font-m);margin-bottom:5px;">🗼 전망대 전용 행동</div>
+      const _lookoutLabel=ct.id==='swamp_watch'?'🗼 늪 전망대 전용 행동':'🗼 전망대 전용 행동';
+      specEl.innerHTML=`<div style="font-size:9px;color:#aecbae;font-family:var(--font-m);margin-bottom:5px;">${_lookoutLabel}</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
           <button class="btn" style="border-color:#4a8a5a;color:#aecbae;font-size:10px;"
             onclick="doFlareSearch()" ${p.ap<2||p.over?'disabled':''}>
@@ -6395,6 +6727,22 @@ function render(){
             ${phLabel[ph]}<span class="apb" style="margin-left:4px;">AP${apArr[ph]}</span>
           </button>
           ${prevDone}${bossHint}`;
+      }
+    } else if(ct.id==='spore_shrine'&&ct.explored){
+      const sph=p.mycPhase||0;
+      specEl.style.display='';
+      if(sph>=3){
+        specEl.innerHTML=`<div style="font-size:9px;color:var(--green);font-family:var(--font-m);">🌀 대균사 격파 — 균사 루트 탈출 완료</div>`;
+      } else {
+        const sphLabel=['🌀 포자 제단 진입','🌀 균사 2페이즈','🌀 대균사 결전'];
+        const sphAP=[3,3,4];
+        const prevDoneSp=sph>0?`<div style="font-size:8px;color:var(--green);margin-top:2px;">✓ ${sph}페이즈 완료</div>`:'';
+        specEl.innerHTML=`<div style="font-size:9px;color:#cc88ee;font-family:var(--font-m);margin-bottom:5px;">🌀 포자 제단 (${sph}/2 완료)</div>
+          <button class="btn full" style="border-color:#774499;color:#cc88ee;font-size:10px;"
+            onclick="doSporeShrine()" ${p.ap<sphAP[sph]||p.over?'disabled':''}>
+            ${sphLabel[sph]}<span class="apb" style="margin-left:4px;">AP${sphAP[sph]}</span>
+          </button>
+          ${prevDoneSp}`;
       }
     } else if(ct.id==='oblivion_lake'&&ct.explored){
       const coolDays=3-(p.day-(p.lastOblivion||-99));
@@ -6455,10 +6803,11 @@ function render(){
 }
 
 </script></script>
-<script>/* 게임은 타이틀 화면의 startGame()으로 시작 */
+<script>/* 게임은 섬 선택 UI의 startGame(islandId)으로 시작 */
 initActionTT();
 initWeatherTT();
 updateContinueBtn();
+renderIslandSelect();
 </script>
 
 </body>

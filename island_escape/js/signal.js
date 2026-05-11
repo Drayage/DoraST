@@ -44,6 +44,11 @@ function _sfFinish(msg,color,label,onOk){
   btn.onclick=()=>{ document.getElementById('signal-flip-mo').style.display='none'; if(onOk)onOk(); };
 }
 
+// ── 섬별 신호 전망대 타일 ID ──
+function getSignalTileId(){
+  return (G.islandId==='mycelium') ? 'swamp_watch' : 'lookout';
+}
+
 // ── 전망대: 신호탄 탐색 ──
 function doFlareSearch(){
   if(G.over) return;
