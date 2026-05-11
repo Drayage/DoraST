@@ -258,6 +258,7 @@ function smartAssign(){
     else if(c.def>0&&c.atk<=0) CBT.defZone.push(c);
     else if(c.atk>0)           CBT.atkZone.push(c);
   });
+  autoAssignStatusCards();
   renderCombat();
 }
 

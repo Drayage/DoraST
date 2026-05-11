@@ -193,7 +193,7 @@ function initGame(){
     skillEvtTriggered:{},
     skillCraftBypass:false,
     runMaxDeck:0, oblivionSeepCnt:0, deathCause:null,
-    mycPhase:0, mycEscape:false, mycBoss:null, mycMapUsed:false, mycMapDrops:{}, mycEventShown:{},
+    mycPhase:0, mycEscape:false, mycBoss:null, mycMapUsed:false, mycMapDrops:{}, mycEventShown:{}, sporeBatchSize:2,
     islandId,
   };
   _pendingItems=null; _itemCb=null; _pendingItemCards=null; _ucHand=[];

@@ -34,7 +34,7 @@ function renderUcCards(){
     const kBoost=hasTool('knife')?8:0;
     const durStr=card.dur?`<div style="font-size:8px;color:var(--accent);font-family:var(--font-m);">🔋${card.curDur||card.dur}/${card.dur}</div>`:'';
     const gsHp=allCards().some(c=>c.id==='sk_cp_s3')?20:10, gsSan=allCards().some(c=>c.id==='sk_cp_s3')?16:8;
-    const useLabels={eat_rotten:'🤢허기+10·HP-5·정신력-3',eat_chunk:'🧫허기+10',myc_map:'🗺️페이즈도전해금',antidote:'💊독해제(전투)/HP+8·정신력+5(평상시)',eat:`🍗허기+${22+kBoost}`,drink:'💧갈증+28',heal:'🌿HP+10',good_sleep:`😪HP+${gsHp}·정신력+${gsSan}`,temple_map:'🏛️사원 위치 표시',lure:'🪤야생 동물 유인 → 전투!',_action:'🏃2장 드로우',sk_ex_reexplore:'📖재탐색 활성화',sk_ga_spot:'🎒현장채집(AP1)',sk_cr_anywhere:'🗂️이동 제작소',sk_cu_peek:'👁️덱 미리보기',sk_cu_discard:'🌀손 카드 1장 소멸',sk_sl_wake:'⏰AP+10(1회용)',sk_cb_strike:'💥전투에서만 사용 가능'};
+    const useLabels={eat_rotten:'🤢허기+10·HP-5·정신력-3',eat_chunk:'🧫허기+10',myc_map:'🗺️페이즈도전해금',antidote:'💊독해제(전투)/HP+8·정신력+5(평상시)',use_spore:'☁️HP/정신력/허기/갈증 중 1개 랜덤 -1',eat:`🍗허기+${22+kBoost}`,drink:'💧갈증+28',heal:'🌿HP+10',good_sleep:`😪HP+${gsHp}·정신력+${gsSan}`,temple_map:'🏛️사원 위치 표시',lure:'🪤야생 동물 유인 → 전투!',_action:'🏃2장 드로우',sk_ex_reexplore:'📖재탐색 활성화',sk_ga_spot:'🎒현장채집(AP1)',sk_cr_anywhere:'🗂️이동 제작소',sk_cu_peek:'👁️덱 미리보기',sk_cu_discard:'🌀손 카드 1장 소멸',sk_sl_wake:'⏰AP+10(1회용)',sk_cb_strike:'💥전투에서만 사용 가능'};
     const div=document.createElement('div');
     div.style.cssText=`background:var(--bg3);border:1px solid ${usable?'var(--green2)':'var(--border)'};border-radius:9px;padding:10px 8px;width:90px;text-align:center;cursor:${usable?'pointer':'default'};opacity:${usable?1:0.5};transition:all .12s;`;
     if(!_prevUcHandUIDs.has(card.uid)){
@@ -113,6 +113,15 @@ function ucUse(i){
       resEl.style.color='var(--green)';
       log('💊 해독제 복용. HP+8 정신력+5','success');
     }
+  } else if(card.use==='use_spore'){
+    const stats=['hp','san','hun','thi'];
+    const labels={hp:'HP',san:'정신력',hun:'허기',thi:'갈증'};
+    const hit=stats[Math.floor(Math.random()*stats.length)];
+    G[hit]=Math.max(0,G[hit]-1);
+    if(hit==='hp') flashDamage();
+    resEl.textContent=`☁️ 포자 흡입 — ${labels[hit]}-1 (랜덤)`;
+    resEl.style.color='var(--red)';
+    log(`☁️ 포자 흡입: ${labels[hit]}-1`,'danger');
   } else if(card.use==='eat'){
     const g=22+kBoost+foodBonus; G.hun=Math.min(100,G.hun+g);
     resEl.textContent=`🍗 ${card.name} — 허기+${g}${kBoost?` (🔪+${kBoost})`:''}${foodBonus?` (🍴+${foodBonus})`:''}`;

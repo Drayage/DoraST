@@ -250,10 +250,12 @@ function _processDoom(early){
   // 일일 수동 증가
   if(G.doomRate>0 && G.doomPhase<4) G.doom=Math.min(100,G.doom+G.doomRate);
 
-  // ── 균사의 늪: doom 단계 3+ 포자 카드 침투 ──
+  // ── 균사의 늪: doom 단계 3+ 포자 카드 배치 침투 (점점 증가, 최대 5장) ──
   if(G.islandId==='mycelium'&&G.doomPhase>=3){
-    addCard('spore_card',1);
-    log('🌡️ 포자가 가득하다. 포자 흡입 카드가 덱에 스며들었다.','danger');
+    const batch=Math.min(5,G.sporeBatchSize||2);
+    addCard('spore_card',batch);
+    G.sporeBatchSize=Math.min(5,(G.sporeBatchSize||2)+1);
+    log(`🌡️ 포자가 가득하다. 포자 흡입 카드 ${batch}장이 덱에 스며들었다.`,'danger');
   }
 
   // 망각 단계 (80%+)
@@ -319,12 +321,21 @@ function _afterDoomContinue(early){
   else {
     const inCamp=G.camps.includes(G.pos);
     if(inCamp){
-      addCard('good_sleep',1);
-      log('😪 캠프에서 숙면: 꿀잠 카드 추가','success');
-      // 모닥불의 온기 패시브
-      if(allCards().some(c=>c.id==='sk_cp_s3')){
+      const fatigueCards=[...G.deck.filter(c=>c.id==='fatigue'),...G.disc.filter(c=>c.id==='fatigue')];
+      if(fatigueCards.length>=2&&Math.random()<0.5){
+        // 피로 회복: 피로 1장 제거 (꿀잠 없음)
+        const removeFrom=G.deck.findIndex(c=>c.id==='fatigue')>=0?G.deck:G.disc;
+        const fi=removeFrom.findIndex(c=>c.id==='fatigue');
+        if(fi>=0) removeFrom.splice(fi,1);
+        log(`💤 캠프에서 충분히 쉬었다. 피로 1장 제거 (${fatigueCards.length-1}장 남음)`,'success');
+      } else {
         addCard('good_sleep',1);
-        log('🔥 모닥불의 온기: 꿀잠 카드 추가','success');
+        log('😪 캠프에서 숙면: 꿀잠 카드 추가','success');
+        // 모닥불의 온기 패시브
+        if(allCards().some(c=>c.id==='sk_cp_s3')){
+          addCard('good_sleep',1);
+          log('🔥 모닥불의 온기: 꿀잠 카드 추가','success');
+        }
       }
     }
     render(); saveGame();
