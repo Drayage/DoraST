@@ -2389,7 +2389,8 @@ function clearSave(){
 function devUnlockAll(){
   const ORDER=['mangrove','mycelium','caldera','station','beast'];
   const p=getIslandProgress();
-  ORDER.forEach(id=>{ if(!p[id]) p[id]={locked:false}; });
+  // isIslandUnlocked() checks p[prevIsland].cleared — mark all as cleared to unlock chain
+  ORDER.forEach(id=>{ p[id]={...(p[id]||{}), cleared:true, locked:false}; });
   localStorage.setItem('ie_islands_progress',JSON.stringify(p));
   renderIslandSelect();
   const btn=document.querySelector('[onclick="devUnlockAll()"]');
