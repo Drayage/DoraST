@@ -3371,43 +3371,46 @@ function showEnding(win, reason){
 }
 
 function _endHeadline(win, reason){
+  const isl=ISLANDS[G.islandId]||ISLANDS.mangrove;
+  const islName=isl.name||'섬';
   if(win){
     if(reason==='temple'){
       const bossNames={boss_stone_idol:'석조 수호신', boss_oblivion_herald:'망각의 전령'};
       const bossName=bossNames[G.templeBoss]||'고대의 존재';
-      return {main:'저주 해제', sub:`${G.day}일 만에 사원의 ${bossName}을 쓰러뜨리고 저주를 풀었다.`};
+      return {main:'저주 해제', sub:`${G.day}일 만에 사원의 ${bossName}을 쓰러뜨리고 망각의 맹그로브를 탈출했다.`};
     }
     if(reason==='signal'){
       const sc=G.signalCollected||0;
       const scTxt=sc>3?`${sc}발의 신호탄을 쏘아 올린 끝에`:`${sc}발의 신호탄으로`;
-      return {main:'구조 성공', sub:`${G.day}일 만에 ${scTxt} 구조선을 불러냈다.`};
+      if(G.islandId==='mycelium')
+        return {main:'구조 성공', sub:`${G.day}일 만에 늪 전망대에서 ${scTxt} 구조대를 불러 균사의 늪을 탈출했다.`};
+      return {main:'구조 성공', sub:`${G.day}일 만에 ${scTxt} 구조선을 불러 망각의 맹그로브를 탈출했다.`};
     }
     if(reason==='mycelium'){
       const bossNames={boss_rot_queen:'부패의 여왕', boss_spore_tyrant:'포자 폭군'};
       const bossName=bossNames[G.mycBoss]||'대균사';
-      return {main:'균사의 늪 탈출', sub:`${G.day}일 만에 포자 제단 3단계를 돌파하고 ${bossName}을 쓰러뜨렸다. 포자 구름이 일시에 걷히며 탈출로가 열렸다.`};
+      return {main:'균사 정복', sub:`${G.day}일 만에 포자 제단 3단계를 돌파하고 ${bossName}을 쓰러뜨렸다. 포자 구름이 걷히며 균사의 늪을 탈출했다.`};
     }
     let main='탈출 성공';
     if(G.hp>=70&&G.san>=70&&G.day<=15) main='완벽한 생존';
     else if(G.hp<20||G.san<20)         main='간신히 살아남았다';
-    return {main, sub:`${G.day}일 만에 섬을 탈출했다.`};
+    return {main, sub:`${G.day}일 만에 ${islName}을(를) 뗏목으로 탈출했다.`};
   }
+  // 패배
+  const islFail=G.islandId==='mycelium'?'균사의 늪':'망각의 맹그로브';
   let main;
   if(G.escape>=80)       main='거의 탈출할 뻔했다';
   else if(G.escape>=50)  main='한 걸음이 부족했다';
   else if(G.san<=0)      main='마음이 먼저 무너졌다';
   else if(G.day<=4)      main='첫 발부터 쉽지 않았다';
-  else if(G.doomSurvives>0) main='섬은 아직 널 놓아주지 않았다';
+  else if(G.doomSurvives>0) main=G.islandId==='mycelium'?'균사가 당신을 놓아주지 않았다':'섬은 아직 널 놓아주지 않았다';
   else {
-    const pool=[
-      '준비는 됐지만, 타이밍을 놓쳤다',
-      '섬은 아직 널 놓아주지 않았다',
-      '이번엔 운이 따르지 않았다',
-      '다음엔 다를 것이다',
-    ];
+    const pool=G.islandId==='mycelium'
+      ?['균사가 깊어질수록 출구가 멀어졌다','포자에 잠식되어 정신이 흐려졌다','늪이 당신을 삼켰다','다음엔 균사를 이겨낼 수 있을 것이다']
+      :['준비는 됐지만, 타이밍을 놓쳤다','섬은 아직 널 놓아주지 않았다','이번엔 운이 따르지 않았다','다음엔 다를 것이다'];
     main=pool[G.day%pool.length];
   }
-  return {main, sub: reason ? `${reason} (${G.day}일 생존)` : `${G.day}일 생존`};
+  return {main, sub:`${islFail} — ${G.day}일 생존`};
 }
 
 function _endStats(){
@@ -3453,8 +3456,8 @@ function _endHighlights(win, reason){
 
   // 일반 하이라이트 (랜덤)
   const pool=[];
-  if(G.doomSurvives>0)         pool.push(`🌀 망각의 복권에서 ${G.doomSurvives}번 살아남았다`);
-  if(G.doomPhase>=3)            pool.push('🌫️ 안개가 기억을 삼키는 것을 두 눈으로 목격했다');
+  if(G.doomSurvives>0)         pool.push(G.islandId==='mycelium'?`🍄 포자 생사 복권에서 ${G.doomSurvives}번 살아남았다`:`🌀 망각의 복권에서 ${G.doomSurvives}번 살아남았다`);
+  if(G.doomPhase>=3)            pool.push(G.islandId==='mycelium'?'🍄 덱의 식량이 썩어가는 것을 두 눈으로 목격했다':'🌫️ 안개가 기억을 삼키는 것을 두 눈으로 목격했다');
   if(G.kills>=5)                pool.push(`⚔️ 총 ${G.kills}마리를 쓰러뜨렸다`);
   else if(G.kills===0&&G.day>3) pool.push('⚔️ 한 번도 싸우지 않았다 (평화주의?)');
   if(!win&&G.escape>=80)        pool.push(`🛶 탈출까지 단 ${100-G.escape}%가 남아있었다`);
@@ -3513,6 +3516,7 @@ function _saveRun(win, reason){
     const rec=JSON.parse(localStorage.getItem('ie_records')||'{"runs":[],"best":{},"streak":{"type":null,"count":0}}');
     const entry={day:G.day,escape:G.escape,doom:Math.min(100,G.doom),win,
       method:reason||'raft',
+      islandId:G.islandId||'mangrove',
       date:new Date().toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'})};
     rec.runs.unshift(entry); rec.runs=rec.runs.slice(0,5);
     if(!rec.best.survival||G.day>rec.best.survival.day) rec.best.survival=entry;
@@ -3543,7 +3547,11 @@ function showRecords(){
       html+='<div class="pn-ver" style="margin-bottom:8px;">';
       html+='<div class="pn-tag">🏆 최고 기록</div>';
       if(best.survival)   html+=`<div style="font-size:9px;color:var(--text2);font-family:var(--font-m);margin:2px 0;">🗓️ 최장 생존 <b style="color:var(--accent);">${best.survival.day}일</b> — 탈출 ${best.survival.escape}% · ${best.survival.date}</div>`;
-      if(best.escape){const em=best.escape.method==='temple'?'🏛️사원':best.escape.method==='signal'?'🎆신호':'🛶뗏목';html+=`<div style="font-size:9px;color:var(--text2);font-family:var(--font-m);margin:2px 0;">🚀 최단 탈출 <b style="color:var(--green);">${best.escape.day}일</b> ${em} — ${best.escape.date}</div>`;}
+      if(best.escape){
+        const em=best.escape.method==='temple'?'🏛️사원':best.escape.method==='signal'?'🎆신호':best.escape.method==='mycelium'?'🌀균사':'🛶뗏목';
+        const bi=(typeof ISLANDS!=='undefined'&&ISLANDS[best.escape.islandId])||{icon:'🌿'};
+        html+=`<div style="font-size:9px;color:var(--text2);font-family:var(--font-m);margin:2px 0;">🚀 최단 탈출 <b style="color:var(--green);">${best.escape.day}일</b> ${bi.icon}${em} — ${best.escape.date}</div>`;
+      }
       if(best.winStreak)  html+=`<div style="font-size:9px;color:var(--text2);font-family:var(--font-m);margin:2px 0;">🔥 최대 연승 <b style="color:var(--accent);">${best.winStreak}연승</b></div>`;
       if(best.lossStreak) html+=`<div style="font-size:9px;color:var(--text2);font-family:var(--font-m);margin:2px 0;">💀 최대 연패 <b style="color:var(--red);">${best.lossStreak}연패</b></div>`;
       html+='</div>';
@@ -3552,14 +3560,17 @@ function showRecords(){
       html+='<div class="pn-tag" style="margin-bottom:6px;">📜 최근 기록</div>';
       runs.forEach((r,i)=>{
         const winTxt=r.win?'<span style="color:var(--green);font-weight:700;">탈출 성공</span>':'<span style="color:var(--red);">실패</span>';
-        const methodBadge=r.win?(r.method==='temple'?'<span style="color:#ccaaee;">🏛️사원</span>':r.method==='signal'?'<span style="color:var(--accent);">🎆신호</span>':'<span style="color:var(--text3);">🛶뗏목</span>'):'';
+        const methodBadge=r.win?(r.method==='temple'?'<span style="color:#ccaaee;">🏛️사원</span>':r.method==='signal'?'<span style="color:var(--accent);">🎆신호</span>':r.method==='mycelium'?'<span style="color:#a0d080;">🌀균사</span>':'<span style="color:var(--text3);">🛶뗏목</span>'):'';
+        const isl=(typeof ISLANDS!=='undefined'&&ISLANDS[r.islandId])||{icon:'🌿',name:'맹그로브'};
+        const islBadge=`<span style="color:var(--text3);">${isl.icon}${isl.name}</span>`;
         html+=`<div style="display:flex;align-items:center;gap:8px;background:var(--bg3);border-radius:6px;padding:7px 10px;margin-bottom:5px;font-family:var(--font-m);font-size:9px;">
           <span style="color:var(--text3);min-width:14px;">${i+1}</span>
           <span style="color:var(--text3);">${r.date}</span>
+          ${islBadge}
           ${winTxt}${methodBadge}
           <span style="color:var(--accent);">🗓️${r.day}일</span>
           <span style="color:var(--green);">🛶${r.escape}%</span>
-          <span style="color:var(--red);margin-left:auto;">🌫️${r.doom}%</span>
+          <span style="color:var(--red);margin-left:auto;">💀${r.doom}%</span>
         </div>`;
       });
     } else {
