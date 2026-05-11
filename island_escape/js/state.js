@@ -129,6 +129,23 @@ function clearSave(){
   try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
 }
 
+function devUnlockAll(){
+  const ORDER=['mangrove','mycelium','caldera','station','beast'];
+  const p=getIslandProgress();
+  ORDER.forEach(id=>{ if(!p[id]) p[id]={locked:false}; });
+  localStorage.setItem('ie_islands_progress',JSON.stringify(p));
+  renderIslandSelect();
+  const btn=document.querySelector('[onclick="devUnlockAll()"]');
+  if(btn){ btn.textContent='✅ 해금됨'; setTimeout(()=>{ btn.textContent='🔓 DEV'; },1500); }
+}
+
+function devReset(){
+  localStorage.removeItem('ie_islands_progress');
+  localStorage.removeItem('ie_achievements');
+  clearSave();
+  renderIslandSelect();
+}
+
 function updateContinueBtn(){
   const btn=document.getElementById('btn-continue');
   if(!btn) return;
