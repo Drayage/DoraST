@@ -26,6 +26,7 @@ function addCard(id, n){
   for(let i=0;i<realN;i++){
     const card={...def, uid:uid()};
     if(def.dur) card.curDur=def.dur;
+    if(G&&G.day) card.addedDay=G.day;
     G.disc.push(card);
   }
   // 업적 카운터: 망각 스며들기 + 덱 사이즈 최댓값

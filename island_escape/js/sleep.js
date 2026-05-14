@@ -210,15 +210,18 @@ function doSleep(){
   // ── 균사의 늪: 취침 시 식량 카드 변질 ──
   if(G.islandId==='mycelium'){
     const foodIds=['food','berry','herb'];
-    const rate=G.doomPhase>=3?0.5:0.25;
+    const phase3=G.doomPhase>=3;
+    const rate=phase3?0.5:0.25;
     const rottenDef=CARDS.find(d=>d.id==='rotten_food');
     if(rottenDef){
       let rottenCnt=0;
       G.deck=G.deck.map(c=>{
-        if(foodIds.includes(c.id)&&Math.random()<rate){
-          rottenCnt++;
-          return {...rottenDef,uid:uid()};
-        }
+        if(!foodIds.includes(c.id)) return c;
+        // 이번 턴(취침 직전 행동)에 얻은 카드는 보호
+        if(c.addedDay!==undefined && c.addedDay>=G.day-1) return c;
+        // 25% 단계: 하루 최대 1장
+        if(!phase3 && rottenCnt>=1) return c;
+        if(Math.random()<rate){ rottenCnt++; return {...rottenDef,uid:uid()}; }
         return c;
       });
       if(rottenCnt>0) log(`🍄 균사가 식량 ${rottenCnt}장을 오염시켰다.`,'danger');
@@ -250,11 +253,11 @@ function _processDoom(early){
   // 일일 수동 증가
   if(G.doomRate>0 && G.doomPhase<4) G.doom=Math.min(100,G.doom+G.doomRate);
 
-  // ── 균사의 늪: doom 단계 3+ 포자 카드 배치 침투 (점점 증가, 최대 5장) ──
+  // ── 균사의 늪: doom 단계 3+ 포자 카드 침투 (첫 취침 1장, 이후 2취침마다 +1, 최대 5장) ──
   if(G.islandId==='mycelium'&&G.doomPhase>=3){
-    const batch=Math.min(5,G.sporeBatchSize||2);
+    G.sporeSleepCnt=(G.sporeSleepCnt||0)+1;
+    const batch=Math.min(5,1+Math.floor((G.sporeSleepCnt-1)/2));
     addCard('spore_card',batch);
-    G.sporeBatchSize=Math.min(5,(G.sporeBatchSize||2)+1);
     log(`🌡️ 포자가 가득하다. 포자 흡입 카드 ${batch}장이 덱에 스며들었다.`,'danger');
   }
 

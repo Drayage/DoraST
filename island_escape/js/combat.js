@@ -647,8 +647,8 @@ function _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,will
       const bonus=e.altCards[Math.floor(Math.random()*e.altCards.length)];
       bonus.forEach(r=>{ const d=CARD_MAP[r.id]; rewardItems.push({id:r.id,icon:d?.icon||'📦',name:d?.name||r.id,n:r.n}); });
     }
-    // 사원지도 조각 드롭 (종류별 1회 한정)
-    if(e.mapDrop){
+    // 사원지도 조각 드롭 (종류별 1회 한정, 균사섬 제외)
+    if(e.mapDrop&&G.islandId!=='mycelium'){
       const dropKey=CBT._evtId||e.name;
       if(!G.templeMapDrops[dropKey]){
         G.templeMapDrops[dropKey]=true;
