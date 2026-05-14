@@ -385,7 +385,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 }
 
 /* ══ TITLE SCREEN ══ */
-#title-scr{display:flex;position:fixed;inset:0;background:linear-gradient(160deg,#060a10 0%,#0a1520 60%,#061018 100%);z-index:250;align-items:center;justify-content:center;flex-direction:column;gap:16px;overflow-y:auto;padding:24px 16px;}
+#title-scr{display:flex;position:fixed;inset:0;background:linear-gradient(160deg,#060a10 0%,#0a1520 60%,#061018 100%);z-index:250;align-items:center;justify-content:flex-start;flex-direction:column;gap:16px;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:60px 16px 40px;box-sizing:border-box;}
 .title-logo{font-family:var(--font-t);font-size:54px;color:var(--accent);text-shadow:0 0 40px rgba(232,184,75,.6),0 0 80px rgba(232,184,75,.2);}
 .title-sub{font-size:10px;color:var(--text3);font-family:var(--font-m);letter-spacing:.28em;text-transform:uppercase;}
 .title-story{background:rgba(17,23,32,.9);border:1px solid var(--border2);border-radius:14px;padding:20px 26px;max-width:460px;width:92%;font-size:11px;color:var(--text2);line-height:2.1;text-align:center;}
@@ -1271,10 +1271,10 @@ body.game-inactive #mob-tabs{
 
 const TILE_TYPES=[
   {id:'beach', name:'해변',icon:'🏖️',cls:'t-beach',flavor:'해변의 모래사장을 걷는다. 파도 소리가 들려온다.',
-   events:['res_wood','res_metal','res_food','old_fire','nothing','debris_find','res_rainwater','stormy_shore','abandoned_cook','river_berries'],
+   events:['res_metal','res_metal','res_metal','res_rainwater','res_rainwater','res_food','old_fire','nothing','debris_find','stormy_shore','river_berries'],
    gather:[{tool:'fishing_rod',res:'food',label:'낚시',flavor:'해변에서 낚싯대로 물고기를 잡는다.'}]},
   {id:'forest',name:'숲',  icon:'🌲',cls:'t-forest',flavor:'울창한 숲이다. 여러 동식물의 소리가 들린다.',
-   events:['res_wood','res_wood','res_food','res_herb','cbt_boar','cbt_snake','trap_pit','debris_find','res_dew_collect','thorny_brush','cliff_anchor','abandoned_cook','wild_plant_id','wounded_prey'],
+   events:['res_wood','res_wood','res_wood','res_food','res_food','res_herb','cbt_boar','cbt_snake','trap_pit','res_dew_collect','thorny_brush','abandoned_cook','wild_plant_id','wounded_prey'],
    gather:[
      {tool:'gathering_knife',res:'herb',label:'약초채집',flavor:'채집칼로 약초를 모은다.'},
      {tool:'axe',res:'wood',label:'나무베기',flavor:'도끼로 나무를 벤다.'},
@@ -1286,10 +1286,10 @@ const TILE_TYPES=[
      {tool:'pickaxe',res:'stone',label:'채석',flavor:'곡괭이로 동굴 바닥을 채석한다.'},
    ]},
   {id:'ruins', name:'폐허',icon:'🏚️',cls:'t-ruins',flavor:'오래된 구조물의 잔해가 흩어져 있다. 무언가 숨겨져 있을 것 같다.',
-   events:['res_metal','find_blueprint','cbt_ghost','res_food','survivor_note','haunted_spot','debris_find','ancient_altar'],
+   events:['res_metal','res_metal','res_metal','find_blueprint','cbt_ghost','res_food','survivor_note','haunted_spot','debris_find','ancient_altar'],
    gather:[{tool:'torch',res:'metal',label:'유물탐색',flavor:'횃불로 폐허를 샅샅이 뒤진다.'}]},
   {id:'shore', name:'해안',icon:'🌊',cls:'t-shore',flavor:'거친 파도가 해안을 두드린다. 표류물이 밀려와 있다.',
-   events:['res_food','res_metal','find_wreckage','nothing','isolation_dread','res_stone','res_rainwater','stormy_shore','cliff_anchor','wild_plant_id','river_berries'],
+   events:['res_rainwater','res_rainwater','res_rainwater','res_dew_collect','res_food','res_metal','find_wreckage','nothing','isolation_dread','stormy_shore','cliff_anchor','river_berries'],
    gather:[
      {tool:'fishing_rod',res:'food',label:'낚시',flavor:'해안에서 낚싯대로 낚시한다.'},
      {tool:'canteen',res:'water',label:'물 채집',flavor:'물통에 깨끗한 물을 담는다.'},
@@ -4557,12 +4557,24 @@ function closeCraft(){ document.getElementById('cr-mo').style.display='none'; re
 
 function renderCraft(){
   const mEl=document.getElementById('cr-mats');
-  mEl.innerHTML='<span style="color:var(--text3);margin-right:3px;">재료:</span>';
-  ['wood','metal','food','water'].forEach(id=>{
-    const d=CARD_MAP[id]; const cnt=cntInDeck(id);
-    mEl.innerHTML+=`<span style="background:var(--bg4);padding:2px 6px;border-radius:3px;margin-right:3px;color:${cnt>0?'var(--text)':'var(--text3)'};">${d.icon}${d.name}<b style="color:var(--accent);margin-left:2px;">×${cnt}</b></span>`;
+  const ALWAYS=['wood','metal','stone'];
+  let matHtml='<span style="color:var(--text3);margin-right:3px;">재료:</span>';
+  ALWAYS.forEach(id=>{
+    const d=CARD_MAP[id]; if(!d) return;
+    const cnt=cntInDeck(id);
+    matHtml+=`<span style="background:var(--bg4);padding:2px 6px;border-radius:3px;margin-right:3px;color:${cnt>0?'var(--text)':'var(--text3)'};">${d.icon}${d.name}<b style="color:var(--accent);margin-left:2px;">×${cnt}</b></span>`;
   });
-  mEl.innerHTML+=`<span style="margin-left:auto;color:var(--text3);">총 ${G.deck.length+G.disc.length}장</span>`;
+  // 레시피에 등장하는 특수 재료: 1개 이상일 때만 표시
+  const alwaysSet=new Set(ALWAYS);
+  const seenIds=[];
+  (typeof RECIPES!=='undefined'?RECIPES:[]).forEach(r=>(r.cost||[]).forEach(c=>{if(!alwaysSet.has(c.id)&&!seenIds.includes(c.id))seenIds.push(c.id);}));
+  seenIds.forEach(id=>{
+    const cnt=cntInDeck(id); if(!cnt) return;
+    const d=CARD_MAP[id]; if(!d) return;
+    matHtml+=`<span style="background:var(--bg4);padding:2px 6px;border-radius:3px;margin-right:3px;color:var(--text);">${d.icon}${d.name}<b style="color:var(--accent);margin-left:2px;">×${cnt}</b></span>`;
+  });
+  matHtml+=`<span style="margin-left:auto;color:var(--text3);">총 ${G.deck.length+G.disc.length}장</span>`;
+  mEl.innerHTML=matHtml;
 
   // 필터 버튼
   const fEl=document.getElementById('cr-filter'); fEl.innerHTML='';

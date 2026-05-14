@@ -2,10 +2,10 @@
 
 const TILE_TYPES=[
   {id:'beach', name:'해변',icon:'🏖️',cls:'t-beach',flavor:'해변의 모래사장을 걷는다. 파도 소리가 들려온다.',
-   events:['res_wood','res_metal','res_food','old_fire','nothing','debris_find','res_rainwater','stormy_shore','abandoned_cook','river_berries'],
+   events:['res_metal','res_metal','res_metal','res_rainwater','res_rainwater','res_food','old_fire','nothing','debris_find','stormy_shore','river_berries'],
    gather:[{tool:'fishing_rod',res:'food',label:'낚시',flavor:'해변에서 낚싯대로 물고기를 잡는다.'}]},
   {id:'forest',name:'숲',  icon:'🌲',cls:'t-forest',flavor:'울창한 숲이다. 여러 동식물의 소리가 들린다.',
-   events:['res_wood','res_wood','res_food','res_herb','cbt_boar','cbt_snake','trap_pit','debris_find','res_dew_collect','thorny_brush','cliff_anchor','abandoned_cook','wild_plant_id','wounded_prey'],
+   events:['res_wood','res_wood','res_wood','res_food','res_food','res_herb','cbt_boar','cbt_snake','trap_pit','res_dew_collect','thorny_brush','abandoned_cook','wild_plant_id','wounded_prey'],
    gather:[
      {tool:'gathering_knife',res:'herb',label:'약초채집',flavor:'채집칼로 약초를 모은다.'},
      {tool:'axe',res:'wood',label:'나무베기',flavor:'도끼로 나무를 벤다.'},
@@ -17,10 +17,10 @@ const TILE_TYPES=[
      {tool:'pickaxe',res:'stone',label:'채석',flavor:'곡괭이로 동굴 바닥을 채석한다.'},
    ]},
   {id:'ruins', name:'폐허',icon:'🏚️',cls:'t-ruins',flavor:'오래된 구조물의 잔해가 흩어져 있다. 무언가 숨겨져 있을 것 같다.',
-   events:['res_metal','find_blueprint','cbt_ghost','res_food','survivor_note','haunted_spot','debris_find','ancient_altar'],
+   events:['res_metal','res_metal','res_metal','find_blueprint','cbt_ghost','res_food','survivor_note','haunted_spot','debris_find','ancient_altar'],
    gather:[{tool:'torch',res:'metal',label:'유물탐색',flavor:'횃불로 폐허를 샅샅이 뒤진다.'}]},
   {id:'shore', name:'해안',icon:'🌊',cls:'t-shore',flavor:'거친 파도가 해안을 두드린다. 표류물이 밀려와 있다.',
-   events:['res_food','res_metal','find_wreckage','nothing','isolation_dread','res_stone','res_rainwater','stormy_shore','cliff_anchor','wild_plant_id','river_berries'],
+   events:['res_rainwater','res_rainwater','res_rainwater','res_dew_collect','res_food','res_metal','find_wreckage','nothing','isolation_dread','stormy_shore','cliff_anchor','river_berries'],
    gather:[
      {tool:'fishing_rod',res:'food',label:'낚시',flavor:'해안에서 낚싯대로 낚시한다.'},
      {tool:'canteen',res:'water',label:'물 채집',flavor:'물통에 깨끗한 물을 담는다.'},

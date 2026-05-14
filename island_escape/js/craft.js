@@ -18,12 +18,24 @@ function closeCraft(){ document.getElementById('cr-mo').style.display='none'; re
 
 function renderCraft(){
   const mEl=document.getElementById('cr-mats');
-  mEl.innerHTML='<span style="color:var(--text3);margin-right:3px;">재료:</span>';
-  ['wood','metal','food','water'].forEach(id=>{
-    const d=CARD_MAP[id]; const cnt=cntInDeck(id);
-    mEl.innerHTML+=`<span style="background:var(--bg4);padding:2px 6px;border-radius:3px;margin-right:3px;color:${cnt>0?'var(--text)':'var(--text3)'};">${d.icon}${d.name}<b style="color:var(--accent);margin-left:2px;">×${cnt}</b></span>`;
+  const ALWAYS=['wood','metal','stone'];
+  let matHtml='<span style="color:var(--text3);margin-right:3px;">재료:</span>';
+  ALWAYS.forEach(id=>{
+    const d=CARD_MAP[id]; if(!d) return;
+    const cnt=cntInDeck(id);
+    matHtml+=`<span style="background:var(--bg4);padding:2px 6px;border-radius:3px;margin-right:3px;color:${cnt>0?'var(--text)':'var(--text3)'};">${d.icon}${d.name}<b style="color:var(--accent);margin-left:2px;">×${cnt}</b></span>`;
   });
-  mEl.innerHTML+=`<span style="margin-left:auto;color:var(--text3);">총 ${G.deck.length+G.disc.length}장</span>`;
+  // 레시피에 등장하는 특수 재료: 1개 이상일 때만 표시
+  const alwaysSet=new Set(ALWAYS);
+  const seenIds=[];
+  (typeof RECIPES!=='undefined'?RECIPES:[]).forEach(r=>(r.cost||[]).forEach(c=>{if(!alwaysSet.has(c.id)&&!seenIds.includes(c.id))seenIds.push(c.id);}));
+  seenIds.forEach(id=>{
+    const cnt=cntInDeck(id); if(!cnt) return;
+    const d=CARD_MAP[id]; if(!d) return;
+    matHtml+=`<span style="background:var(--bg4);padding:2px 6px;border-radius:3px;margin-right:3px;color:var(--text);">${d.icon}${d.name}<b style="color:var(--accent);margin-left:2px;">×${cnt}</b></span>`;
+  });
+  matHtml+=`<span style="margin-left:auto;color:var(--text3);">총 ${G.deck.length+G.disc.length}장</span>`;
+  mEl.innerHTML=matHtml;
 
   // 필터 버튼
   const fEl=document.getElementById('cr-filter'); fEl.innerHTML='';
