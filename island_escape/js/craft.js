@@ -47,16 +47,15 @@ function renderCraft(){
     fEl.appendChild(b);
   });
 
-  // 정렬: 다른섬 전용 → 최하단 / 제작가능+AP있음 → 재료있음 → 불가
+  // 정렬: 제작가능+AP있음 → 재료있음 → 불가 / 다른 섬 전용은 완전 숨김
   const craftFree=allCards().some(c=>c.id==='sk_cr_g');
   const crBCnt=allCards().filter(c=>c.id==='sk_cr_b').length;
   const effAp=rec=>craftFree?0:Math.max(1,rec.ap-crBCnt);
-  const isOtherIsland=rec=>rec.islandOnly&&!rec.islandOnly.includes(G.islandId||'mangrove');
+  const curIsland=G.islandId||'mangrove';
   const sorted=[...RECIPES]
-    .filter(r=>_craftFilter==='전체'||r.cat===_craftFilter)
+    .filter(r=>(_craftFilter==='전체'||r.cat===_craftFilter)
+               && (!r.islandOnly||r.islandOnly.includes(curIsland)))
     .sort((a,b)=>{
-      const aOther=isOtherIsland(a)?1:0, bOther=isOtherIsland(b)?1:0;
-      if(aOther!==bOther) return aOther-bOther;
       const aFull=canCraft(a)&&G.ap>=effAp(a), bFull=canCraft(b)&&G.ap>=effAp(b);
       const aOk=canCraft(a), bOk=canCraft(b);
       if(aFull!==bFull) return bFull-aFull;
@@ -66,8 +65,7 @@ function renderCraft(){
 
   const lEl=document.getElementById('cr-list'); lEl.innerHTML='';
   sorted.forEach(rec=>{
-    const otherIsland=isOtherIsland(rec);
-    const ok=!otherIsland&&canCraft(rec), ap=effAp(rec), hasAP=G.ap>=ap, canDo=ok&&hasAP;
+    const ok=canCraft(rec), ap=effAp(rec), hasAP=G.ap>=ap, canDo=ok&&hasAP;
     const resultDef=rec.result?CARD_MAP[rec.result]:null;
     const costHtml=rec.cost.map(c=>{
       const d=CARD_MAP[c.id]; const have=cntInDeck(c.id);
@@ -78,13 +76,11 @@ function renderCraft(){
       :`<span style="color:var(--accent);">${resultDef?.icon||''}${resultDef?.name||rec.result}</span>`;
     const div=document.createElement('div');
     div.className='cr-recipe'+(ok?' avail':'');
-    if(otherIsland) div.style.cssText='filter:grayscale(1);opacity:0.4;pointer-events:none;';
-    const islandTag=otherIsland?`<span style="font-size:7px;color:var(--text3);font-family:var(--font-m);"> — 🏝 ${(rec.islandOnly||[]).map(id=>(typeof ISLANDS!=='undefined'&&ISLANDS[id]?.name)||id).join('/')} 전용</span>`:'';
     div.innerHTML=`
       <div style="display:flex;align-items:center;gap:6px;">
         <span style="font-size:20px;">${rec.icon}</span>
         <div>
-          <div style="font-family:var(--font-t);font-size:12px;color:${ok?'var(--text)':'var(--text3)'};">${rec.name}${islandTag}</div>
+          <div style="font-family:var(--font-t);font-size:12px;color:${ok?'var(--text)':'var(--text3)'};">${rec.name}</div>
           <div style="font-size:8px;font-family:var(--font-m);color:var(--text3);">${rec.raftLottery?'🛶탈출':'📦아이템'}</div>
         </div>
         <span style="margin-left:auto;font-size:8px;font-family:var(--font-m);color:${hasAP?(ap<rec.ap?'var(--green)':'var(--text3)'):'var(--red)'};">AP${ap}</span>
