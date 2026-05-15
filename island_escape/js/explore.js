@@ -89,12 +89,15 @@ function fmtR(r){
   if(!r) return '';
   const p=[];
   if(r.card){const d=CARD_MAP[r.card];if(d)p.push(`${d.icon}${d.name}×${r.n||1}`);}
+  if(r.card2){const d=CARD_MAP[r.card2];if(d)p.push(`${d.icon}${d.name}×${r.n2||1}`);}
   if(r.cards) r.cards.forEach(c=>{const d=CARD_MAP[c.id];if(d)p.push(`${d.icon}${d.name}×${c.n||1}`);});
   if(r.san)        p.push(`정신력${r.san>=0?'+':''}${r.san}`);
   if(r.escape)     p.push(`탈출+${r.escape}%`);
-  if(r.hun)        p.push(`허기+${r.hun}`);
-  if(r.hp)         p.push(`HP+${r.hp}`);
+  if(r.hun)        p.push(`허기${r.hun>=0?'+':''}${r.hun}`);
+  if(r.hp)         p.push(`HP${r.hp>=0?'+':''}${r.hp}`);
+  if(r.thi)        p.push(`갈증${r.thi>=0?'+':''}${r.thi}`);
   if(r.ap)         p.push(`AP+${r.ap}`);
+  if(r.removeCards)p.push(`비상태카드 ${r.removeCards}장 소멸`);
   if(r.revealTile){const td=TILE_TYPES.find(t=>t.id===r.revealTile);p.push(`${td?.icon||'📍'}${td?.name||r.revealTile} 위치 표시`);}
   if(r.removeCard){const d=CARD_MAP[r.removeCard];p.push(`${d?.icon||''}${d?.name||r.removeCard} 소멸`);}
   if(r.devourCard){const d=CARD_MAP[r.devourCard];p.push(`${d?.icon||''}${d?.name||r.devourCard} 소멸(제물)`);}
@@ -108,10 +111,13 @@ function fmtR(r){
 
 function fmtP(p){
   const a=[];
-  if(p.hp)    a.push(`HP${p.hp}`);
-  if(p.hun)   a.push(`허기${p.hun}`);
-  if(p.san)   a.push(`정신력${p.san}`);
-  if(p.escape)a.push(`탈출-${p.escape}%`);
+  if(p.hp)         a.push(`HP${p.hp}`);
+  if(p.hun)        a.push(`허기${p.hun}`);
+  if(p.thi)        a.push(`갈증${p.thi}`);
+  if(p.san)        a.push(`정신력${p.san}`);
+  if(p.escape)     a.push(`탈출-${p.escape}%`);
+  if(p.removeCards)a.push(`비상태카드 ${p.removeCards}장 소멸`);
+  if(p.addCard)    {const d=CARD_MAP[p.addCard];a.push(`${d?.icon||''}${d?.name||p.addCard} 추가`);}
   return a.join(' ');
 }
 
@@ -251,6 +257,11 @@ function doJudgment(evt, ch){
         addCard(ch.curseDeck,1);
         bonLines.push(`🌀 ${CARD_MAP[ch.curseDeck]?.name||ch.curseDeck}: 덱에 스며들었다`);
       }
+      // doomPen: 선택 시 무조건 DOOM 증가
+      if(ch.doomPen){
+        G.doom=Math.min(99,G.doom+ch.doomPen);
+        bonLines.push(`☠️ DOOM+${ch.doomPen}`);
+      }
       const detEl=document.getElementById('jdg-det');
       detEl.style.display=''; detEl.textContent=lines.join('\n');
       const bonEl=document.getElementById('jdg-bon');
@@ -300,11 +311,32 @@ function applyR(r, lines){
       }
     });
   }
+  if(r.card2){
+    const d=CARD_MAP[r.card2];
+    lines.push(`${d?.icon||''}${d?.name||r.card2}×${r.n2||1}`);
+    if(_pendingItems!=null){
+      for(let i=0;i<(r.n2||1);i++) _pendingItems.push({id:r.card2,icon:d?.icon||'📦',name:d?.name||r.card2,n:1});
+    } else {
+      addCard(r.card2,r.n2||1);
+    }
+  }
   if(r.san)        {G.san=Math.min(100,Math.max(0,G.san+r.san)); lines.push(r.san>=0?`정신력+${r.san}`:`정신력${r.san}`);}
   if(r.escape)     {G.escape=Math.min(100,G.escape+r.escape);lines.push(`탈출+${r.escape}%`);}
-  if(r.hun)        {G.hun=Math.min(100,G.hun+r.hun);  lines.push(`허기+${r.hun}`);}
-  if(r.hp)         {G.hp=Math.min(100,G.hp+r.hp);     lines.push(`HP+${r.hp}`);}
+  if(r.hun)        {G.hun=Math.min(100,G.hun+r.hun);  lines.push(r.hun>=0?`허기+${r.hun}`:`허기${r.hun}`);}
+  if(r.hp)         {G.hp=Math.min(100,Math.max(0,G.hp+r.hp));     lines.push(r.hp>=0?`HP+${r.hp}`:`HP${r.hp}`);if(r.hp<0)flashDamage();}
+  if(r.thi)        {G.thi=Math.min(100,Math.max(0,G.thi+r.thi)); lines.push(r.thi>=0?`갈증+${r.thi}`:`갈증${r.thi}`);}
   if(r.ap)         {G.ap=Math.min(G.maxAP+4,G.ap+r.ap);lines.push(`AP+${r.ap}환급`);}
+  if(r.removeCards){
+    const removable=([...G.deck,...G.disc]).filter(c=>c.tag!=='status');
+    const toRemove=removable.slice(0,r.removeCards);
+    toRemove.forEach(c=>{
+      const di=G.deck.findIndex(x=>x.uid===c.uid);
+      if(di>=0) G.deck.splice(di,1);
+      else{const di2=G.disc.findIndex(x=>x.uid===c.uid);if(di2>=0)G.disc.splice(di2,1);}
+    });
+    if(toRemove.length) lines.push(`${toRemove.map(c=>c.name).join('·')} 소멸`);
+    else lines.push('(소멸할 카드 없음)');
+  }
   if(r.revealTile) {
     const idx=G.tiles.findIndex(t=>t.id===r.revealTile);
     if(idx>=0&&!G.tiles[idx].revealed){ G.tiles[idx].revealed=true; const td=TILE_TYPES.find(t=>t.id===r.revealTile); lines.push(`${td?.icon||'📍'}${td?.name||r.revealTile} 위치 발견`); }
@@ -341,10 +373,23 @@ function applyR(r, lines){
 }
 
 function applyPen(p, lines){
-  if(p.hp)    {G.hp=Math.max(0,G.hp+p.hp);     lines.push(`HP${p.hp}`);if(p.hp<0)flashDamage();}
-  if(p.hun)   {G.hun=Math.max(0,G.hun+p.hun);  lines.push(`허기${p.hun}`);}
-  if(p.san)   {G.san=Math.max(0,G.san+p.san);  lines.push(`정신력${p.san}`);if(p.san<0)flashDamage();}
-  if(p.card)  {addCard(p.card,1);               lines.push(`${p.card}카드추가`);}
+  if(p.hp)         {G.hp=Math.max(0,G.hp+p.hp);     lines.push(`HP${p.hp}`);if(p.hp<0)flashDamage();}
+  if(p.hun)        {G.hun=Math.max(0,G.hun+p.hun);  lines.push(`허기${p.hun}`);}
+  if(p.thi)        {G.thi=Math.max(0,G.thi+p.thi);  lines.push(`갈증${p.thi}`);}
+  if(p.san)        {G.san=Math.max(0,G.san+p.san);  lines.push(`정신력${p.san}`);if(p.san<0)flashDamage();}
+  if(p.card)       {addCard(p.card,1);               const d=CARD_MAP[p.card];lines.push(`${d?.icon||''}${d?.name||p.card} 추가`);}
+  if(p.addCard)    {addCard(p.addCard,p.n||1);       const d=CARD_MAP[p.addCard];lines.push(`${d?.icon||''}${d?.name||p.addCard}×${p.n||1} 추가`);}
+  if(p.removeCards){
+    const removable=([...G.deck,...G.disc]).filter(c=>c.tag!=='status');
+    const toRemove=removable.slice(0,p.removeCards);
+    toRemove.forEach(c=>{
+      const di=G.deck.findIndex(x=>x.uid===c.uid);
+      if(di>=0) G.deck.splice(di,1);
+      else{const di2=G.disc.findIndex(x=>x.uid===c.uid);if(di2>=0)G.disc.splice(di2,1);}
+    });
+    if(toRemove.length) lines.push(`${toRemove.map(c=>c.name).join('·')} 소멸`);
+    else lines.push('(소멸할 카드 없음)');
+  }
   if(p.escape){G.escape=Math.max(0,G.escape-p.escape);lines.push(`탈출-${p.escape}%`);}
 }
 

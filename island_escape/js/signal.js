@@ -46,7 +46,9 @@ function _sfFinish(msg,color,label,onOk){
 
 // ── 섬별 신호 전망대 타일 ID ──
 function getSignalTileId(){
-  return (G.islandId==='mycelium') ? 'swamp_watch' : 'lookout';
+  if(G.islandId==='mycelium') return 'swamp_watch';
+  if(G.islandId==='caldera')  return 'smoke_tower';
+  return 'lookout';
 }
 
 // ── 전망대: 신호탄 탐색 ──

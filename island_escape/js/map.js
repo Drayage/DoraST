@@ -114,11 +114,19 @@ function clickTile(i){
     flashDamage();
     log('🌫️ 균류 군락: 균사가 살갗을 파고든다. HP-3','danger');
   }
+  // 분화구: 진입 시 DOOM+5
+  if(t.id==='caldera_tile'&&G.islandId==='caldera'){
+    G.doom=Math.min(99,G.doom+5);
+    log('🌋 분화구: 열기가 온몸을 태운다. DOOM+5','danger');
+  }
+  const _getAmbPool=()=>{
+    if(G.islandId==='caldera') return ['cbt_lava_crab','cbt_lava_crab','cbt_flame_lizard'];
+    if(G.islandId==='mycelium') return ['cbt_swamp_frog','cbt_swamp_frog','cbt_swamp_frog'];
+    return ['cbt_boar','cbt_boar','cbt_snake','cbt_snake','cbt_bat','cbt_ghost'];
+  };
   if(t.id==='thicket'&&!t.explored){
     t.explored=true;
-    const _ambPool=G.islandId==='mycelium'
-      ?['cbt_swamp_frog','cbt_swamp_frog','cbt_swamp_frog']
-      :['cbt_boar','cbt_boar','cbt_snake','cbt_snake','cbt_bat','cbt_ghost'];
+    const _ambPool=_getAmbPool();
     setTimeout(()=>showThicketAmbush(_ambPool[Math.floor(Math.random()*_ambPool.length)]),300);
   }
   getAdj(i).forEach(j=>{
@@ -126,9 +134,7 @@ function clickTile(i){
     G.tiles[j].revealed=true;
     if(!wasRevealed && G.tiles[j].id==='thicket' && !G.tiles[j].explored){
       G.tiles[j].explored=true;
-      const _ambPool=G.islandId==='mycelium'
-        ?['cbt_swamp_frog','cbt_swamp_frog','cbt_swamp_frog']
-        :['cbt_boar','cbt_boar','cbt_snake','cbt_snake','cbt_bat','cbt_ghost'];
+      const _ambPool=_getAmbPool();
       const ambEvt=_ambPool[Math.floor(Math.random()*_ambPool.length)];
       setTimeout(()=>showThicketAmbush(ambEvt),300);
     }

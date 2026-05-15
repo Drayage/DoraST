@@ -113,6 +113,15 @@ function render(){
     if(sporeCnt>0) extraPassives.push(`💛 포자 ${sporeCnt}개`);
     if(rotCnt>0)   extraPassives.push(`🤢 썩은음식 ${rotCnt}장`);
   }
+  if(p.islandId==='caldera'){
+    const burnCnt=cards.filter(c=>c.id==='burn_card').length;
+    const thirstCnt=cards.filter(c=>c.id==='thirst_card').length;
+    const obsCnt=cards.filter(c=>c.id==='obsidian').length;
+    if(burnCnt>0)   extraPassives.push(`🔥 화상 ${burnCnt}장`);
+    if(thirstCnt>0) extraPassives.push(`💧 목마름 ${thirstCnt}장`);
+    if(obsCnt>0)    extraPassives.push(`⬛ 흑요석 ${obsCnt}개`);
+    if(p.calderaFinale) extraPassives.push(`🌋 대분화 ${p.calderaFinaleDays}/5일`);
+  }
   const passiveAll=[...passives, ...extraPassives];
   d.passiveInfo.textContent=passiveAll.length?passiveAll.join(' / '):'없음';
 
@@ -242,7 +251,7 @@ function render(){
   // 특수 타일 액션 패널
   const specEl=document.getElementById('act-special');
   if(specEl){
-    if((ct.id==='lookout'||ct.id==='swamp_watch')&&ct.explored){
+    if((ct.id==='lookout'||ct.id==='swamp_watch'||ct.id==='smoke_tower')&&ct.explored){
       const hasKit=cards.some(c=>c.id==='flare_kit');
       const sigCnt=cards.filter(c=>c.id==='signal').length;
       const N=cards.length;
@@ -266,7 +275,7 @@ function render(){
       if(N>=3&&sigCnt>=3) sigProb=Math.round(sigCnt*(sigCnt-1)*(sigCnt-2)/(N*(N-1)*(N-2))*100);
       const probCol=p=>p>=60?'var(--green)':p>=30?'var(--accent)':'var(--red)';
       specEl.style.display='';
-      const _lookoutLabel=ct.id==='swamp_watch'?'🗼 늪 전망대 전용 행동':'🗼 전망대 전용 행동';
+      const _lookoutLabel=ct.id==='swamp_watch'?'🗼 늪 전망대 전용 행동':ct.id==='smoke_tower'?'🗼 연기 전망대 전용 행동':'🗼 전망대 전용 행동';
       specEl.innerHTML=`<div style="font-size:9px;color:#aecbae;font-family:var(--font-m);margin-bottom:5px;">${_lookoutLabel}</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
           <button class="btn" style="border-color:#4a8a5a;color:#aecbae;font-size:10px;"
@@ -323,6 +332,23 @@ function render(){
             🌱 포자 제물 교환<span style="font-size:8px;color:var(--text3);margin-left:4px;">(포자${sporeCnt}개 보유)</span>
           </button>
           ${mapBtn}`;
+      }
+    } else if(ct.id==='village'&&ct.explored&&p.islandId==='caldera'){
+      specEl.style.display='';
+      if(p.calderaFinale){
+        specEl.innerHTML=`<div style="color:var(--red);font-family:var(--font-t);font-size:11px;">
+          🌋 대분화 버티기 ${p.calderaFinaleDays}/5일
+          <div style="font-size:8px;color:var(--text3);">매 취침 종말 이벤트 발생. 5일 생존 시 탈출!</div>
+        </div>`;
+      } else {
+        const warnMsg=p.doom>=60?'⚠️ 대분화가 가까워졌다. 준비되면 종말을 기다려라.':'화산의 종말을 기다릴 수 있는 장소. 충분히 준비한 후 발동하라.';
+        specEl.innerHTML=`
+          <div style="font-size:9px;color:var(--text3);font-family:var(--font-m);margin-bottom:6px;">${warnMsg}</div>
+          <button class="btn full" style="border-color:var(--red);color:var(--red);font-size:10px;"
+            onclick="doCalderaFinaleStart()" ${p.over?'disabled':''}>
+            🌋 화산의 종말을 기다린다<span class="apb" style="margin-left:4px;">AP0</span>
+          </button>
+          <div style="font-size:7px;color:var(--text3);font-family:var(--font-m);margin-top:3px;">되돌릴 수 없음. 5일간 극한 이벤트 발생.</div>`;
       }
     } else if(ct.id==='oblivion_lake'&&ct.explored){
       const coolDays=3-(p.day-(p.lastOblivion||-99));

@@ -69,6 +69,10 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .tile.t-swamp{background:#0d0d0a;border-color:#443322;color:#998877;}
 .tile.t-temple{background:#1a1020;border-color:#8866aa;color:#ccaaee;}
 .tile.t-thicket{background:#0f1a0f;border-color:#446644;color:#88aa88;}
+.tile.t-caldera{background:#1a0a00;border-color:#cc4400;color:#ff8844;}
+.tile.t-village{background:#1a1410;border-color:#886644;color:#ccaa88;}
+.tile.t-obsidian{background:#0a0a10;border-color:#554466;color:#aa88cc;}
+.tile.t-lava-dead{background:#110800;border-color:#442200;color:#664422;opacity:.6;}
 
 /* ACTIONS */
 #act-panel{padding:7px 9px;border-top:1px solid var(--border);}
@@ -895,6 +899,7 @@ body.game-inactive #mob-tabs{
   <div id="uc-box" class="mb">
     <div style="font-family:var(--font-t);font-size:16px;color:var(--green);margin-bottom:3px;">✨ 카드 사용</div>
     <div style="font-size:9px;color:var(--text3);font-family:var(--font-m);margin-bottom:10px;" id="uc-sub"></div>
+    <div id="uc-ondraw-banner" style="display:none;color:var(--red);font-family:var(--font-t);font-size:11px;text-align:center;padding:4px;background:rgba(255,0,0,0.1);border-radius:4px;margin-bottom:6px;"></div>
     <div style="display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin-bottom:10px;" id="uc-cards"></div>
     <div id="uc-result" style="font-size:10px;font-family:var(--font-m);min-height:16px;margin-bottom:8px;"></div>
     <div style="display:flex;justify-content:flex-end;">
@@ -1271,16 +1276,16 @@ body.game-inactive #mob-tabs{
 
 const TILE_TYPES=[
   {id:'beach', name:'해변',icon:'🏖️',cls:'t-beach',flavor:'해변의 모래사장을 걷는다. 파도 소리가 들려온다.',
-   events:['res_metal','res_metal','res_metal','res_rainwater','res_rainwater','res_food','old_fire','nothing','debris_find','stormy_shore','river_berries'],
+   events:['res_metal','res_metal','res_metal','res_rainwater','res_rainwater','res_food','old_fire','nothing','debris_find','stormy_shore','river_berries','caldera_beach_shelter'],
    gather:[{tool:'fishing_rod',res:'food',label:'낚시',flavor:'해변에서 낚싯대로 물고기를 잡는다.'}]},
   {id:'forest',name:'숲',  icon:'🌲',cls:'t-forest',flavor:'울창한 숲이다. 여러 동식물의 소리가 들린다.',
-   events:['res_wood','res_wood','res_wood','res_food','res_food','res_herb','cbt_boar','cbt_snake','trap_pit','res_dew_collect','thorny_brush','abandoned_cook','wild_plant_id','wounded_prey'],
+   events:['res_wood','res_wood','res_wood','res_food','res_food','res_herb','cbt_boar','cbt_snake','trap_pit','res_dew_collect','thorny_brush','abandoned_cook','wild_plant_id','wounded_prey','caldera_deep_pool'],
    gather:[
      {tool:'gathering_knife',res:'herb',label:'약초채집',flavor:'채집칼로 약초를 모은다.'},
      {tool:'axe',res:'wood',label:'나무베기',flavor:'도끼로 나무를 벤다.'},
    ]},
   {id:'cave',  name:'동굴',icon:'🪨',cls:'t-cave',flavor:'어두운 동굴 입구가 보인다. 안에서 차가운 공기가 흘러나온다.',
-   events:['res_metal','res_metal','res_stone','res_stone','res_stone','cave_vein','cave_stalactite','cbt_bat','find_shelter','nothing','dark_cave_path'],
+   events:['res_metal','res_metal','res_stone','res_stone','res_stone','cave_vein','cave_stalactite','cbt_bat','find_shelter','nothing','dark_cave_path','caldera_cave_spring','caldera_cave_herb','caldera_cave_collapse'],
    gather:[
      {tool:'pickaxe',res:'metal',label:'채굴',flavor:'곡괭이로 동굴 벽을 캔다.'},
      {tool:'pickaxe',res:'stone',label:'채석',flavor:'곡괭이로 동굴 바닥을 채석한다.'},
@@ -1330,6 +1335,20 @@ const TILE_TYPES=[
   {id:'swamp_watch', name:'늪 전망대', icon:'🗼', cls:'t-lookout',
    flavor:'늪 위에 세워진 낡은 전망대. 여기서 신호를 보낼 수 있을 것 같다.',
    events:['nothing'], gather:[]},
+
+  // ── 흑색 화산섬 (섬3) 전용 타일 ──
+  {id:'caldera_tile', name:'분화구', icon:'🌋', cls:'t-caldera',
+   flavor:'분화구 가장자리. 열기가 피부를 태운다. 이 곳에 발을 딛는 것만으로 DOOM이 빨라진다.',
+   events:['caldera_eruption_sign','cbt_lava_crab','cbt_lava_crab','cbt_flame_lizard'], gather:[]},
+  {id:'smoke_tower', name:'연기 전망대', icon:'🗼', cls:'t-lookout',
+   flavor:'화산 측면에 세워진 전망대. 연기 신호로 구조를 요청할 수 있다.',
+   events:['nothing','res_wood','find_blueprint'], gather:[]},
+  {id:'village', name:'숨겨진 마을', icon:'🏘️', cls:'t-village',
+   flavor:'화산 기슭의 은신처. 대분화에도 버틸 수 있는 구조물이 남아있다.',
+   events:['caldera_village_supply','caldera_village_supply','caldera_village_supply','nothing'], gather:[]},
+  {id:'obsidian_vein', name:'흑요석 광맥', icon:'⬛', cls:'t-obsidian',
+   flavor:'화산 용암이 굳어 만들어진 흑요석 광맥.',
+   events:['caldera_obsidian','caldera_obsidian','caldera_obsidian','cbt_lava_crab','nothing'], gather:[]},
 ];
 
 const WEATHER=[
@@ -1348,6 +1367,16 @@ const WEATHER_MYCELIUM=[
   {id:'overcast',name:'무거운 하늘',icon:'🌑',eff:'san_-2'},
   {id:'storm',  name:'뇌우',      icon:'⛈️', eff:'hp_-8'},
   {id:'fog',    name:'포자 안개', icon:'🌫️',eff:'fog'},
+];
+const WEATHER_CALDERA=[
+  {id:'heat',   name:'화산 열기', icon:'🔥', eff:'thi_-14'},
+  {id:'heat',   name:'화산 열기', icon:'🔥', eff:'thi_-14'},
+  {id:'heat',   name:'화산 열기', icon:'🔥', eff:'thi_-14'},
+  {id:'sunny',  name:'맑음',     icon:'☀️', eff:'san_+2'},
+  {id:'sunny',  name:'맑음',     icon:'☀️', eff:'san_+2'},
+  {id:'sunny',  name:'맑음',     icon:'☀️', eff:'san_+2'},
+  {id:'tremor', name:'지진',     icon:'🌍', eff:'san_-5'},
+  {id:'steam',  name:'수증기',   icon:'💨', eff:'thi_-5'},
 ];
 
 // dur: n회 사용 후 덱에서 영구 제거. 인스턴스에 curDur 추가
@@ -1630,6 +1659,18 @@ const CARDS=[
   {id:'antidote', name:'해독제', icon:'💊', tag:'tool', atk:0, def:1, n:0, subTags:[],
    use:'antidote',
    desc:'전투 중: 독 + 포자 스택 완전 해제. 전투 외: HP+8 정신력+5.'},
+
+  // ── 흑색 화산섬 (섬3) 전용 카드 ──
+  {id:'obsidian', name:'흑요석', icon:'⬛', tag:'resource', atk:0, def:0, n:0, subTags:['날카로움'],
+   desc:'화산이 만든 날카로운 광물. 무기·도구 제작 재료.'},
+  {id:'burn_card', name:'화상', icon:'🔥', tag:'status', atk:0, def:0, n:0, dur:1, onDraw:true, subTags:[],
+   desc:'드로우 시 자동 HP-5 후 소멸. 대분화의 열기에 탄 상처.'},
+  {id:'thirst_card', name:'극심한 목마름', icon:'💧', tag:'status', atk:0, def:0, n:0, dur:1, onDraw:true, subTags:[],
+   desc:'드로우 시 자동 갈증-10 후 소멸. 화산 열기에 탈수됐다.'},
+  {id:'obsidian_blade', name:'흑요석 칼날', icon:'🗡️', tag:'combat', atk:7, def:0, n:0, dur:3, subTags:['날카로움','불꽃'],
+   desc:'화산 흑요석을 갈아 만든 날. ATK+7, 날카로움·불꽃 태그.'},
+  {id:'disassembler', name:'분해기', icon:'⚙️', tag:'tool', atk:0, def:0, n:0, dur:3, use:'use_disassembler', subTags:[],
+   desc:'사용 시 자원 카드 1장을 분해: 돌→잔해+이슬, 목재→잔해+열매, 고철→잔해+이슬. 내구도3.'},
 ];
 
 const ENEMIES={
@@ -1762,6 +1803,26 @@ const ENEMIES={
     encDesc:'포자 폭군이 포자를 뿜어낸다. 매 라운드 독이 누적되고, 체력을 재생한다.',
     patternDesc:'매 라운드 독 1스택 부여 + HP+4 재생. HP 40% 이하: 분노(ATK+6)',
     reward:{san:25}, altCards:[[{id:'mycelium',n:3}],[{id:'myc_map_piece',n:1},{id:'herb',n:3}]]},
+
+  // ── 흑색 화산섬 (섬3) 전용 몬스터 ──
+  cbt_lava_crab:{name:'용암 게',icon:'🦀',hp:28,atk:11,def:5,
+    bossType:'shield_first',
+    patternDesc:'첫 라운드 DEF 3배 방어막. 2라운드부터 정상.',
+    encDesc:'용암 속에 사는 단단한 게. 첫 공격은 방어막으로 막아낸다.',
+    observeReward:[{id:'obsidian',n:1},{id:'food',n:1}],
+    observeText:'게를 피해 흑요석 조각과 식량을 챙겼다.',
+    reward:{cards:[{id:'food',n:1}]},
+    altCards:[[{id:'obsidian',n:1}],[{id:'stone',n:2}]],
+    rewardDesc:'식량×1 + (흑요석×1 또는 돌×2)'},
+  cbt_flame_lizard:{name:'화염 도마뱀',icon:'🦎',hp:22,atk:9,def:2,
+    burnPerRound:2,
+    patternDesc:'연소: 매 라운드 HP-2 (방어구 보유 시 HP-1)',
+    encDesc:'화염을 내뿜는 도마뱀. 매 라운드 플레이어를 태운다.',
+    observeReward:[{id:'herb',n:1}],
+    observeText:'도마뱀을 피해 불꽃 근처 약초를 채취했다.',
+    reward:{cards:[{id:'herb',n:1}]},
+    altCards:[[{id:'obsidian',n:1}],[{id:'hide',n:1}]],
+    rewardDesc:'약초×1 + (흑요석×1 또는 가죽×1)'},
 };
 
 const EVENTS={
@@ -2296,6 +2357,86 @@ const EVENTS={
       {label:'그냥 간다',icon:'↩️',req:null,reward:{},
        desc:'무조건. 빈손.'},
     ]},
+
+  // ── 흑색 화산섬 (섬3) 이벤트 ──
+  caldera_eruption_sign:{
+    name:'분화 경고',flavor:'분화구가 격하게 흔들린다. 뜨거운 증기가 뿜어오른다.',
+    choices:[
+      {label:'도구로 빠르게 탐색',icon:'🔍',req:'tool',
+       reward:{card:'obsidian',n:2,san:-3},failPen:{hp:-8,san:-5},
+       doomPen:5,
+       desc:'도구판정. 성공:흑요석×2+정신력-3 / 실패:HP-8+정신력-5. DOOM+5'},
+      {label:'물러선다',icon:'🏃',req:null,reward:{},fixed:true,doomPen:5,
+       desc:'무조건. DOOM+5.'},
+    ]},
+  caldera_obsidian:{
+    name:'흑요석 광맥',flavor:'검은 광석이 빛나고 있다. 빼내면 좋은 재료가 될 것 같다.',
+    choices:[
+      {label:'도구로 채굴',icon:'⛏️',req:'tool',
+       reward:{card:'obsidian',n:2},failPen:{hp:-6},
+       desc:'도구판정. 성공:흑요석×2 / 실패:HP-6'},
+      {label:'날카로운 것으로 떼낸다',icon:'🗡️',req:null,subReq:'날카로움',
+       reward:{card:'obsidian',n:2},failPen:{card:'obsidian',n:1,hp:-4},
+       desc:'날카로움 판정. 성공:흑요석×2 / 실패:흑요석×1+HP-4'},
+      {label:'맨손으로 캔다',icon:'🤲',req:null,reward:{card:'obsidian',n:1},fixed:true,
+       desc:'무조건. 흑요석×1.'},
+    ]},
+  caldera_village_supply:{
+    name:'마을 물자',flavor:'폐허가 된 마을에서 물자를 찾았다.',
+    choices:[
+      {label:'샅샅이 뒤진다',icon:'🔍',req:'tool',
+       reward:{cards:[{id:'food',n:1},{id:'wood',n:1},{id:'water',n:1}]},failPen:{hp:-3},
+       desc:'도구판정. 성공:식량+목재+물 / 실패:HP-3'},
+      {label:'빠르게 수색',icon:'👀',req:'resource',
+       reward:{card:'food',n:1},failPen:{hp:-2},
+       desc:'자원판정. 성공:식량×1 / 실패:HP-2'},
+      {label:'간단히 살핀다',icon:'🚶',req:null,reward:{card:'water',n:1},fixed:true,
+       desc:'무조건. 물×1.'},
+    ]},
+  caldera_cave_spring:{
+    name:'지열 온천',flavor:'동굴 깊숙이 따뜻한 물이 솟아오른다. 피로가 풀리는 것 같다.',
+    choices:[
+      {label:'물을 마시고 몸을 씻는다',icon:'💧',req:null,reward:{hp:15,thi:20},fixed:true,
+       desc:'무조건. HP+15, 갈증+20.'},
+      {label:'물을 채취한다',icon:'🫙',req:'tool',reward:{card:'water',n:2,hp:5},failPen:{card:'water',n:1},
+       desc:'도구판정. 성공:물×2+HP+5 / 실패:물×1'},
+    ]},
+  caldera_cave_herb:{
+    name:'화산 약초',flavor:'뜨거운 동굴 벽에 특이한 약초가 자란다. 강한 생명력이 느껴진다.',
+    choices:[
+      {label:'날카로운 것으로 채집',icon:'🗡️',req:null,subReq:'날카로움',
+       reward:{card:'herb',n:3,hp:5},failPen:{card:'herb',n:1},
+       desc:'날카로움 판정. 성공:약초×3+HP+5 / 실패:약초×1'},
+      {label:'맨손으로 뜯는다',icon:'🤲',req:null,reward:{card:'herb',n:1,hp:3},fixed:true,
+       desc:'무조건. 약초×1+HP+3.'},
+    ]},
+  caldera_cave_collapse:{
+    name:'동굴 붕괴',flavor:'지진으로 동굴이 무너지려 한다. 빠르게 판단해야 한다.',
+    choices:[
+      {label:'짐을 버리고 탈출',icon:'🏃',req:null,reward:{removeCards:1,hp:5},fixed:true,
+       desc:'무조건. 비상태이상 카드 1장 소멸+HP+5 (강제 덱 압축).'},
+      {label:'무거운 것으로 버팀',icon:'⚒️',req:null,subReq:'무거움',
+       reward:{card:'stone',n:2,hp:3},failPen:{hp:-12},
+       desc:'무거움 판정. 성공:돌×2+HP+3 / 실패:HP-12'},
+    ]},
+  caldera_beach_shelter:{
+    name:'서늘한 해변 굴',flavor:'해변 근처에 바위 그늘이 있다. 잠깐의 휴식을 취할 수 있다.',
+    choices:[
+      {label:'쉰다',icon:'😮‍💨',req:null,reward:{hp:12,thi:15},fixed:true,
+       desc:'무조건. HP+12, 갈증+15.'},
+      {label:'물자 탐색',icon:'🔍',req:'tool',
+       reward:{card:'water',n:2,card2:'food',n2:1},failPen:{hp:-5},
+       desc:'도구판정. 성공:물×2+식량×1 / 실패:HP-5'},
+    ]},
+  caldera_deep_pool:{
+    name:'깊은 웅덩이',flavor:'숲 안쪽에 물이 고여있다. 목이 타는 것 같다.',
+    choices:[
+      {label:'그냥 마신다',icon:'💧',req:null,reward:{thi:25,hp:-3},fixed:true,
+       desc:'무조건. 갈증+25+HP-3 (오염 위험).'},
+      {label:'정화하여 마신다',icon:'🫙',req:'tool',
+       reward:{thi:30,hp:5},failPen:{thi:15,hp:-8},
+       desc:'도구판정. 성공:갈증+30+HP+5 / 실패:갈증+15+HP-8'},
+    ]},
 };
 
 const RECIPES=[
@@ -2330,6 +2471,12 @@ const RECIPES=[
   {id:'r_antidote', cat:'생존', name:'해독제', icon:'💊', result:'antidote', rn:1, ap:1, islandOnly:['mycelium'],
    cost:[{id:'mycelium',n:1},{id:'herb',n:1}],
    desc:'독·포자 스택 완전 해제. 균사×1+약초×1.'},
+  {id:'r_obsidian_blade', cat:'전투', name:'흑요석 칼날', icon:'🗡️', result:'obsidian_blade', rn:1, ap:1, islandOnly:['caldera'],
+   cost:[{id:'obsidian',n:2},{id:'wood',n:1}],
+   desc:'흑요석×2+목재×1 → 흑요석 칼날(ATK+7, 날카로움·불꽃, 내구도3).'},
+  {id:'r_disassembler', cat:'도구', name:'분해기', icon:'⚙️', result:'disassembler', rn:1, ap:1, islandOnly:['caldera'],
+   cost:[{id:'obsidian',n:1},{id:'debris',n:1}],
+   desc:'흑요석×1+잔해×1 → 분해기. 자원 카드 분해로 덱을 불림(내구도3).'},
   {id:'r_lure',    cat:'수집',name:'유인 미끼',  icon:'🪤',result:'lure',          rn:1,ap:1,cost:[{id:'food',n:1},{id:'wood',n:1}],   desc:'야생 동물 유인 → 회피불가 강제 전투. 내구도1. 식량×1 목재×1.'},
   {id:'r_flare_kit', cat:'탈출', name:'신호탄 키트', icon:'🧨', result:'flare_kit', rn:1, ap:1,
    cost:[{id:'metal',n:1},{id:'wood',n:1}],
@@ -2386,6 +2533,27 @@ const ISLANDS = {
         {id:'oblivion_swamp',count:2, minDist:3},
         {id:'temple',      count:1,   minDist:5, group:'escape'},
         {id:'thicket',     count:[0,2],minDist:2},
+      ],
+    },
+  },
+  caldera: {
+    id: 'caldera',
+    name: '흑색 화산섬',
+    icon: '🌋',
+    subtitle: '대분화가 시작된 화산의 섬',
+    story: '검은 재가 발밑에 쌓여 있었다.\n\n주변 어디를 봐도 타오른 흔적뿐이었다.\n멀리서 화산이 진동하고, 연기 기둥이 하늘을 가린다.\n\n물을 마셔야 한다. 그리고 빠져나가야 한다.\n이 섬은 기다려 주지 않는다.',
+    mechanic: '🌋 대분화 대기\n흑요석을 모아 버티기 준비를 한다.\n숨겨진 마을(🏘️)에서 "화산의 종말을 기다린다"를 발동하면\n대분화 5일간의 극한 생존을 버텨내야 탈출 가능.',
+    doomName: '대분화',
+    doomIcon: '🌋',
+    startLog: '🌋 흑색 화산섬에 눈을 떴다. 발밑이 뜨겁고 공기에서 유황 냄새가 난다.',
+    mapConfig: {
+      baseTiles: ['cave','cave','cave','cave','cave','cave','forest','forest','forest','beach','beach','shore','ruins'],
+      specialTiles: [
+        {id:'caldera_tile', count:1,   minDist:6},
+        {id:'smoke_tower',  count:1,   minDist:5, group:'escape'},
+        {id:'village',      count:1,   minDist:5, group:'escape'},
+        {id:'obsidian_vein',count:4,   minDist:2},
+        {id:'thicket',      count:[0,1],minDist:2},
       ],
     },
   },
@@ -2610,6 +2778,7 @@ function initGame(){
     skillCraftBypass:false,
     runMaxDeck:0, oblivionSeepCnt:0, deathCause:null,
     mycPhase:0, mycEscape:false, mycBoss:null, mycMapUsed:false, mycMapDrops:{}, mycEventShown:{}, sporeSleepCnt:0,
+    calderaFinale:false, calderaFinaleDays:0, calderaVillageEscape:false,
     islandId,
   };
   _pendingItems=null; _itemCb=null; _pendingItemCards=null; _ucHand=[];
@@ -3303,7 +3472,7 @@ function checkWin(){
   if(G.escape>=85&&!G.escMile[85]){ G.escMile[85]=true; showEscapeMilestone(15); }
   if(G.escape>=100&&!G.over){
     G.over=true;
-    const escMethod=G.mycEscape?'mycelium':G.templeEscape?'temple':G.signalEscape?'signal':null;
+    const escMethod=G.calderaVillageEscape?'caldera_village':G.mycEscape?'mycelium':G.templeEscape?'temple':G.signalEscape?'signal':null;
     showVictoryFanfare(()=>showEnding(true, escMethod));
   }
 }
@@ -3410,6 +3579,8 @@ function _endHeadline(win, reason){
       const scTxt=sc>3?`${sc}발의 신호탄을 쏘아 올린 끝에`:`${sc}발의 신호탄으로`;
       if(G.islandId==='mycelium')
         return {main:'구조 성공', sub:`${G.day}일 만에 늪 전망대에서 ${scTxt} 구조대를 불러 균사의 늪을 탈출했다.`};
+      if(G.islandId==='caldera')
+        return {main:'구조 성공', sub:`${G.day}일 만에 연기 전망대에서 ${scTxt} 구조대를 불러 흑색 화산섬을 탈출했다.`};
       return {main:'구조 성공', sub:`${G.day}일 만에 ${scTxt} 구조선을 불러 망각의 맹그로브를 탈출했다.`};
     }
     if(reason==='mycelium'){
@@ -3417,22 +3588,27 @@ function _endHeadline(win, reason){
       const bossName=bossNames[G.mycBoss]||'대균사';
       return {main:'균사 정복', sub:`${G.day}일 만에 포자 제단 3단계를 돌파하고 ${bossName}을 쓰러뜨렸다. 포자 구름이 걷히며 균사의 늪을 탈출했다.`};
     }
+    if(reason==='caldera_village'){
+      return {main:'마을의 기적', sub:`${G.day}일 만에 대분화 5일을 버텨냈다. 화산이 진정되자 흑색 화산섬을 탈출했다.`};
+    }
     let main='탈출 성공';
     if(G.hp>=70&&G.san>=70&&G.day<=15) main='완벽한 생존';
     else if(G.hp<20||G.san<20)         main='간신히 살아남았다';
     return {main, sub:`${G.day}일 만에 ${islName}을(를) 뗏목으로 탈출했다.`};
   }
   // 패배
-  const islFail=G.islandId==='mycelium'?'균사의 늪':'망각의 맹그로브';
+  const islFail=G.islandId==='mycelium'?'균사의 늪':G.islandId==='caldera'?'흑색 화산섬':'망각의 맹그로브';
   let main;
   if(G.escape>=80)       main='거의 탈출할 뻔했다';
   else if(G.escape>=50)  main='한 걸음이 부족했다';
   else if(G.san<=0)      main='마음이 먼저 무너졌다';
   else if(G.day<=4)      main='첫 발부터 쉽지 않았다';
-  else if(G.doomSurvives>0) main=G.islandId==='mycelium'?'균사가 당신을 놓아주지 않았다':'섬은 아직 널 놓아주지 않았다';
+  else if(G.doomSurvives>0) main=G.islandId==='mycelium'?'균사가 당신을 놓아주지 않았다':G.islandId==='caldera'?'화산이 모든 것을 삼켰다':'섬은 아직 널 놓아주지 않았다';
   else {
     const pool=G.islandId==='mycelium'
       ?['균사가 깊어질수록 출구가 멀어졌다','포자에 잠식되어 정신이 흐려졌다','늪이 당신을 삼켰다','다음엔 균사를 이겨낼 수 있을 것이다']
+      :G.islandId==='caldera'
+      ?['용암이 모든 것을 삼켰다','화산재 속에서 방향을 잃었다','마을을 찾지 못한 채 화산이 폭발했다','5일을 버티지 못했다']
       :['준비는 됐지만, 타이밍을 놓쳤다','섬은 아직 널 놓아주지 않았다','이번엔 운이 따르지 않았다','다음엔 다를 것이다'];
     main=pool[G.day%pool.length];
   }
@@ -4039,11 +4215,19 @@ function clickTile(i){
     flashDamage();
     log('🌫️ 균류 군락: 균사가 살갗을 파고든다. HP-3','danger');
   }
+  // 분화구: 진입 시 DOOM+5
+  if(t.id==='caldera_tile'&&G.islandId==='caldera'){
+    G.doom=Math.min(99,G.doom+5);
+    log('🌋 분화구: 열기가 온몸을 태운다. DOOM+5','danger');
+  }
+  const _getAmbPool=()=>{
+    if(G.islandId==='caldera') return ['cbt_lava_crab','cbt_lava_crab','cbt_flame_lizard'];
+    if(G.islandId==='mycelium') return ['cbt_swamp_frog','cbt_swamp_frog','cbt_swamp_frog'];
+    return ['cbt_boar','cbt_boar','cbt_snake','cbt_snake','cbt_bat','cbt_ghost'];
+  };
   if(t.id==='thicket'&&!t.explored){
     t.explored=true;
-    const _ambPool=G.islandId==='mycelium'
-      ?['cbt_swamp_frog','cbt_swamp_frog','cbt_swamp_frog']
-      :['cbt_boar','cbt_boar','cbt_snake','cbt_snake','cbt_bat','cbt_ghost'];
+    const _ambPool=_getAmbPool();
     setTimeout(()=>showThicketAmbush(_ambPool[Math.floor(Math.random()*_ambPool.length)]),300);
   }
   getAdj(i).forEach(j=>{
@@ -4051,9 +4235,7 @@ function clickTile(i){
     G.tiles[j].revealed=true;
     if(!wasRevealed && G.tiles[j].id==='thicket' && !G.tiles[j].explored){
       G.tiles[j].explored=true;
-      const _ambPool=G.islandId==='mycelium'
-        ?['cbt_swamp_frog','cbt_swamp_frog','cbt_swamp_frog']
-        :['cbt_boar','cbt_boar','cbt_snake','cbt_snake','cbt_bat','cbt_ghost'];
+      const _ambPool=_getAmbPool();
       const ambEvt=_ambPool[Math.floor(Math.random()*_ambPool.length)];
       setTimeout(()=>showThicketAmbush(ambEvt),300);
     }
@@ -4155,12 +4337,15 @@ function fmtR(r){
   if(!r) return '';
   const p=[];
   if(r.card){const d=CARD_MAP[r.card];if(d)p.push(`${d.icon}${d.name}×${r.n||1}`);}
+  if(r.card2){const d=CARD_MAP[r.card2];if(d)p.push(`${d.icon}${d.name}×${r.n2||1}`);}
   if(r.cards) r.cards.forEach(c=>{const d=CARD_MAP[c.id];if(d)p.push(`${d.icon}${d.name}×${c.n||1}`);});
   if(r.san)        p.push(`정신력${r.san>=0?'+':''}${r.san}`);
   if(r.escape)     p.push(`탈출+${r.escape}%`);
-  if(r.hun)        p.push(`허기+${r.hun}`);
-  if(r.hp)         p.push(`HP+${r.hp}`);
+  if(r.hun)        p.push(`허기${r.hun>=0?'+':''}${r.hun}`);
+  if(r.hp)         p.push(`HP${r.hp>=0?'+':''}${r.hp}`);
+  if(r.thi)        p.push(`갈증${r.thi>=0?'+':''}${r.thi}`);
   if(r.ap)         p.push(`AP+${r.ap}`);
+  if(r.removeCards)p.push(`비상태카드 ${r.removeCards}장 소멸`);
   if(r.revealTile){const td=TILE_TYPES.find(t=>t.id===r.revealTile);p.push(`${td?.icon||'📍'}${td?.name||r.revealTile} 위치 표시`);}
   if(r.removeCard){const d=CARD_MAP[r.removeCard];p.push(`${d?.icon||''}${d?.name||r.removeCard} 소멸`);}
   if(r.devourCard){const d=CARD_MAP[r.devourCard];p.push(`${d?.icon||''}${d?.name||r.devourCard} 소멸(제물)`);}
@@ -4174,10 +4359,13 @@ function fmtR(r){
 
 function fmtP(p){
   const a=[];
-  if(p.hp)    a.push(`HP${p.hp}`);
-  if(p.hun)   a.push(`허기${p.hun}`);
-  if(p.san)   a.push(`정신력${p.san}`);
-  if(p.escape)a.push(`탈출-${p.escape}%`);
+  if(p.hp)         a.push(`HP${p.hp}`);
+  if(p.hun)        a.push(`허기${p.hun}`);
+  if(p.thi)        a.push(`갈증${p.thi}`);
+  if(p.san)        a.push(`정신력${p.san}`);
+  if(p.escape)     a.push(`탈출-${p.escape}%`);
+  if(p.removeCards)a.push(`비상태카드 ${p.removeCards}장 소멸`);
+  if(p.addCard)    {const d=CARD_MAP[p.addCard];a.push(`${d?.icon||''}${d?.name||p.addCard} 추가`);}
   return a.join(' ');
 }
 
@@ -4317,6 +4505,11 @@ function doJudgment(evt, ch){
         addCard(ch.curseDeck,1);
         bonLines.push(`🌀 ${CARD_MAP[ch.curseDeck]?.name||ch.curseDeck}: 덱에 스며들었다`);
       }
+      // doomPen: 선택 시 무조건 DOOM 증가
+      if(ch.doomPen){
+        G.doom=Math.min(99,G.doom+ch.doomPen);
+        bonLines.push(`☠️ DOOM+${ch.doomPen}`);
+      }
       const detEl=document.getElementById('jdg-det');
       detEl.style.display=''; detEl.textContent=lines.join('\n');
       const bonEl=document.getElementById('jdg-bon');
@@ -4366,11 +4559,32 @@ function applyR(r, lines){
       }
     });
   }
+  if(r.card2){
+    const d=CARD_MAP[r.card2];
+    lines.push(`${d?.icon||''}${d?.name||r.card2}×${r.n2||1}`);
+    if(_pendingItems!=null){
+      for(let i=0;i<(r.n2||1);i++) _pendingItems.push({id:r.card2,icon:d?.icon||'📦',name:d?.name||r.card2,n:1});
+    } else {
+      addCard(r.card2,r.n2||1);
+    }
+  }
   if(r.san)        {G.san=Math.min(100,Math.max(0,G.san+r.san)); lines.push(r.san>=0?`정신력+${r.san}`:`정신력${r.san}`);}
   if(r.escape)     {G.escape=Math.min(100,G.escape+r.escape);lines.push(`탈출+${r.escape}%`);}
-  if(r.hun)        {G.hun=Math.min(100,G.hun+r.hun);  lines.push(`허기+${r.hun}`);}
-  if(r.hp)         {G.hp=Math.min(100,G.hp+r.hp);     lines.push(`HP+${r.hp}`);}
+  if(r.hun)        {G.hun=Math.min(100,G.hun+r.hun);  lines.push(r.hun>=0?`허기+${r.hun}`:`허기${r.hun}`);}
+  if(r.hp)         {G.hp=Math.min(100,Math.max(0,G.hp+r.hp));     lines.push(r.hp>=0?`HP+${r.hp}`:`HP${r.hp}`);if(r.hp<0)flashDamage();}
+  if(r.thi)        {G.thi=Math.min(100,Math.max(0,G.thi+r.thi)); lines.push(r.thi>=0?`갈증+${r.thi}`:`갈증${r.thi}`);}
   if(r.ap)         {G.ap=Math.min(G.maxAP+4,G.ap+r.ap);lines.push(`AP+${r.ap}환급`);}
+  if(r.removeCards){
+    const removable=([...G.deck,...G.disc]).filter(c=>c.tag!=='status');
+    const toRemove=removable.slice(0,r.removeCards);
+    toRemove.forEach(c=>{
+      const di=G.deck.findIndex(x=>x.uid===c.uid);
+      if(di>=0) G.deck.splice(di,1);
+      else{const di2=G.disc.findIndex(x=>x.uid===c.uid);if(di2>=0)G.disc.splice(di2,1);}
+    });
+    if(toRemove.length) lines.push(`${toRemove.map(c=>c.name).join('·')} 소멸`);
+    else lines.push('(소멸할 카드 없음)');
+  }
   if(r.revealTile) {
     const idx=G.tiles.findIndex(t=>t.id===r.revealTile);
     if(idx>=0&&!G.tiles[idx].revealed){ G.tiles[idx].revealed=true; const td=TILE_TYPES.find(t=>t.id===r.revealTile); lines.push(`${td?.icon||'📍'}${td?.name||r.revealTile} 위치 발견`); }
@@ -4407,10 +4621,23 @@ function applyR(r, lines){
 }
 
 function applyPen(p, lines){
-  if(p.hp)    {G.hp=Math.max(0,G.hp+p.hp);     lines.push(`HP${p.hp}`);if(p.hp<0)flashDamage();}
-  if(p.hun)   {G.hun=Math.max(0,G.hun+p.hun);  lines.push(`허기${p.hun}`);}
-  if(p.san)   {G.san=Math.max(0,G.san+p.san);  lines.push(`정신력${p.san}`);if(p.san<0)flashDamage();}
-  if(p.card)  {addCard(p.card,1);               lines.push(`${p.card}카드추가`);}
+  if(p.hp)         {G.hp=Math.max(0,G.hp+p.hp);     lines.push(`HP${p.hp}`);if(p.hp<0)flashDamage();}
+  if(p.hun)        {G.hun=Math.max(0,G.hun+p.hun);  lines.push(`허기${p.hun}`);}
+  if(p.thi)        {G.thi=Math.max(0,G.thi+p.thi);  lines.push(`갈증${p.thi}`);}
+  if(p.san)        {G.san=Math.max(0,G.san+p.san);  lines.push(`정신력${p.san}`);if(p.san<0)flashDamage();}
+  if(p.card)       {addCard(p.card,1);               const d=CARD_MAP[p.card];lines.push(`${d?.icon||''}${d?.name||p.card} 추가`);}
+  if(p.addCard)    {addCard(p.addCard,p.n||1);       const d=CARD_MAP[p.addCard];lines.push(`${d?.icon||''}${d?.name||p.addCard}×${p.n||1} 추가`);}
+  if(p.removeCards){
+    const removable=([...G.deck,...G.disc]).filter(c=>c.tag!=='status');
+    const toRemove=removable.slice(0,p.removeCards);
+    toRemove.forEach(c=>{
+      const di=G.deck.findIndex(x=>x.uid===c.uid);
+      if(di>=0) G.deck.splice(di,1);
+      else{const di2=G.disc.findIndex(x=>x.uid===c.uid);if(di2>=0)G.disc.splice(di2,1);}
+    });
+    if(toRemove.length) lines.push(`${toRemove.map(c=>c.name).join('·')} 소멸`);
+    else lines.push('(소멸할 카드 없음)');
+  }
   if(p.escape){G.escape=Math.max(0,G.escape-p.escape);lines.push(`탈출-${p.escape}%`);}
 }
 
@@ -4752,6 +4979,30 @@ function openUseCard(){
   const drawN=5+ropeCnt+beachCampCnt+skillDrawBonus;
   _ucHand=drawToHand(drawN);
   if(!_ucHand.length){log('덱이 비어있다.','danger');G.ap+=1;render();return;}
+  // ── onDraw 자동 발동 (화상/목마름 등 onDraw:true 카드) ──
+  {
+    const onDrawMsgs=[];
+    _ucHand=_ucHand.filter(c=>{
+      if(!c.onDraw) return true;
+      if(c.id==='burn_card'){
+        G.hp=Math.max(0,G.hp-5);
+        flashDamage();
+        onDrawMsgs.push('🔥 화상 카드 드로우: HP-5');
+        log('🔥 화상 카드 드로우 — HP-5 (자동 발동 후 소멸)','danger');
+      } else if(c.id==='thirst_card'){
+        G.thi=Math.max(0,G.thi-10);
+        onDrawMsgs.push('💧 목마름 카드 드로우: 갈증-10');
+        log('💧 목마름 카드 드로우 — 갈증-10 (자동 발동 후 소멸)','danger');
+      }
+      return false; // onDraw 카드는 핸드에서 제거 (소멸)
+    });
+    if(onDrawMsgs.length){
+      const banner=document.getElementById('uc-ondraw-banner');
+      if(banner){ banner.textContent=onDrawMsgs.join(' | '); banner.style.display='block'; setTimeout(()=>{banner.style.display='none';},2000); }
+      checkSurvival(); if(G.over) return;
+    }
+    if(!_ucHand.length){log('드로우한 카드가 모두 자동 발동됐습니다.','danger');G.ap+=1;render();return;}
+  }
   _prevUcHandUIDs=new Set();
   const bonusDesc=(ropeCnt?` (🪢밧줄+${ropeCnt})`:'')+(rawBeachCnt?` (🏖️해변캠프+${beachCampCnt}${campDouble?' 🏰×2':''})`:'')+(skillDrawBonus?` (🔀손놀림+${skillDrawBonus})`:'');
   document.getElementById('uc-sub').textContent=`${_ucHand.length}장 드로우${bonusDesc} — 사용할 카드 선택`;
@@ -4952,6 +5203,55 @@ function ucUse(i){
     resEl.textContent='💥 힘을 담은 일격은 전투 핸드에서만 사용 가능합니다.';
     resEl.style.color='var(--red)';
     return;
+  } else if(card.use==='use_disassembler'){
+    const breakable=['stone','wood','metal'];
+    const breakMap={
+      stone:[{id:'debris',n:1},{id:'dew',n:1}],
+      wood: [{id:'debris',n:1},{id:'berry',n:1}],
+      metal:[{id:'debris',n:1},{id:'dew',n:1}],
+    };
+    const allC=allCards();
+    const candidates=allC.filter(c=>breakable.includes(c.id));
+    if(!candidates.length){
+      resEl.textContent='⚙️ 분해할 자원 카드가 없습니다.';
+      resEl.style.color='var(--text3)';
+      return;
+    }
+    // 선택 UI
+    const disasm=document.createElement('div');
+    disasm.style.cssText='margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;';
+    // 중복 제거 (id 기준)
+    const shown=new Set();
+    candidates.forEach(c=>{
+      if(shown.has(c.id)) return; shown.add(c.id);
+      const d=CARD_MAP[c.id];
+      const out=breakMap[c.id].map(o=>{const od=CARD_MAP[o.id];return `${od?.icon||''}${od?.name||o.id}×${o.n}`;}).join('+');
+      const btn=document.createElement('button');
+      btn.className='btn';
+      btn.style.cssText='font-size:9px;padding:4px 8px;';
+      btn.textContent=`${d?.icon||''}${d?.name||c.id} → ${out}`;
+      btn.onclick=()=>{
+        // 분해 실행
+        const di=G.deck.findIndex(x=>x.id===c.id);
+        if(di>=0) G.deck.splice(di,1);
+        else { const di2=G.disc.findIndex(x=>x.id===c.id); if(di2>=0) G.disc.splice(di2,1); }
+        breakMap[c.id].forEach(o=>addCard(o.id,o.n));
+        const outStr=breakMap[c.id].map(o=>{const od=CARD_MAP[o.id];return `${od?.icon||''}${od?.name||o.id}×${o.n}`;}).join('+');
+        log(`⚙️ 분해: ${d?.icon||''}${d?.name||c.id} → ${outStr}`,'success');
+        resEl.textContent=`⚙️ 분해 완료: ${d?.name||c.id} → ${outStr}`;
+        resEl.style.color='var(--green)';
+        disasm.remove();
+        // 내구도 처리
+        if(card.dur){ card.curDur=(card.curDur||card.dur)-1; if(card.curDur<=0){_ucHand.splice(i,1);log(`⚙️ 분해기 소진`,'');}else{G.disc.push(..._ucHand.splice(i,1));log(`⚙️ 내구도 ${card.curDur}/${card.dur}남음`,'');} }
+        else G.disc.push(..._ucHand.splice(i,1));
+        renderUcCards(); checkSurvival(); render();
+      };
+      disasm.appendChild(btn);
+    });
+    resEl.textContent='⚙️ 분해할 카드를 선택하세요:';
+    resEl.style.color='var(--accent)';
+    resEl.insertAdjacentElement('afterend', disasm);
+    return;
   } else if(card.use==='lure'){
     const _lurePool=['cbt_boar','cbt_snake','cbt_bat','cbt_ghost'];
     const evtId=_lurePool[Math.floor(Math.random()*_lurePool.length)];
@@ -5047,6 +5347,80 @@ const MYCELIUM_ENDGAME_FL=[
   {txt:'균사 나무가 점점 가까워지는 느낌이다. 아니면 내가 가까이 간 건가.',hpPen:1,sanPen:6},
   {txt:'포자 구름 속에서 사람의 형상을 봤다. 달려갔더니 균사 덩어리였다.',hpPen:0,sanPen:8},
   {txt:'균사가 발밑에서 올라온다. 이미 무릎까지 뻗어있는 것 같다.',hpPen:2,sanPen:6},
+];
+
+// ── 흑색 화산섬 종말 시나리오 ──
+const CALDERA_DOOM_STORY=[
+  {phase:0,
+   title:'🌋 첫 번째 진동',
+   story:'발밑이 뜨겁다. 밤새 지진이 두 번 있었다.\n\n지평선 저 너머에서 연기가 피어오른다.\n아직은 멀다.',
+   detail:'⚠️ 칼데라 시작: DOOM +1%, 이후 매 취침 +2%',
+   doomAdd:1, rateAfter:2, nextPhase:1},
+  {phase:1, minDay:6,
+   title:'🔥 화산이 깨어났다',
+   story:'화산이 깨어났다.\n지평선이 붉게 물들었다.\n\n재가 내린다.\n물을 구하기 어렵고 숨 쉬기도 힘들다.',
+   detail:'⚠️ DOOM 즉시 +15%p → 이후 매 취침 +3%p',
+   doomAdd:15, rateAfter:3, nextPhase:2},
+  {phase:2, minDay:11,
+   title:'💨 대분화 임박',
+   story:'용암이 흐르기 시작했다.\n지형이 무너지고 있다.\n\n숨겨진 마을(🏘️)을 찾아라.\n그곳에서 대분화를 기다려야 한다.',
+   detail:'⚠️ DOOM 즉시 +25%p | 이후 매 취침 +4%p',
+   doomAdd:25, rateAfter:4, nextPhase:3},
+  {phase:3, minDay:16,
+   title:'🌑 최후의 선택',
+   story:'섬이 사라지고 있다.\n\n마을(🏘️)에서 대분화를 기다려 5일을 버텨내거나,\n뗏목·연기 신호로 지금 당장 탈출하라.',
+   detail:'⚠️ DOOM 강제 80%p | 매 취침 생사 복권 시작',
+   doomSet:80, rateAfter:0, nextPhase:4},
+];
+const CALDERA_ENDGAME_FL=[
+  {txt:'흑색 재가 손등에 쌓인다. 섬이 사라지고 있다.',hpPen:3,sanPen:3},
+  {txt:'지반이 흔들려 물건을 잃을 뻔했다.',hpPen:2,sanPen:5},
+  {txt:'화산재 속에서 방향을 잃었다.',hpPen:0,sanPen:8},
+  {txt:'용암이 눈앞까지 왔다. 뒤로 물러섰다.',hpPen:4,sanPen:4},
+  {txt:'뜨거운 공기가 폐를 태운다.',hpPen:5,sanPen:2},
+];
+// 5일간 대분화 종말 이벤트 풀
+const CALDERA_DOOM_EVENTS=[
+  {id:'caldera_fire', name:'🔥 화재',
+   flavor:'마을 지붕에 불이 붙었다! 중요한 것들이 불에 탄다.',
+   choices:[
+     {label:'막는다',icon:'🔥',req:'tool',
+      reward:{removeCards:2},failPen:{removeCards:3},
+      desc:'도구판정. 성공:비상태 2장 소멸 / 실패:비상태 3장 소멸'},
+     {label:'포기하고 피한다',icon:'🏃',req:null,reward:{removeCards:2},fixed:true,
+      desc:'무조건. 비상태 2장 소멸.'},
+   ]},
+  {id:'caldera_heat', name:'💨 타는 듯한 열기',
+   flavor:'대분화의 열기가 물을 순식간에 증발시킨다.',
+   choices:[
+     {label:'방어구로 버팀',icon:'🛡️',req:null,subReq:'방어구',
+      reward:{thi:-15},failPen:{thi:-40,addCard:'thirst_card',n:1},
+      desc:'방어구 판정. 성공:갈증-15 / 실패:갈증-40+목마름1장 추가'},
+     {label:'그냥 버틴다',icon:'😤',req:null,reward:{thi:-40,addCard:'thirst_card',n:1},fixed:true,
+      desc:'무조건. 갈증-40+목마름1장 추가.'},
+   ]},
+  {id:'caldera_gas', name:'☁️ 유독 가스',
+   flavor:'화산 가스가 마을을 덮쳤다.',
+   choices:[
+     {label:'불꽃 도구로 가스 태움',icon:'🔥',req:null,subReq:'불꽃',
+      reward:{hp:-3},failPen:{hp:-15,thi:-10},
+      desc:'불꽃 판정. 성공:HP-3 / 실패:HP-15+갈증-10'},
+     {label:'숨을 참고 통과',icon:'😮‍💨',req:null,reward:{hp:-10,thi:-10},fixed:true,
+      desc:'무조건. HP-10, 갈증-10.'},
+   ]},
+  {id:'caldera_quake', name:'🌍 강진',
+   flavor:'강력한 지진이 마을을 뒤흔든다.',
+   choices:[
+     {label:'무거운 것으로 버팀',icon:'⚒️',req:null,subReq:'무거움',
+      reward:{hp:-5},failPen:{hp:-20,removeCards:1},
+      desc:'무거움 판정. 성공:HP-5 / 실패:HP-20+비상태 1장 소멸'},
+     {label:'그냥 버틴다',icon:'😤',req:null,reward:{hp:-15},fixed:true,
+      desc:'무조건. HP-15.'},
+   ]},
+  // 몬스터 습격 — isCombat:true (기습 전투)
+  {id:'caldera_monster_raid', isCombat:true,
+   flavor:'화산 폭발을 피해 도망치던 몬스터들이 마을로 밀려들었다!',
+   combatPool:['cbt_lava_crab','cbt_flame_lizard']},
 ];
 
 // ── 망각의 맹그로브 섬 종말 시나리오 ──
@@ -5148,12 +5522,67 @@ function checkGatherDanger(){
   openGather();
 }
 
+function _showCalderaDoomEvent(cb){
+  const ev=CALDERA_DOOM_EVENTS[Math.floor(Math.random()*CALDERA_DOOM_EVENTS.length)];
+  log(`🌋 대분화 종말이벤트: ${ev.name||ev.id}. ${ev.flavor||''}`,'danger');
+  if(ev.isCombat){
+    const mId=ev.combatPool[Math.floor(Math.random()*ev.combatPool.length)];
+    _calderaCombatCallback=cb;
+    startCombat(mId, true, false, null);
+    // combat finish calls _calderaCombatCallback via startCombatWithCallback pattern
+  } else {
+    showExploreChoice(ev, cb);
+  }
+}
+let _calderaCombatCallback=null;
+function calderaCombatDone(){
+  const cb=_calderaCombatCallback; _calderaCombatCallback=null;
+  if(cb) cb();
+}
+
+function doCalderaFinaleStart(){
+  if(G.over||G.calderaFinale) return;
+  showConfirm(
+    '🌋 화산의 종말을 기다립니다',
+    '대분화가 시작됩니다. 5일간 극한의 이벤트가 발생합니다.\n화상 3장, 목마름 2장이 덱에 추가됩니다.\n이 선택은 되돌릴 수 없습니다.',
+    ()=>{
+      G.calderaFinale=true;
+      G.calderaFinaleDays=0;
+      addCard('burn_card',3); addCard('thirst_card',2);
+      log('🌋 대분화 시작! 화상×3, 목마름×2가 덱에 추가됐다.','danger');
+      render(); saveGame();
+    }
+  );
+}
+
 function doSleep(){
   if(G.over) return;
   const early=G.ap>=4;
   if(!G.actionCnt) G.actionCnt={move:0,explore:0,gather:0,camp:0,craft:0,carduse:0,sleep:0,combat:0};
   G.actionCnt.sleep=(G.actionCnt.sleep||0)+1;
   G.day++;
+
+  // ── 칼데라: 대분화 절정 5일 버티기 ──
+  if(G.islandId==='caldera'&&G.calderaFinale&&!G.over){
+    G.calderaFinaleDays=(G.calderaFinaleDays||0)+1;
+    G.doom=Math.min(99,G.doom); // doom 사망 방지
+    // 매 취침 화상 또는 목마름 카드 1장 추가
+    const addEvtCard=G.calderaFinaleDays%2===0?'thirst_card':'burn_card';
+    addCard(addEvtCard,1);
+    log(`🌋 대분화 절정 ${G.calderaFinaleDays}/5일 — ${addEvtCard==='burn_card'?'화상':'목마름'} 카드 추가`,'danger');
+    _showCalderaDoomEvent(()=>{
+      log(`🌋 대분화 버티기 ${G.calderaFinaleDays}/5일`,'');
+      if(G.calderaFinaleDays>=5){
+        G.escape=100;
+        G.calderaVillageEscape=true;
+        log('🏘️ 5일을 버텼다! 화산이 진정됐다. 마을 밖으로 나올 수 있다!','success');
+        checkWin(); return;
+      }
+      checkSurvival(); if(G.over) return;
+      render(); saveGame();
+    });
+    return; // 정상 취침 스킵
+  }
 
   let hpR=early?15:9, sanR=early?4:2;
   if(G.doomPhase===4){ hpR=Math.max(0,hpR-4); sanR=Math.max(0,sanR-2); }
@@ -5208,7 +5637,7 @@ function doSleep(){
   const sanDrain=(G.camps.length?2:5)+doomSanExtra;
   G.san=Math.min(100,Math.max(0,G.san+sanR-sanDrain+wD.san));
   const bonAP=early?2:0;
-  const _wPool=G.islandId==='mycelium'?WEATHER_MYCELIUM:WEATHER;
+  const _wPool=G.islandId==='mycelium'?WEATHER_MYCELIUM:G.islandId==='caldera'?WEATHER_CALDERA:WEATHER;
   G.tomorrow=_wPool[Math.floor(Math.random()*_wPool.length)];
   G.ap=Math.max(1,G.maxAP+bonAP+ruinsBonusAP-fatigueN*2+wD.ap);
   if(wD.fog) log(`${G.weather.icon} ${G.weather.name}: 안개가 짙어졌다.`,'danger');
@@ -5256,7 +5685,7 @@ function doSleep(){
 function _processDoom(early){
   const _di=(ISLANDS[G.islandId]||ISLANDS.mangrove).doomIcon||'🌫️';
   // 스토리 이벤트 확인
-  const storyArr=(G.islandId==='mycelium')?MYCELIUM_DOOM_STORY:DOOM_STORY;
+  const storyArr=G.islandId==='mycelium'?MYCELIUM_DOOM_STORY:G.islandId==='caldera'?CALDERA_DOOM_STORY:DOOM_STORY;
   const storyEvt=storyArr.find(e=>e.phase===G.doomPhase&&(e.minDay===undefined||G.day>=e.minDay));
   if(storyEvt){
     if(storyEvt.doomSet!==undefined) G.doom=storyEvt.doomSet;
@@ -5282,7 +5711,7 @@ function _processDoom(early){
   if(G.doomPhase===4){
     const add=2+Math.floor(Math.random()*2);
     G.doom=Math.min(100,G.doom+add);
-    const flArr=(G.islandId==='mycelium')?MYCELIUM_ENDGAME_FL:DOOM_ENDGAME_FL;
+    const flArr=G.islandId==='mycelium'?MYCELIUM_ENDGAME_FL:G.islandId==='caldera'?CALDERA_ENDGAME_FL:DOOM_ENDGAME_FL;
     const fl=flArr[Math.floor(Math.random()*flArr.length)];
     G.hp=Math.max(0,G.hp-fl.hpPen); G.san=Math.max(0,G.san-fl.sanPen);
     if(fl.hpPen>0) flashDamage();
@@ -5327,7 +5756,18 @@ function _afterDoom(early){
 function _afterDoomContinue(early){
   checkSurvival(); if(G.over) return;
   checkWin(); if(G.over) return;
-  // DOOM 100% → 복권으로 대체
+  // 칼데라: DOOM 100% 도달 시 마을(village) 안이면 대분화 절정 모드 진입
+  if(G.doom>=100 && G.islandId==='caldera' && !G.calderaFinale && G.doomPhase>=4){
+    if(G.tiles[G.pos]?.id==='village'){
+      G.calderaFinale=true;
+      G.calderaFinaleDays=0;
+      G.doom=99; // 즉사 방지
+      log('🏘️ 대분화! 마을이 버텨주고 있다. 5일을 버텨라!','danger');
+      render(); saveGame(); return;
+    }
+    // village 밖이면 정상 doom 사망으로 처리
+  }
+  // DOOM 100% → 복권으로 대체 (caldera village 없는 경우 포함)
   if(G.doom>=100 && G.doomPhase>=4){
     showDoomLottery(); return;
   }
@@ -5829,7 +6269,13 @@ function startCombat(evtId, ambush, fightChosen, enemyOverride){
   // 급소 파악: 전투 시작 시 적 DEF -2 (count 기반)
   const _cbS3Cnt=allCards().filter(c=>c.id==='sk_cb_s3').length;
   if(_cbS3Cnt) enemy.def=Math.max(0,(enemy.def||0)-2*_cbS3Cnt);
-  CBT={enemy:{...enemy,curHp:enemy.hp},hand:[],atkZone:[],defZone:[],resolved:false,turn:1,stunned:false,poisoned:false,penaltyApplied:false,fightChosen:!!fightChosen,_evtId:evtId};
+  const enemyCopy={...enemy,curHp:enemy.hp};
+  // 용암 게: 첫 라운드 방어 3배
+  if(enemyCopy.bossType==='shield_first'){
+    enemyCopy._origDef=enemyCopy.def;
+    enemyCopy.def=(enemyCopy.def||0)*3;
+  }
+  CBT={enemy:enemyCopy,hand:[],atkZone:[],defZone:[],resolved:false,turn:1,stunned:false,poisoned:false,penaltyApplied:false,fightChosen:!!fightChosen,_evtId:evtId};
   _prevCbtHandUIDs=new Set();
   CBT.hand = ambush ? drawAmbushHand() : drawCombatHand();
   autoAssignStatusCards();
@@ -5840,7 +6286,8 @@ function startCombat(evtId, ambush, fightChosen, enemyOverride){
   document.getElementById('cbt-res').style.display='none';
   document.getElementById('cbt-mo').style.display='flex';
   renderCombat();
-  log(`⚔️ ${enemy.name} 전투 시작${ambush?' (기습! 전투카드 우선)':''}.`,'danger');
+  const shieldMsg=enemyCopy.bossType==='shield_first'?` (🦀 방어막 활성! 이번 라운드 DEF ${enemyCopy.def})`:'';
+  log(`⚔️ ${enemy.name} 전투 시작${ambush?' (기습! 전투카드 우선)':''}${shieldMsg}.`,'danger');
 }
 
 function setCbtMode(m){
@@ -6333,6 +6780,19 @@ function _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,will
     CBT.atkZone=[]; CBT.defZone=[];
     G.disc.push(...CBT.hand.filter(c=>!c._temp)); CBT.hand=[];
     // 보스 패턴 (다음 라운드 진입 직전)
+    // 화염 도마뱀: 매 라운드 HP-2 연소 (방어구 있으면 HP-1)
+    if(e.burnPerRound&&e.curHp>0&&CBT.turn>1){
+      const hasArmor=allCards().some(c=>c.subTags&&c.subTags.includes('방어구'));
+      const burnDmg=hasArmor?1:e.burnPerRound;
+      G.hp=Math.max(0,G.hp-burnDmg);
+      if(burnDmg>0) flashDamage();
+      resEl.innerHTML+=`<div class="rl bad">🔥 연소: HP-${burnDmg}${hasArmor?' (방어구 감소)':''}</div>`;
+      log(`🔥 화염 도마뱀 연소: HP-${burnDmg}`,'danger');
+    }
+    // 용암 게: shield_first — 첫 라운드 방어 3배, 2라운드부터 정상
+    if(e.bossType==='shield_first'){
+      if(CBT.turn===2&&!e._shieldDone){ e._shieldDone=true; e._origDef=e.def; e.def=Math.round(e.def/3); log('🦀 방어막 해제: DEF 정상화',''); }
+    }
     // 균사 수호수: 매 라운드 HP 재생
     if(e.regenPerRound&&e.curHp>0){
       const reg=Math.min(e.regenPerRound, e.hp-e.curHp);
@@ -6446,8 +6906,17 @@ function closeCombat(){
   hideCbtDeckView();
   _prevCbtHandUIDs=new Set();
   if(CBT.hand?.length){ G.disc.push(...CBT.hand.filter(c=>!c._temp)); CBT.hand=[]; }
-  if(G.hp<=0){ G.deathCause='monster'; triggerGameOver('전투 중 사망했습니다.'); }
-  checkSurvival(); checkWin(); render();
+  if(G.hp<=0){ G.deathCause='monster'; triggerGameOver('전투 중 사망했습니다.'); return; }
+  checkSurvival(); if(G.over) return;
+  checkWin(); if(G.over) return;
+  // 칼데라 대분화 종말이벤트 전투 콜백
+  if(typeof _calderaCombatCallback==='function'&&_calderaCombatCallback){
+    const cb=_calderaCombatCallback; _calderaCombatCallback=null;
+    render(); saveGame();
+    setTimeout(cb,300);
+    return;
+  }
+  render();
   saveGame();
 }
 
@@ -6554,7 +7023,9 @@ function _sfFinish(msg,color,label,onOk){
 
 // ── 섬별 신호 전망대 타일 ID ──
 function getSignalTileId(){
-  return (G.islandId==='mycelium') ? 'swamp_watch' : 'lookout';
+  if(G.islandId==='mycelium') return 'swamp_watch';
+  if(G.islandId==='caldera')  return 'smoke_tower';
+  return 'lookout';
 }
 
 // ── 전망대: 신호탄 탐색 ──
@@ -6964,6 +7435,15 @@ function render(){
     if(sporeCnt>0) extraPassives.push(`💛 포자 ${sporeCnt}개`);
     if(rotCnt>0)   extraPassives.push(`🤢 썩은음식 ${rotCnt}장`);
   }
+  if(p.islandId==='caldera'){
+    const burnCnt=cards.filter(c=>c.id==='burn_card').length;
+    const thirstCnt=cards.filter(c=>c.id==='thirst_card').length;
+    const obsCnt=cards.filter(c=>c.id==='obsidian').length;
+    if(burnCnt>0)   extraPassives.push(`🔥 화상 ${burnCnt}장`);
+    if(thirstCnt>0) extraPassives.push(`💧 목마름 ${thirstCnt}장`);
+    if(obsCnt>0)    extraPassives.push(`⬛ 흑요석 ${obsCnt}개`);
+    if(p.calderaFinale) extraPassives.push(`🌋 대분화 ${p.calderaFinaleDays}/5일`);
+  }
   const passiveAll=[...passives, ...extraPassives];
   d.passiveInfo.textContent=passiveAll.length?passiveAll.join(' / '):'없음';
 
@@ -7093,7 +7573,7 @@ function render(){
   // 특수 타일 액션 패널
   const specEl=document.getElementById('act-special');
   if(specEl){
-    if((ct.id==='lookout'||ct.id==='swamp_watch')&&ct.explored){
+    if((ct.id==='lookout'||ct.id==='swamp_watch'||ct.id==='smoke_tower')&&ct.explored){
       const hasKit=cards.some(c=>c.id==='flare_kit');
       const sigCnt=cards.filter(c=>c.id==='signal').length;
       const N=cards.length;
@@ -7117,7 +7597,7 @@ function render(){
       if(N>=3&&sigCnt>=3) sigProb=Math.round(sigCnt*(sigCnt-1)*(sigCnt-2)/(N*(N-1)*(N-2))*100);
       const probCol=p=>p>=60?'var(--green)':p>=30?'var(--accent)':'var(--red)';
       specEl.style.display='';
-      const _lookoutLabel=ct.id==='swamp_watch'?'🗼 늪 전망대 전용 행동':'🗼 전망대 전용 행동';
+      const _lookoutLabel=ct.id==='swamp_watch'?'🗼 늪 전망대 전용 행동':ct.id==='smoke_tower'?'🗼 연기 전망대 전용 행동':'🗼 전망대 전용 행동';
       specEl.innerHTML=`<div style="font-size:9px;color:#aecbae;font-family:var(--font-m);margin-bottom:5px;">${_lookoutLabel}</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
           <button class="btn" style="border-color:#4a8a5a;color:#aecbae;font-size:10px;"
@@ -7174,6 +7654,23 @@ function render(){
             🌱 포자 제물 교환<span style="font-size:8px;color:var(--text3);margin-left:4px;">(포자${sporeCnt}개 보유)</span>
           </button>
           ${mapBtn}`;
+      }
+    } else if(ct.id==='village'&&ct.explored&&p.islandId==='caldera'){
+      specEl.style.display='';
+      if(p.calderaFinale){
+        specEl.innerHTML=`<div style="color:var(--red);font-family:var(--font-t);font-size:11px;">
+          🌋 대분화 버티기 ${p.calderaFinaleDays}/5일
+          <div style="font-size:8px;color:var(--text3);">매 취침 종말 이벤트 발생. 5일 생존 시 탈출!</div>
+        </div>`;
+      } else {
+        const warnMsg=p.doom>=60?'⚠️ 대분화가 가까워졌다. 준비되면 종말을 기다려라.':'화산의 종말을 기다릴 수 있는 장소. 충분히 준비한 후 발동하라.';
+        specEl.innerHTML=`
+          <div style="font-size:9px;color:var(--text3);font-family:var(--font-m);margin-bottom:6px;">${warnMsg}</div>
+          <button class="btn full" style="border-color:var(--red);color:var(--red);font-size:10px;"
+            onclick="doCalderaFinaleStart()" ${p.over?'disabled':''}>
+            🌋 화산의 종말을 기다린다<span class="apb" style="margin-left:4px;">AP0</span>
+          </button>
+          <div style="font-size:7px;color:var(--text3);font-family:var(--font-m);margin-top:3px;">되돌릴 수 없음. 5일간 극한 이벤트 발생.</div>`;
       }
     } else if(ct.id==='oblivion_lake'&&ct.explored){
       const coolDays=3-(p.day-(p.lastOblivion||-99));

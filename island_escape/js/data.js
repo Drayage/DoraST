@@ -2,16 +2,16 @@
 
 const TILE_TYPES=[
   {id:'beach', name:'해변',icon:'🏖️',cls:'t-beach',flavor:'해변의 모래사장을 걷는다. 파도 소리가 들려온다.',
-   events:['res_metal','res_metal','res_metal','res_rainwater','res_rainwater','res_food','old_fire','nothing','debris_find','stormy_shore','river_berries'],
+   events:['res_metal','res_metal','res_metal','res_rainwater','res_rainwater','res_food','old_fire','nothing','debris_find','stormy_shore','river_berries','caldera_beach_shelter'],
    gather:[{tool:'fishing_rod',res:'food',label:'낚시',flavor:'해변에서 낚싯대로 물고기를 잡는다.'}]},
   {id:'forest',name:'숲',  icon:'🌲',cls:'t-forest',flavor:'울창한 숲이다. 여러 동식물의 소리가 들린다.',
-   events:['res_wood','res_wood','res_wood','res_food','res_food','res_herb','cbt_boar','cbt_snake','trap_pit','res_dew_collect','thorny_brush','abandoned_cook','wild_plant_id','wounded_prey'],
+   events:['res_wood','res_wood','res_wood','res_food','res_food','res_herb','cbt_boar','cbt_snake','trap_pit','res_dew_collect','thorny_brush','abandoned_cook','wild_plant_id','wounded_prey','caldera_deep_pool'],
    gather:[
      {tool:'gathering_knife',res:'herb',label:'약초채집',flavor:'채집칼로 약초를 모은다.'},
      {tool:'axe',res:'wood',label:'나무베기',flavor:'도끼로 나무를 벤다.'},
    ]},
   {id:'cave',  name:'동굴',icon:'🪨',cls:'t-cave',flavor:'어두운 동굴 입구가 보인다. 안에서 차가운 공기가 흘러나온다.',
-   events:['res_metal','res_metal','res_stone','res_stone','res_stone','cave_vein','cave_stalactite','cbt_bat','find_shelter','nothing','dark_cave_path'],
+   events:['res_metal','res_metal','res_stone','res_stone','res_stone','cave_vein','cave_stalactite','cbt_bat','find_shelter','nothing','dark_cave_path','caldera_cave_spring','caldera_cave_herb','caldera_cave_collapse'],
    gather:[
      {tool:'pickaxe',res:'metal',label:'채굴',flavor:'곡괭이로 동굴 벽을 캔다.'},
      {tool:'pickaxe',res:'stone',label:'채석',flavor:'곡괭이로 동굴 바닥을 채석한다.'},
@@ -61,6 +61,20 @@ const TILE_TYPES=[
   {id:'swamp_watch', name:'늪 전망대', icon:'🗼', cls:'t-lookout',
    flavor:'늪 위에 세워진 낡은 전망대. 여기서 신호를 보낼 수 있을 것 같다.',
    events:['nothing'], gather:[]},
+
+  // ── 흑색 화산섬 (섬3) 전용 타일 ──
+  {id:'caldera_tile', name:'분화구', icon:'🌋', cls:'t-caldera',
+   flavor:'분화구 가장자리. 열기가 피부를 태운다. 이 곳에 발을 딛는 것만으로 DOOM이 빨라진다.',
+   events:['caldera_eruption_sign','cbt_lava_crab','cbt_lava_crab','cbt_flame_lizard'], gather:[]},
+  {id:'smoke_tower', name:'연기 전망대', icon:'🗼', cls:'t-lookout',
+   flavor:'화산 측면에 세워진 전망대. 연기 신호로 구조를 요청할 수 있다.',
+   events:['nothing','res_wood','find_blueprint'], gather:[]},
+  {id:'village', name:'숨겨진 마을', icon:'🏘️', cls:'t-village',
+   flavor:'화산 기슭의 은신처. 대분화에도 버틸 수 있는 구조물이 남아있다.',
+   events:['caldera_village_supply','caldera_village_supply','caldera_village_supply','nothing'], gather:[]},
+  {id:'obsidian_vein', name:'흑요석 광맥', icon:'⬛', cls:'t-obsidian',
+   flavor:'화산 용암이 굳어 만들어진 흑요석 광맥.',
+   events:['caldera_obsidian','caldera_obsidian','caldera_obsidian','cbt_lava_crab','nothing'], gather:[]},
 ];
 
 const WEATHER=[
@@ -79,6 +93,16 @@ const WEATHER_MYCELIUM=[
   {id:'overcast',name:'무거운 하늘',icon:'🌑',eff:'san_-2'},
   {id:'storm',  name:'뇌우',      icon:'⛈️', eff:'hp_-8'},
   {id:'fog',    name:'포자 안개', icon:'🌫️',eff:'fog'},
+];
+const WEATHER_CALDERA=[
+  {id:'heat',   name:'화산 열기', icon:'🔥', eff:'thi_-14'},
+  {id:'heat',   name:'화산 열기', icon:'🔥', eff:'thi_-14'},
+  {id:'heat',   name:'화산 열기', icon:'🔥', eff:'thi_-14'},
+  {id:'sunny',  name:'맑음',     icon:'☀️', eff:'san_+2'},
+  {id:'sunny',  name:'맑음',     icon:'☀️', eff:'san_+2'},
+  {id:'sunny',  name:'맑음',     icon:'☀️', eff:'san_+2'},
+  {id:'tremor', name:'지진',     icon:'🌍', eff:'san_-5'},
+  {id:'steam',  name:'수증기',   icon:'💨', eff:'thi_-5'},
 ];
 
 // dur: n회 사용 후 덱에서 영구 제거. 인스턴스에 curDur 추가
@@ -361,6 +385,18 @@ const CARDS=[
   {id:'antidote', name:'해독제', icon:'💊', tag:'tool', atk:0, def:1, n:0, subTags:[],
    use:'antidote',
    desc:'전투 중: 독 + 포자 스택 완전 해제. 전투 외: HP+8 정신력+5.'},
+
+  // ── 흑색 화산섬 (섬3) 전용 카드 ──
+  {id:'obsidian', name:'흑요석', icon:'⬛', tag:'resource', atk:0, def:0, n:0, subTags:['날카로움'],
+   desc:'화산이 만든 날카로운 광물. 무기·도구 제작 재료.'},
+  {id:'burn_card', name:'화상', icon:'🔥', tag:'status', atk:0, def:0, n:0, dur:1, onDraw:true, subTags:[],
+   desc:'드로우 시 자동 HP-5 후 소멸. 대분화의 열기에 탄 상처.'},
+  {id:'thirst_card', name:'극심한 목마름', icon:'💧', tag:'status', atk:0, def:0, n:0, dur:1, onDraw:true, subTags:[],
+   desc:'드로우 시 자동 갈증-10 후 소멸. 화산 열기에 탈수됐다.'},
+  {id:'obsidian_blade', name:'흑요석 칼날', icon:'🗡️', tag:'combat', atk:7, def:0, n:0, dur:3, subTags:['날카로움','불꽃'],
+   desc:'화산 흑요석을 갈아 만든 날. ATK+7, 날카로움·불꽃 태그.'},
+  {id:'disassembler', name:'분해기', icon:'⚙️', tag:'tool', atk:0, def:0, n:0, dur:3, use:'use_disassembler', subTags:[],
+   desc:'사용 시 자원 카드 1장을 분해: 돌→잔해+이슬, 목재→잔해+열매, 고철→잔해+이슬. 내구도3.'},
 ];
 
 const ENEMIES={
@@ -493,6 +529,26 @@ const ENEMIES={
     encDesc:'포자 폭군이 포자를 뿜어낸다. 매 라운드 독이 누적되고, 체력을 재생한다.',
     patternDesc:'매 라운드 독 1스택 부여 + HP+4 재생. HP 40% 이하: 분노(ATK+6)',
     reward:{san:25}, altCards:[[{id:'mycelium',n:3}],[{id:'myc_map_piece',n:1},{id:'herb',n:3}]]},
+
+  // ── 흑색 화산섬 (섬3) 전용 몬스터 ──
+  cbt_lava_crab:{name:'용암 게',icon:'🦀',hp:28,atk:11,def:5,
+    bossType:'shield_first',
+    patternDesc:'첫 라운드 DEF 3배 방어막. 2라운드부터 정상.',
+    encDesc:'용암 속에 사는 단단한 게. 첫 공격은 방어막으로 막아낸다.',
+    observeReward:[{id:'obsidian',n:1},{id:'food',n:1}],
+    observeText:'게를 피해 흑요석 조각과 식량을 챙겼다.',
+    reward:{cards:[{id:'food',n:1}]},
+    altCards:[[{id:'obsidian',n:1}],[{id:'stone',n:2}]],
+    rewardDesc:'식량×1 + (흑요석×1 또는 돌×2)'},
+  cbt_flame_lizard:{name:'화염 도마뱀',icon:'🦎',hp:22,atk:9,def:2,
+    burnPerRound:2,
+    patternDesc:'연소: 매 라운드 HP-2 (방어구 보유 시 HP-1)',
+    encDesc:'화염을 내뿜는 도마뱀. 매 라운드 플레이어를 태운다.',
+    observeReward:[{id:'herb',n:1}],
+    observeText:'도마뱀을 피해 불꽃 근처 약초를 채취했다.',
+    reward:{cards:[{id:'herb',n:1}]},
+    altCards:[[{id:'obsidian',n:1}],[{id:'hide',n:1}]],
+    rewardDesc:'약초×1 + (흑요석×1 또는 가죽×1)'},
 };
 
 const EVENTS={
@@ -1027,6 +1083,86 @@ const EVENTS={
       {label:'그냥 간다',icon:'↩️',req:null,reward:{},
        desc:'무조건. 빈손.'},
     ]},
+
+  // ── 흑색 화산섬 (섬3) 이벤트 ──
+  caldera_eruption_sign:{
+    name:'분화 경고',flavor:'분화구가 격하게 흔들린다. 뜨거운 증기가 뿜어오른다.',
+    choices:[
+      {label:'도구로 빠르게 탐색',icon:'🔍',req:'tool',
+       reward:{card:'obsidian',n:2,san:-3},failPen:{hp:-8,san:-5},
+       doomPen:5,
+       desc:'도구판정. 성공:흑요석×2+정신력-3 / 실패:HP-8+정신력-5. DOOM+5'},
+      {label:'물러선다',icon:'🏃',req:null,reward:{},fixed:true,doomPen:5,
+       desc:'무조건. DOOM+5.'},
+    ]},
+  caldera_obsidian:{
+    name:'흑요석 광맥',flavor:'검은 광석이 빛나고 있다. 빼내면 좋은 재료가 될 것 같다.',
+    choices:[
+      {label:'도구로 채굴',icon:'⛏️',req:'tool',
+       reward:{card:'obsidian',n:2},failPen:{hp:-6},
+       desc:'도구판정. 성공:흑요석×2 / 실패:HP-6'},
+      {label:'날카로운 것으로 떼낸다',icon:'🗡️',req:null,subReq:'날카로움',
+       reward:{card:'obsidian',n:2},failPen:{card:'obsidian',n:1,hp:-4},
+       desc:'날카로움 판정. 성공:흑요석×2 / 실패:흑요석×1+HP-4'},
+      {label:'맨손으로 캔다',icon:'🤲',req:null,reward:{card:'obsidian',n:1},fixed:true,
+       desc:'무조건. 흑요석×1.'},
+    ]},
+  caldera_village_supply:{
+    name:'마을 물자',flavor:'폐허가 된 마을에서 물자를 찾았다.',
+    choices:[
+      {label:'샅샅이 뒤진다',icon:'🔍',req:'tool',
+       reward:{cards:[{id:'food',n:1},{id:'wood',n:1},{id:'water',n:1}]},failPen:{hp:-3},
+       desc:'도구판정. 성공:식량+목재+물 / 실패:HP-3'},
+      {label:'빠르게 수색',icon:'👀',req:'resource',
+       reward:{card:'food',n:1},failPen:{hp:-2},
+       desc:'자원판정. 성공:식량×1 / 실패:HP-2'},
+      {label:'간단히 살핀다',icon:'🚶',req:null,reward:{card:'water',n:1},fixed:true,
+       desc:'무조건. 물×1.'},
+    ]},
+  caldera_cave_spring:{
+    name:'지열 온천',flavor:'동굴 깊숙이 따뜻한 물이 솟아오른다. 피로가 풀리는 것 같다.',
+    choices:[
+      {label:'물을 마시고 몸을 씻는다',icon:'💧',req:null,reward:{hp:15,thi:20},fixed:true,
+       desc:'무조건. HP+15, 갈증+20.'},
+      {label:'물을 채취한다',icon:'🫙',req:'tool',reward:{card:'water',n:2,hp:5},failPen:{card:'water',n:1},
+       desc:'도구판정. 성공:물×2+HP+5 / 실패:물×1'},
+    ]},
+  caldera_cave_herb:{
+    name:'화산 약초',flavor:'뜨거운 동굴 벽에 특이한 약초가 자란다. 강한 생명력이 느껴진다.',
+    choices:[
+      {label:'날카로운 것으로 채집',icon:'🗡️',req:null,subReq:'날카로움',
+       reward:{card:'herb',n:3,hp:5},failPen:{card:'herb',n:1},
+       desc:'날카로움 판정. 성공:약초×3+HP+5 / 실패:약초×1'},
+      {label:'맨손으로 뜯는다',icon:'🤲',req:null,reward:{card:'herb',n:1,hp:3},fixed:true,
+       desc:'무조건. 약초×1+HP+3.'},
+    ]},
+  caldera_cave_collapse:{
+    name:'동굴 붕괴',flavor:'지진으로 동굴이 무너지려 한다. 빠르게 판단해야 한다.',
+    choices:[
+      {label:'짐을 버리고 탈출',icon:'🏃',req:null,reward:{removeCards:1,hp:5},fixed:true,
+       desc:'무조건. 비상태이상 카드 1장 소멸+HP+5 (강제 덱 압축).'},
+      {label:'무거운 것으로 버팀',icon:'⚒️',req:null,subReq:'무거움',
+       reward:{card:'stone',n:2,hp:3},failPen:{hp:-12},
+       desc:'무거움 판정. 성공:돌×2+HP+3 / 실패:HP-12'},
+    ]},
+  caldera_beach_shelter:{
+    name:'서늘한 해변 굴',flavor:'해변 근처에 바위 그늘이 있다. 잠깐의 휴식을 취할 수 있다.',
+    choices:[
+      {label:'쉰다',icon:'😮‍💨',req:null,reward:{hp:12,thi:15},fixed:true,
+       desc:'무조건. HP+12, 갈증+15.'},
+      {label:'물자 탐색',icon:'🔍',req:'tool',
+       reward:{card:'water',n:2,card2:'food',n2:1},failPen:{hp:-5},
+       desc:'도구판정. 성공:물×2+식량×1 / 실패:HP-5'},
+    ]},
+  caldera_deep_pool:{
+    name:'깊은 웅덩이',flavor:'숲 안쪽에 물이 고여있다. 목이 타는 것 같다.',
+    choices:[
+      {label:'그냥 마신다',icon:'💧',req:null,reward:{thi:25,hp:-3},fixed:true,
+       desc:'무조건. 갈증+25+HP-3 (오염 위험).'},
+      {label:'정화하여 마신다',icon:'🫙',req:'tool',
+       reward:{thi:30,hp:5},failPen:{thi:15,hp:-8},
+       desc:'도구판정. 성공:갈증+30+HP+5 / 실패:갈증+15+HP-8'},
+    ]},
 };
 
 const RECIPES=[
@@ -1061,6 +1197,12 @@ const RECIPES=[
   {id:'r_antidote', cat:'생존', name:'해독제', icon:'💊', result:'antidote', rn:1, ap:1, islandOnly:['mycelium'],
    cost:[{id:'mycelium',n:1},{id:'herb',n:1}],
    desc:'독·포자 스택 완전 해제. 균사×1+약초×1.'},
+  {id:'r_obsidian_blade', cat:'전투', name:'흑요석 칼날', icon:'🗡️', result:'obsidian_blade', rn:1, ap:1, islandOnly:['caldera'],
+   cost:[{id:'obsidian',n:2},{id:'wood',n:1}],
+   desc:'흑요석×2+목재×1 → 흑요석 칼날(ATK+7, 날카로움·불꽃, 내구도3).'},
+  {id:'r_disassembler', cat:'도구', name:'분해기', icon:'⚙️', result:'disassembler', rn:1, ap:1, islandOnly:['caldera'],
+   cost:[{id:'obsidian',n:1},{id:'debris',n:1}],
+   desc:'흑요석×1+잔해×1 → 분해기. 자원 카드 분해로 덱을 불림(내구도3).'},
   {id:'r_lure',    cat:'수집',name:'유인 미끼',  icon:'🪤',result:'lure',          rn:1,ap:1,cost:[{id:'food',n:1},{id:'wood',n:1}],   desc:'야생 동물 유인 → 회피불가 강제 전투. 내구도1. 식량×1 목재×1.'},
   {id:'r_flare_kit', cat:'탈출', name:'신호탄 키트', icon:'🧨', result:'flare_kit', rn:1, ap:1,
    cost:[{id:'metal',n:1},{id:'wood',n:1}],
@@ -1117,6 +1259,27 @@ const ISLANDS = {
         {id:'oblivion_swamp',count:2, minDist:3},
         {id:'temple',      count:1,   minDist:5, group:'escape'},
         {id:'thicket',     count:[0,2],minDist:2},
+      ],
+    },
+  },
+  caldera: {
+    id: 'caldera',
+    name: '흑색 화산섬',
+    icon: '🌋',
+    subtitle: '대분화가 시작된 화산의 섬',
+    story: '검은 재가 발밑에 쌓여 있었다.\n\n주변 어디를 봐도 타오른 흔적뿐이었다.\n멀리서 화산이 진동하고, 연기 기둥이 하늘을 가린다.\n\n물을 마셔야 한다. 그리고 빠져나가야 한다.\n이 섬은 기다려 주지 않는다.',
+    mechanic: '🌋 대분화 대기\n흑요석을 모아 버티기 준비를 한다.\n숨겨진 마을(🏘️)에서 "화산의 종말을 기다린다"를 발동하면\n대분화 5일간의 극한 생존을 버텨내야 탈출 가능.',
+    doomName: '대분화',
+    doomIcon: '🌋',
+    startLog: '🌋 흑색 화산섬에 눈을 떴다. 발밑이 뜨겁고 공기에서 유황 냄새가 난다.',
+    mapConfig: {
+      baseTiles: ['cave','cave','cave','cave','cave','cave','forest','forest','forest','beach','beach','shore','ruins'],
+      specialTiles: [
+        {id:'caldera_tile', count:1,   minDist:6},
+        {id:'smoke_tower',  count:1,   minDist:5, group:'escape'},
+        {id:'village',      count:1,   minDist:5, group:'escape'},
+        {id:'obsidian_vein',count:4,   minDist:2},
+        {id:'thicket',      count:[0,1],minDist:2},
       ],
     },
   },

@@ -15,7 +15,7 @@ function checkWin(){
   if(G.escape>=85&&!G.escMile[85]){ G.escMile[85]=true; showEscapeMilestone(15); }
   if(G.escape>=100&&!G.over){
     G.over=true;
-    const escMethod=G.mycEscape?'mycelium':G.templeEscape?'temple':G.signalEscape?'signal':null;
+    const escMethod=G.calderaVillageEscape?'caldera_village':G.mycEscape?'mycelium':G.templeEscape?'temple':G.signalEscape?'signal':null;
     showVictoryFanfare(()=>showEnding(true, escMethod));
   }
 }
@@ -122,6 +122,8 @@ function _endHeadline(win, reason){
       const scTxt=sc>3?`${sc}발의 신호탄을 쏘아 올린 끝에`:`${sc}발의 신호탄으로`;
       if(G.islandId==='mycelium')
         return {main:'구조 성공', sub:`${G.day}일 만에 늪 전망대에서 ${scTxt} 구조대를 불러 균사의 늪을 탈출했다.`};
+      if(G.islandId==='caldera')
+        return {main:'구조 성공', sub:`${G.day}일 만에 연기 전망대에서 ${scTxt} 구조대를 불러 흑색 화산섬을 탈출했다.`};
       return {main:'구조 성공', sub:`${G.day}일 만에 ${scTxt} 구조선을 불러 망각의 맹그로브를 탈출했다.`};
     }
     if(reason==='mycelium'){
@@ -129,22 +131,27 @@ function _endHeadline(win, reason){
       const bossName=bossNames[G.mycBoss]||'대균사';
       return {main:'균사 정복', sub:`${G.day}일 만에 포자 제단 3단계를 돌파하고 ${bossName}을 쓰러뜨렸다. 포자 구름이 걷히며 균사의 늪을 탈출했다.`};
     }
+    if(reason==='caldera_village'){
+      return {main:'마을의 기적', sub:`${G.day}일 만에 대분화 5일을 버텨냈다. 화산이 진정되자 흑색 화산섬을 탈출했다.`};
+    }
     let main='탈출 성공';
     if(G.hp>=70&&G.san>=70&&G.day<=15) main='완벽한 생존';
     else if(G.hp<20||G.san<20)         main='간신히 살아남았다';
     return {main, sub:`${G.day}일 만에 ${islName}을(를) 뗏목으로 탈출했다.`};
   }
   // 패배
-  const islFail=G.islandId==='mycelium'?'균사의 늪':'망각의 맹그로브';
+  const islFail=G.islandId==='mycelium'?'균사의 늪':G.islandId==='caldera'?'흑색 화산섬':'망각의 맹그로브';
   let main;
   if(G.escape>=80)       main='거의 탈출할 뻔했다';
   else if(G.escape>=50)  main='한 걸음이 부족했다';
   else if(G.san<=0)      main='마음이 먼저 무너졌다';
   else if(G.day<=4)      main='첫 발부터 쉽지 않았다';
-  else if(G.doomSurvives>0) main=G.islandId==='mycelium'?'균사가 당신을 놓아주지 않았다':'섬은 아직 널 놓아주지 않았다';
+  else if(G.doomSurvives>0) main=G.islandId==='mycelium'?'균사가 당신을 놓아주지 않았다':G.islandId==='caldera'?'화산이 모든 것을 삼켰다':'섬은 아직 널 놓아주지 않았다';
   else {
     const pool=G.islandId==='mycelium'
       ?['균사가 깊어질수록 출구가 멀어졌다','포자에 잠식되어 정신이 흐려졌다','늪이 당신을 삼켰다','다음엔 균사를 이겨낼 수 있을 것이다']
+      :G.islandId==='caldera'
+      ?['용암이 모든 것을 삼켰다','화산재 속에서 방향을 잃었다','마을을 찾지 못한 채 화산이 폭발했다','5일을 버티지 못했다']
       :['준비는 됐지만, 타이밍을 놓쳤다','섬은 아직 널 놓아주지 않았다','이번엔 운이 따르지 않았다','다음엔 다를 것이다'];
     main=pool[G.day%pool.length];
   }

@@ -61,6 +61,10 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .tile.t-swamp{background:#0d0d0a;border-color:#443322;color:#998877;}
 .tile.t-temple{background:#1a1020;border-color:#8866aa;color:#ccaaee;}
 .tile.t-thicket{background:#0f1a0f;border-color:#446644;color:#88aa88;}
+.tile.t-caldera{background:#1a0a00;border-color:#cc4400;color:#ff8844;}
+.tile.t-village{background:#1a1410;border-color:#886644;color:#ccaa88;}
+.tile.t-obsidian{background:#0a0a10;border-color:#554466;color:#aa88cc;}
+.tile.t-lava-dead{background:#110800;border-color:#442200;color:#664422;opacity:.6;}
 
 /* ACTIONS */
 #act-panel{padding:7px 9px;border-top:1px solid var(--border);}

@@ -17,6 +17,30 @@ function openUseCard(){
   const drawN=5+ropeCnt+beachCampCnt+skillDrawBonus;
   _ucHand=drawToHand(drawN);
   if(!_ucHand.length){log('덱이 비어있다.','danger');G.ap+=1;render();return;}
+  // ── onDraw 자동 발동 (화상/목마름 등 onDraw:true 카드) ──
+  {
+    const onDrawMsgs=[];
+    _ucHand=_ucHand.filter(c=>{
+      if(!c.onDraw) return true;
+      if(c.id==='burn_card'){
+        G.hp=Math.max(0,G.hp-5);
+        flashDamage();
+        onDrawMsgs.push('🔥 화상 카드 드로우: HP-5');
+        log('🔥 화상 카드 드로우 — HP-5 (자동 발동 후 소멸)','danger');
+      } else if(c.id==='thirst_card'){
+        G.thi=Math.max(0,G.thi-10);
+        onDrawMsgs.push('💧 목마름 카드 드로우: 갈증-10');
+        log('💧 목마름 카드 드로우 — 갈증-10 (자동 발동 후 소멸)','danger');
+      }
+      return false; // onDraw 카드는 핸드에서 제거 (소멸)
+    });
+    if(onDrawMsgs.length){
+      const banner=document.getElementById('uc-ondraw-banner');
+      if(banner){ banner.textContent=onDrawMsgs.join(' | '); banner.style.display='block'; setTimeout(()=>{banner.style.display='none';},2000); }
+      checkSurvival(); if(G.over) return;
+    }
+    if(!_ucHand.length){log('드로우한 카드가 모두 자동 발동됐습니다.','danger');G.ap+=1;render();return;}
+  }
   _prevUcHandUIDs=new Set();
   const bonusDesc=(ropeCnt?` (🪢밧줄+${ropeCnt})`:'')+(rawBeachCnt?` (🏖️해변캠프+${beachCampCnt}${campDouble?' 🏰×2':''})`:'')+(skillDrawBonus?` (🔀손놀림+${skillDrawBonus})`:'');
   document.getElementById('uc-sub').textContent=`${_ucHand.length}장 드로우${bonusDesc} — 사용할 카드 선택`;
@@ -216,6 +240,55 @@ function ucUse(i){
   } else if(card.use==='sk_cb_strike'){
     resEl.textContent='💥 힘을 담은 일격은 전투 핸드에서만 사용 가능합니다.';
     resEl.style.color='var(--red)';
+    return;
+  } else if(card.use==='use_disassembler'){
+    const breakable=['stone','wood','metal'];
+    const breakMap={
+      stone:[{id:'debris',n:1},{id:'dew',n:1}],
+      wood: [{id:'debris',n:1},{id:'berry',n:1}],
+      metal:[{id:'debris',n:1},{id:'dew',n:1}],
+    };
+    const allC=allCards();
+    const candidates=allC.filter(c=>breakable.includes(c.id));
+    if(!candidates.length){
+      resEl.textContent='⚙️ 분해할 자원 카드가 없습니다.';
+      resEl.style.color='var(--text3)';
+      return;
+    }
+    // 선택 UI
+    const disasm=document.createElement('div');
+    disasm.style.cssText='margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;';
+    // 중복 제거 (id 기준)
+    const shown=new Set();
+    candidates.forEach(c=>{
+      if(shown.has(c.id)) return; shown.add(c.id);
+      const d=CARD_MAP[c.id];
+      const out=breakMap[c.id].map(o=>{const od=CARD_MAP[o.id];return `${od?.icon||''}${od?.name||o.id}×${o.n}`;}).join('+');
+      const btn=document.createElement('button');
+      btn.className='btn';
+      btn.style.cssText='font-size:9px;padding:4px 8px;';
+      btn.textContent=`${d?.icon||''}${d?.name||c.id} → ${out}`;
+      btn.onclick=()=>{
+        // 분해 실행
+        const di=G.deck.findIndex(x=>x.id===c.id);
+        if(di>=0) G.deck.splice(di,1);
+        else { const di2=G.disc.findIndex(x=>x.id===c.id); if(di2>=0) G.disc.splice(di2,1); }
+        breakMap[c.id].forEach(o=>addCard(o.id,o.n));
+        const outStr=breakMap[c.id].map(o=>{const od=CARD_MAP[o.id];return `${od?.icon||''}${od?.name||o.id}×${o.n}`;}).join('+');
+        log(`⚙️ 분해: ${d?.icon||''}${d?.name||c.id} → ${outStr}`,'success');
+        resEl.textContent=`⚙️ 분해 완료: ${d?.name||c.id} → ${outStr}`;
+        resEl.style.color='var(--green)';
+        disasm.remove();
+        // 내구도 처리
+        if(card.dur){ card.curDur=(card.curDur||card.dur)-1; if(card.curDur<=0){_ucHand.splice(i,1);log(`⚙️ 분해기 소진`,'');}else{G.disc.push(..._ucHand.splice(i,1));log(`⚙️ 내구도 ${card.curDur}/${card.dur}남음`,'');} }
+        else G.disc.push(..._ucHand.splice(i,1));
+        renderUcCards(); checkSurvival(); render();
+      };
+      disasm.appendChild(btn);
+    });
+    resEl.textContent='⚙️ 분해할 카드를 선택하세요:';
+    resEl.style.color='var(--accent)';
+    resEl.insertAdjacentElement('afterend', disasm);
     return;
   } else if(card.use==='lure'){
     const _lurePool=['cbt_boar','cbt_snake','cbt_bat','cbt_ghost'];

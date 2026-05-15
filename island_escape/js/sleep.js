@@ -32,6 +32,80 @@ const MYCELIUM_ENDGAME_FL=[
   {txt:'균사가 발밑에서 올라온다. 이미 무릎까지 뻗어있는 것 같다.',hpPen:2,sanPen:6},
 ];
 
+// ── 흑색 화산섬 종말 시나리오 ──
+const CALDERA_DOOM_STORY=[
+  {phase:0,
+   title:'🌋 첫 번째 진동',
+   story:'발밑이 뜨겁다. 밤새 지진이 두 번 있었다.\n\n지평선 저 너머에서 연기가 피어오른다.\n아직은 멀다.',
+   detail:'⚠️ 칼데라 시작: DOOM +1%, 이후 매 취침 +2%',
+   doomAdd:1, rateAfter:2, nextPhase:1},
+  {phase:1, minDay:6,
+   title:'🔥 화산이 깨어났다',
+   story:'화산이 깨어났다.\n지평선이 붉게 물들었다.\n\n재가 내린다.\n물을 구하기 어렵고 숨 쉬기도 힘들다.',
+   detail:'⚠️ DOOM 즉시 +15%p → 이후 매 취침 +3%p',
+   doomAdd:15, rateAfter:3, nextPhase:2},
+  {phase:2, minDay:11,
+   title:'💨 대분화 임박',
+   story:'용암이 흐르기 시작했다.\n지형이 무너지고 있다.\n\n숨겨진 마을(🏘️)을 찾아라.\n그곳에서 대분화를 기다려야 한다.',
+   detail:'⚠️ DOOM 즉시 +25%p | 이후 매 취침 +4%p',
+   doomAdd:25, rateAfter:4, nextPhase:3},
+  {phase:3, minDay:16,
+   title:'🌑 최후의 선택',
+   story:'섬이 사라지고 있다.\n\n마을(🏘️)에서 대분화를 기다려 5일을 버텨내거나,\n뗏목·연기 신호로 지금 당장 탈출하라.',
+   detail:'⚠️ DOOM 강제 80%p | 매 취침 생사 복권 시작',
+   doomSet:80, rateAfter:0, nextPhase:4},
+];
+const CALDERA_ENDGAME_FL=[
+  {txt:'흑색 재가 손등에 쌓인다. 섬이 사라지고 있다.',hpPen:3,sanPen:3},
+  {txt:'지반이 흔들려 물건을 잃을 뻔했다.',hpPen:2,sanPen:5},
+  {txt:'화산재 속에서 방향을 잃었다.',hpPen:0,sanPen:8},
+  {txt:'용암이 눈앞까지 왔다. 뒤로 물러섰다.',hpPen:4,sanPen:4},
+  {txt:'뜨거운 공기가 폐를 태운다.',hpPen:5,sanPen:2},
+];
+// 5일간 대분화 종말 이벤트 풀
+const CALDERA_DOOM_EVENTS=[
+  {id:'caldera_fire', name:'🔥 화재',
+   flavor:'마을 지붕에 불이 붙었다! 중요한 것들이 불에 탄다.',
+   choices:[
+     {label:'막는다',icon:'🔥',req:'tool',
+      reward:{removeCards:2},failPen:{removeCards:3},
+      desc:'도구판정. 성공:비상태 2장 소멸 / 실패:비상태 3장 소멸'},
+     {label:'포기하고 피한다',icon:'🏃',req:null,reward:{removeCards:2},fixed:true,
+      desc:'무조건. 비상태 2장 소멸.'},
+   ]},
+  {id:'caldera_heat', name:'💨 타는 듯한 열기',
+   flavor:'대분화의 열기가 물을 순식간에 증발시킨다.',
+   choices:[
+     {label:'방어구로 버팀',icon:'🛡️',req:null,subReq:'방어구',
+      reward:{thi:-15},failPen:{thi:-40,addCard:'thirst_card',n:1},
+      desc:'방어구 판정. 성공:갈증-15 / 실패:갈증-40+목마름1장 추가'},
+     {label:'그냥 버틴다',icon:'😤',req:null,reward:{thi:-40,addCard:'thirst_card',n:1},fixed:true,
+      desc:'무조건. 갈증-40+목마름1장 추가.'},
+   ]},
+  {id:'caldera_gas', name:'☁️ 유독 가스',
+   flavor:'화산 가스가 마을을 덮쳤다.',
+   choices:[
+     {label:'불꽃 도구로 가스 태움',icon:'🔥',req:null,subReq:'불꽃',
+      reward:{hp:-3},failPen:{hp:-15,thi:-10},
+      desc:'불꽃 판정. 성공:HP-3 / 실패:HP-15+갈증-10'},
+     {label:'숨을 참고 통과',icon:'😮‍💨',req:null,reward:{hp:-10,thi:-10},fixed:true,
+      desc:'무조건. HP-10, 갈증-10.'},
+   ]},
+  {id:'caldera_quake', name:'🌍 강진',
+   flavor:'강력한 지진이 마을을 뒤흔든다.',
+   choices:[
+     {label:'무거운 것으로 버팀',icon:'⚒️',req:null,subReq:'무거움',
+      reward:{hp:-5},failPen:{hp:-20,removeCards:1},
+      desc:'무거움 판정. 성공:HP-5 / 실패:HP-20+비상태 1장 소멸'},
+     {label:'그냥 버틴다',icon:'😤',req:null,reward:{hp:-15},fixed:true,
+      desc:'무조건. HP-15.'},
+   ]},
+  // 몬스터 습격 — isCombat:true (기습 전투)
+  {id:'caldera_monster_raid', isCombat:true,
+   flavor:'화산 폭발을 피해 도망치던 몬스터들이 마을로 밀려들었다!',
+   combatPool:['cbt_lava_crab','cbt_flame_lizard']},
+];
+
 // ── 망각의 맹그로브 섬 종말 시나리오 ──
 const DOOM_STORY=[
   {phase:0,
@@ -131,12 +205,67 @@ function checkGatherDanger(){
   openGather();
 }
 
+function _showCalderaDoomEvent(cb){
+  const ev=CALDERA_DOOM_EVENTS[Math.floor(Math.random()*CALDERA_DOOM_EVENTS.length)];
+  log(`🌋 대분화 종말이벤트: ${ev.name||ev.id}. ${ev.flavor||''}`,'danger');
+  if(ev.isCombat){
+    const mId=ev.combatPool[Math.floor(Math.random()*ev.combatPool.length)];
+    _calderaCombatCallback=cb;
+    startCombat(mId, true, false, null);
+    // combat finish calls _calderaCombatCallback via startCombatWithCallback pattern
+  } else {
+    showExploreChoice(ev, cb);
+  }
+}
+let _calderaCombatCallback=null;
+function calderaCombatDone(){
+  const cb=_calderaCombatCallback; _calderaCombatCallback=null;
+  if(cb) cb();
+}
+
+function doCalderaFinaleStart(){
+  if(G.over||G.calderaFinale) return;
+  showConfirm(
+    '🌋 화산의 종말을 기다립니다',
+    '대분화가 시작됩니다. 5일간 극한의 이벤트가 발생합니다.\n화상 3장, 목마름 2장이 덱에 추가됩니다.\n이 선택은 되돌릴 수 없습니다.',
+    ()=>{
+      G.calderaFinale=true;
+      G.calderaFinaleDays=0;
+      addCard('burn_card',3); addCard('thirst_card',2);
+      log('🌋 대분화 시작! 화상×3, 목마름×2가 덱에 추가됐다.','danger');
+      render(); saveGame();
+    }
+  );
+}
+
 function doSleep(){
   if(G.over) return;
   const early=G.ap>=4;
   if(!G.actionCnt) G.actionCnt={move:0,explore:0,gather:0,camp:0,craft:0,carduse:0,sleep:0,combat:0};
   G.actionCnt.sleep=(G.actionCnt.sleep||0)+1;
   G.day++;
+
+  // ── 칼데라: 대분화 절정 5일 버티기 ──
+  if(G.islandId==='caldera'&&G.calderaFinale&&!G.over){
+    G.calderaFinaleDays=(G.calderaFinaleDays||0)+1;
+    G.doom=Math.min(99,G.doom); // doom 사망 방지
+    // 매 취침 화상 또는 목마름 카드 1장 추가
+    const addEvtCard=G.calderaFinaleDays%2===0?'thirst_card':'burn_card';
+    addCard(addEvtCard,1);
+    log(`🌋 대분화 절정 ${G.calderaFinaleDays}/5일 — ${addEvtCard==='burn_card'?'화상':'목마름'} 카드 추가`,'danger');
+    _showCalderaDoomEvent(()=>{
+      log(`🌋 대분화 버티기 ${G.calderaFinaleDays}/5일`,'');
+      if(G.calderaFinaleDays>=5){
+        G.escape=100;
+        G.calderaVillageEscape=true;
+        log('🏘️ 5일을 버텼다! 화산이 진정됐다. 마을 밖으로 나올 수 있다!','success');
+        checkWin(); return;
+      }
+      checkSurvival(); if(G.over) return;
+      render(); saveGame();
+    });
+    return; // 정상 취침 스킵
+  }
 
   let hpR=early?15:9, sanR=early?4:2;
   if(G.doomPhase===4){ hpR=Math.max(0,hpR-4); sanR=Math.max(0,sanR-2); }
@@ -191,7 +320,7 @@ function doSleep(){
   const sanDrain=(G.camps.length?2:5)+doomSanExtra;
   G.san=Math.min(100,Math.max(0,G.san+sanR-sanDrain+wD.san));
   const bonAP=early?2:0;
-  const _wPool=G.islandId==='mycelium'?WEATHER_MYCELIUM:WEATHER;
+  const _wPool=G.islandId==='mycelium'?WEATHER_MYCELIUM:G.islandId==='caldera'?WEATHER_CALDERA:WEATHER;
   G.tomorrow=_wPool[Math.floor(Math.random()*_wPool.length)];
   G.ap=Math.max(1,G.maxAP+bonAP+ruinsBonusAP-fatigueN*2+wD.ap);
   if(wD.fog) log(`${G.weather.icon} ${G.weather.name}: 안개가 짙어졌다.`,'danger');
@@ -239,7 +368,7 @@ function doSleep(){
 function _processDoom(early){
   const _di=(ISLANDS[G.islandId]||ISLANDS.mangrove).doomIcon||'🌫️';
   // 스토리 이벤트 확인
-  const storyArr=(G.islandId==='mycelium')?MYCELIUM_DOOM_STORY:DOOM_STORY;
+  const storyArr=G.islandId==='mycelium'?MYCELIUM_DOOM_STORY:G.islandId==='caldera'?CALDERA_DOOM_STORY:DOOM_STORY;
   const storyEvt=storyArr.find(e=>e.phase===G.doomPhase&&(e.minDay===undefined||G.day>=e.minDay));
   if(storyEvt){
     if(storyEvt.doomSet!==undefined) G.doom=storyEvt.doomSet;
@@ -265,7 +394,7 @@ function _processDoom(early){
   if(G.doomPhase===4){
     const add=2+Math.floor(Math.random()*2);
     G.doom=Math.min(100,G.doom+add);
-    const flArr=(G.islandId==='mycelium')?MYCELIUM_ENDGAME_FL:DOOM_ENDGAME_FL;
+    const flArr=G.islandId==='mycelium'?MYCELIUM_ENDGAME_FL:G.islandId==='caldera'?CALDERA_ENDGAME_FL:DOOM_ENDGAME_FL;
     const fl=flArr[Math.floor(Math.random()*flArr.length)];
     G.hp=Math.max(0,G.hp-fl.hpPen); G.san=Math.max(0,G.san-fl.sanPen);
     if(fl.hpPen>0) flashDamage();
@@ -310,7 +439,18 @@ function _afterDoom(early){
 function _afterDoomContinue(early){
   checkSurvival(); if(G.over) return;
   checkWin(); if(G.over) return;
-  // DOOM 100% → 복권으로 대체
+  // 칼데라: DOOM 100% 도달 시 마을(village) 안이면 대분화 절정 모드 진입
+  if(G.doom>=100 && G.islandId==='caldera' && !G.calderaFinale && G.doomPhase>=4){
+    if(G.tiles[G.pos]?.id==='village'){
+      G.calderaFinale=true;
+      G.calderaFinaleDays=0;
+      G.doom=99; // 즉사 방지
+      log('🏘️ 대분화! 마을이 버텨주고 있다. 5일을 버텨라!','danger');
+      render(); saveGame(); return;
+    }
+    // village 밖이면 정상 doom 사망으로 처리
+  }
+  // DOOM 100% → 복권으로 대체 (caldera village 없는 경우 포함)
   if(G.doom>=100 && G.doomPhase>=4){
     showDoomLottery(); return;
   }

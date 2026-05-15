@@ -233,7 +233,13 @@ function startCombat(evtId, ambush, fightChosen, enemyOverride){
   // 급소 파악: 전투 시작 시 적 DEF -2 (count 기반)
   const _cbS3Cnt=allCards().filter(c=>c.id==='sk_cb_s3').length;
   if(_cbS3Cnt) enemy.def=Math.max(0,(enemy.def||0)-2*_cbS3Cnt);
-  CBT={enemy:{...enemy,curHp:enemy.hp},hand:[],atkZone:[],defZone:[],resolved:false,turn:1,stunned:false,poisoned:false,penaltyApplied:false,fightChosen:!!fightChosen,_evtId:evtId};
+  const enemyCopy={...enemy,curHp:enemy.hp};
+  // 용암 게: 첫 라운드 방어 3배
+  if(enemyCopy.bossType==='shield_first'){
+    enemyCopy._origDef=enemyCopy.def;
+    enemyCopy.def=(enemyCopy.def||0)*3;
+  }
+  CBT={enemy:enemyCopy,hand:[],atkZone:[],defZone:[],resolved:false,turn:1,stunned:false,poisoned:false,penaltyApplied:false,fightChosen:!!fightChosen,_evtId:evtId};
   _prevCbtHandUIDs=new Set();
   CBT.hand = ambush ? drawAmbushHand() : drawCombatHand();
   autoAssignStatusCards();
@@ -244,7 +250,8 @@ function startCombat(evtId, ambush, fightChosen, enemyOverride){
   document.getElementById('cbt-res').style.display='none';
   document.getElementById('cbt-mo').style.display='flex';
   renderCombat();
-  log(`⚔️ ${enemy.name} 전투 시작${ambush?' (기습! 전투카드 우선)':''}.`,'danger');
+  const shieldMsg=enemyCopy.bossType==='shield_first'?` (🦀 방어막 활성! 이번 라운드 DEF ${enemyCopy.def})`:'';
+  log(`⚔️ ${enemy.name} 전투 시작${ambush?' (기습! 전투카드 우선)':''}${shieldMsg}.`,'danger');
 }
 
 function setCbtMode(m){
@@ -737,6 +744,19 @@ function _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,will
     CBT.atkZone=[]; CBT.defZone=[];
     G.disc.push(...CBT.hand.filter(c=>!c._temp)); CBT.hand=[];
     // 보스 패턴 (다음 라운드 진입 직전)
+    // 화염 도마뱀: 매 라운드 HP-2 연소 (방어구 있으면 HP-1)
+    if(e.burnPerRound&&e.curHp>0&&CBT.turn>1){
+      const hasArmor=allCards().some(c=>c.subTags&&c.subTags.includes('방어구'));
+      const burnDmg=hasArmor?1:e.burnPerRound;
+      G.hp=Math.max(0,G.hp-burnDmg);
+      if(burnDmg>0) flashDamage();
+      resEl.innerHTML+=`<div class="rl bad">🔥 연소: HP-${burnDmg}${hasArmor?' (방어구 감소)':''}</div>`;
+      log(`🔥 화염 도마뱀 연소: HP-${burnDmg}`,'danger');
+    }
+    // 용암 게: shield_first — 첫 라운드 방어 3배, 2라운드부터 정상
+    if(e.bossType==='shield_first'){
+      if(CBT.turn===2&&!e._shieldDone){ e._shieldDone=true; e._origDef=e.def; e.def=Math.round(e.def/3); log('🦀 방어막 해제: DEF 정상화',''); }
+    }
     // 균사 수호수: 매 라운드 HP 재생
     if(e.regenPerRound&&e.curHp>0){
       const reg=Math.min(e.regenPerRound, e.hp-e.curHp);
@@ -850,7 +870,16 @@ function closeCombat(){
   hideCbtDeckView();
   _prevCbtHandUIDs=new Set();
   if(CBT.hand?.length){ G.disc.push(...CBT.hand.filter(c=>!c._temp)); CBT.hand=[]; }
-  if(G.hp<=0){ G.deathCause='monster'; triggerGameOver('전투 중 사망했습니다.'); }
-  checkSurvival(); checkWin(); render();
+  if(G.hp<=0){ G.deathCause='monster'; triggerGameOver('전투 중 사망했습니다.'); return; }
+  checkSurvival(); if(G.over) return;
+  checkWin(); if(G.over) return;
+  // 칼데라 대분화 종말이벤트 전투 콜백
+  if(typeof _calderaCombatCallback==='function'&&_calderaCombatCallback){
+    const cb=_calderaCombatCallback; _calderaCombatCallback=null;
+    render(); saveGame();
+    setTimeout(cb,300);
+    return;
+  }
+  render();
   saveGame();
 }
