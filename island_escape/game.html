@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>망각의 맹그로브 섬 v0.2</title>
+<title>Island Escape v0.3.5</title>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -551,7 +551,7 @@ body.game-inactive #mob-tabs{
   <button onclick="showAchievements()" style="position:absolute;top:14px;right:184px;font-size:9px;padding:4px 12px;" class="btn">🏆 업적</button>
   <button onclick="devUnlockAll()" style="position:absolute;top:14px;left:16px;font-size:8px;padding:4px 10px;opacity:.45;border-color:var(--border);" class="btn" title="DEV: 모든 섬 강제 해금">🔓 DEV</button>
   <div class="title-logo">🏝 무인도 탈출</div>
-  <div class="title-sub">Island Escape · v0.2</div>
+  <div class="title-sub">Island Escape · v0.3.5</div>
   <div class="title-story">
     <span class="ts-head">어딘가의 섬에 혼자다</span>
     낯선 땅, 낯선 하늘. 여기가 어딘지는 모른다.<br>
@@ -1104,6 +1104,28 @@ body.game-inactive #mob-tabs{
       <button class="btn" onclick="document.getElementById('patch-mo').style.display='none'">✕</button>
     </div>
     <div style="font-family:var(--font-m);font-size:9px;line-height:1.9;color:var(--text2);display:flex;flex-direction:column;gap:10px;">
+
+      <div class="pn-ver">
+        <div class="pn-tag">v0.3.5 <span class="pn-date">2026-05-15</span></div>
+        <ul class="pn-list">
+          <li>🌋 <b>섬3 흑색 화산섬</b> 추가 — 균사의 늪 클리어 후 해금</li>
+          <li>🌋 분화구 타일: 진입 시 즉시 DOOM+5</li>
+          <li>⬛ 흑요석 광맥 타일: 흑요석 자원 채집 (날카로움 태그)</li>
+          <li>🗼 연기 전망대: 연기 신호 3장으로 구조 요청 탈출</li>
+          <li>🏘️ 숨겨진 마을 탈출 루트 — 탐색 후 "화산의 종말을 기다린다" 특수 행동 발동 가능</li>
+          <li>🔥 종말 대기 발동 시 화상×3·목마름×2 덱 추가 → 5일간 버티면 탈출 (되돌릴 수 없음)</li>
+          <li>💥 5일 종말 이벤트: 화재 (덱 카드 소멸) · 타는 듯한 열기 (갈증 급감) · 몬스터 습격 (진짜 전투) · 유독 가스 · 강진</li>
+          <li>🔥 화상 카드 / 💧 목마름 카드: 드로우 5장에 포함 시 자동 효과 발동 후 소멸 (onDraw)</li>
+          <li>🗡️ 흑요석 칼날 제작: 흑요석×2+목재×1 → ATK+7, 날카로움·불꽃 태그</li>
+          <li>⚙️ 분해기 제작: 흑요석×1+잔해×1 → 덱의 자원 카드를 잔해+부산물로 분해 (덱 빌딩 도구)</li>
+          <li>🦀 새 몬스터: 용암 게 — 첫 라운드 DEF 3배 방어막</li>
+          <li>🦎 새 몬스터: 화염 도마뱀 — 매 라운드 연소 HP-2 (방어구 보유 시 HP-1)</li>
+          <li>🐛 수풀 기습 드로우에서 전사의 심장(sk_cb_s1) 보너스 미적용 버그 수정</li>
+          <li>🐛 균사의 늪 섬이 아닌 곳에서 지도조각 카드 드롭되는 버그 수정</li>
+          <li>🐛 다른 섬 전용 레시피가 제작 목록에 표시되는 버그 수정</li>
+          <li>⚙️ 타일 이벤트 발생 편향 조정, 제작 재료 수량 균형 조정, 타이틀 모바일 스크롤 개선</li>
+        </ul>
+      </div>
 
       <div class="pn-ver">
         <div class="pn-tag">v0.3.4 <span class="pn-date">2026-05-10</span></div>
