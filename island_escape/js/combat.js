@@ -56,11 +56,13 @@ function hideCbtDeckView(){
 // 기습: 첫 라운드 전투카드 1장 보장
 function drawAmbushHand(){
   const isCbt = c => c.tag === 'combat';
+  const _cbS1Cnt=allCards().filter(c=>c.id==='sk_cb_s1').length;
+  const n=5+_cbS1Cnt;
   // 1. 덱에 공격카드 있으면 맨 끝(첫 드로우)으로 이동
   let idx = G.deck.findIndex(isCbt);
   if(idx !== -1){
     const [pick]=G.deck.splice(idx,1); G.deck.push(pick);
-    return drawToHand(5);
+    return drawToHand(n);
   }
   // 2. 버림더미에 있으면 셔플 후 보장
   if(G.disc.some(isCbt)){
@@ -68,12 +70,12 @@ function drawAmbushHand(){
     idx=G.deck.findIndex(isCbt);
     const [pick]=G.deck.splice(idx,1); G.deck.push(pick);
     log('🔀 버림더미 셔플 후 공격카드 보장','');
-    return drawToHand(5);
+    return drawToHand(n);
   }
   // 3. 어디에도 공격카드 없음 → 맨손 기습 임시카드
   const fist={...CARD_MAP['ambush_fist'], uid:Date.now()+Math.random(), _temp:true};
   log('👊 덱에 공격카드 없음 — 맨손 기습 (방어무시 ATK3) 임시 지급','danger');
-  return [fist, ...drawToHand(4)];
+  return [fist, ...drawToHand(n-1)];
 }
 
 // 수풀 기습 전용 — 조우 선택지 없이 바로 전투 시작

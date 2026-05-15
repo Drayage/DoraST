@@ -20,7 +20,7 @@ function doExplore(){
       if(maxEsc>0&&G.escape+maxEsc>30) return;
     }
     _evtPool.push(e);
-    if(hasTmpPiece&&ENEMIES[e]&&Math.random()<0.5) _evtPool.push(e);
+    if(hasTmpPiece&&ENEMIES[e]){ _evtPool.push(e); _evtPool.push(e); }
   });
   const evtId=_evtPool[Math.floor(Math.random()*_evtPool.length)];
   if(hasTmpPiece&&ENEMIES[evtId]) log('🗺️ 사원지도 조각: 전투 조우 확률 증가 발동!','');
