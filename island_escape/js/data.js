@@ -95,14 +95,12 @@ const WEATHER_MYCELIUM=[
   {id:'fog',    name:'포자 안개', icon:'🌫️',eff:'fog'},
 ];
 const WEATHER_CALDERA=[
-  {id:'heat',   name:'화산 열기', icon:'🔥', eff:'thi_-14'},
-  {id:'heat',   name:'화산 열기', icon:'🔥', eff:'thi_-14'},
-  {id:'heat',   name:'화산 열기', icon:'🔥', eff:'thi_-14'},
-  {id:'sunny',  name:'맑음',     icon:'☀️', eff:'san_+2'},
-  {id:'sunny',  name:'맑음',     icon:'☀️', eff:'san_+2'},
-  {id:'sunny',  name:'맑음',     icon:'☀️', eff:'san_+2'},
-  {id:'tremor', name:'지진',     icon:'🌍', eff:'san_-5'},
-  {id:'steam',  name:'수증기',   icon:'💨', eff:'thi_-5'},
+  {id:'heat',  name:'화산 열기', icon:'🔥', eff:'thi_-14'},
+  {id:'heat',  name:'화산 열기', icon:'🔥', eff:'thi_-14'},
+  {id:'heat',  name:'화산 열기', icon:'🔥', eff:'thi_-14'},
+  {id:'heat',  name:'화산 열기', icon:'🔥', eff:'thi_-14'},
+  {id:'sunny', name:'맑음',     icon:'☀️', eff:'san_+2'},
+  {id:'sunny', name:'맑음',     icon:'☀️', eff:'san_+2'},
 ];
 
 // dur: n회 사용 후 덱에서 영구 제거. 인스턴스에 curDur 추가
