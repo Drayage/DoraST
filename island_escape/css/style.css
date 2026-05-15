@@ -64,7 +64,31 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .tile.t-caldera{background:#1a0a00;border-color:#cc4400;color:#ff8844;}
 .tile.t-village{background:#1a1410;border-color:#886644;color:#ccaa88;}
 .tile.t-obsidian{background:#0a0a10;border-color:#554466;color:#aa88cc;}
-.tile.t-lava-dead{background:#110800;border-color:#442200;color:#664422;opacity:.6;}
+.tile.t-lava-dead{background:#110800;border-color:#552200;color:#ff4400;opacity:.7;cursor:not-allowed;}
+@keyframes volcanoShake{
+  0%,100%{transform:translate(0,0) rotate(0deg);}
+  10%{transform:translate(-10px,5px) rotate(-.5deg);}
+  20%{transform:translate(8px,-8px) rotate(.3deg);}
+  30%{transform:translate(-6px,10px) rotate(-.4deg);}
+  40%{transform:translate(10px,-5px) rotate(.2deg);}
+  50%{transform:translate(-8px,8px) rotate(-.3deg);}
+  60%{transform:translate(6px,-10px) rotate(.5deg);}
+  70%{transform:translate(-10px,4px) rotate(-.2deg);}
+  80%{transform:translate(8px,-4px) rotate(.4deg);}
+  90%{transform:translate(-4px,8px) rotate(-.1deg);}
+}
+@keyframes volcanoFlash{
+  0%{opacity:0;}
+  8%{opacity:.9;}
+  20%{opacity:.5;}
+  35%{opacity:.8;}
+  50%{opacity:.3;}
+  65%{opacity:.7;}
+  80%{opacity:.2;}
+  100%{opacity:0;}
+}
+.volcano-shake{animation:volcanoShake 1.2s ease-in-out;}
+#volcano-overlay{position:fixed;inset:0;pointer-events:none;z-index:9998;background:radial-gradient(ellipse at center,rgba(255,100,0,.55),rgba(180,0,0,.85));animation:volcanoFlash 2.5s ease-out forwards;}
 
 /* ACTIONS */
 #act-panel{padding:7px 9px;border-top:1px solid var(--border);}

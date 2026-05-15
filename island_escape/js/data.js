@@ -1277,7 +1277,7 @@ const ISLANDS = {
       specialTiles: [
         {id:'caldera_tile', count:1,   minDist:6},
         {id:'smoke_tower',  count:1,   minDist:5, group:'escape'},
-        {id:'village',      count:1,   minDist:5, group:'escape'},
+        {id:'village',      count:1,   minDist:2, nearTo:'caldera_tile', nearMax:3, group:'escape'},
         {id:'obsidian_vein',count:4,   minDist:2},
         {id:'thicket',      count:[0,1],minDist:2},
       ],

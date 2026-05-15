@@ -36,6 +36,7 @@ function buildMap(){
   // 특수 타일 배치 — mapConfig.specialTiles 기반으로 일반화
   const placedSpecialIds=new Set();
   const isSpecialPlaced=i=>placedSpecialIds.has(i);
+  const placedById={}; // id -> first placed index
 
   for(const spec of cfg.specialTiles){
     const count=Array.isArray(spec.count)
@@ -43,8 +44,15 @@ function buildMap(){
       : spec.count;
     const minDist=spec.minDist||3;
 
-    const pool=shuffle(Array.from({length:49},(_,i)=>i)
+    let pool=shuffle(Array.from({length:49},(_,i)=>i)
       .filter(i=>tileDist(i,G.pos)>=minDist && !isSpecialPlaced(i)));
+    // nearTo constraint: must be placed within nearMax distance of named tile
+    if(spec.nearTo && placedById[spec.nearTo]!==undefined){
+      const src=placedById[spec.nearTo];
+      const nearMax=spec.nearMax||4;
+      const nearPool=pool.filter(i=>tileDist(i,src)<=nearMax);
+      if(nearPool.length>0) pool=nearPool;
+    }
 
     let n=0, prevIdx=-1;
     for(const i of pool){
@@ -60,6 +68,7 @@ function buildMap(){
       _placeTile(i, spec.id);
       placedSpecialIds.add(i);
       prevIdx=i; n++;
+      if(!placedById[spec.id]) placedById[spec.id]=i;
     }
   }
 
@@ -83,6 +92,7 @@ function clickTile(i){
   if(G.over) return;
   const t=G.tiles[i];
   if(!t.revealed||i===G.pos) return;
+  if(t.lavaDead){log('🌋 용암에 막힌 땅이다. 이동 불가.','danger');render();return;}
   const baseCost=tileDist(G.pos, i);
   const cost=baseCost;
   if(G.ap<cost){log(`AP부족 (이동${baseCost}칸=AP${cost})`, ''); render(); return;}

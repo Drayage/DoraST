@@ -64,45 +64,54 @@ const CALDERA_ENDGAME_FL=[
 ];
 // 5일간 대분화 종말 이벤트 풀
 const CALDERA_DOOM_EVENTS=[
-  {id:'caldera_fire', name:'🔥 화재',
-   flavor:'마을 지붕에 불이 붙었다! 중요한 것들이 불에 탄다.',
+  {id:'caldera_fire', name:'🔥 대화재',
+   flavor:'마을 전체에 불이 번졌다! 덱이 타오른다.',
    choices:[
-     {label:'막는다',icon:'🔥',req:'tool',
-      reward:{removeCards:2},failPen:{removeCards:3},
-      desc:'도구판정. 성공:비상태 2장 소멸 / 실패:비상태 3장 소멸'},
-     {label:'포기하고 피한다',icon:'🏃',req:null,reward:{removeCards:2},fixed:true,
-      desc:'무조건. 비상태 2장 소멸.'},
+     {label:'필사적으로 막는다',icon:'🔥',req:'tool',
+      reward:{removeCards:4},failPen:{removeCards:7},
+      desc:'도구판정. 성공:비상태 4장 소멸 / 실패:비상태 7장 소멸'},
+     {label:'포기하고 피한다',icon:'🏃',req:null,reward:{removeCards:5},fixed:true,
+      desc:'무조건. 비상태 5장 소멸.'},
    ]},
-  {id:'caldera_heat', name:'💨 타는 듯한 열기',
-   flavor:'대분화의 열기가 물을 순식간에 증발시킨다.',
+  {id:'caldera_heat', name:'💨 극한 열기',
+   flavor:'화산 열기가 몸속 수분을 모두 태워버린다.',
    choices:[
      {label:'방어구로 버팀',icon:'🛡️',req:null,subReq:'방어구',
-      reward:{thi:-15},failPen:{thi:-40,addCard:'thirst_card',n:1},
-      desc:'방어구 판정. 성공:갈증-15 / 실패:갈증-40+목마름1장 추가'},
-     {label:'그냥 버틴다',icon:'😤',req:null,reward:{thi:-40,addCard:'thirst_card',n:1},fixed:true,
-      desc:'무조건. 갈증-40+목마름1장 추가.'},
+      reward:{thi:-30},failPen:{thi:-65,addCard:'thirst_card',n:2},
+      desc:'방어구 판정. 성공:갈증-30 / 실패:갈증-65+목마름2장'},
+     {label:'그냥 버틴다',icon:'😤',req:null,reward:{thi:-65,addCard:'thirst_card',n:2},fixed:true,
+      desc:'무조건. 갈증-65+목마름2장.'},
    ]},
-  {id:'caldera_gas', name:'☁️ 유독 가스',
-   flavor:'화산 가스가 마을을 덮쳤다.',
+  {id:'caldera_gas', name:'☁️ 독성 화산 가스',
+   flavor:'유독한 화산 가스가 마을을 완전히 덮쳤다.',
    choices:[
-     {label:'불꽃 도구로 가스 태움',icon:'🔥',req:null,subReq:'불꽃',
-      reward:{hp:-3},failPen:{hp:-15,thi:-10},
-      desc:'불꽃 판정. 성공:HP-3 / 실패:HP-15+갈증-10'},
-     {label:'숨을 참고 통과',icon:'😮‍💨',req:null,reward:{hp:-10,thi:-10},fixed:true,
-      desc:'무조건. HP-10, 갈증-10.'},
+     {label:'불꽃으로 가스 태움',icon:'🔥',req:null,subReq:'불꽃',
+      reward:{hp:-10},failPen:{hp:-35,thi:-20},
+      desc:'불꽃 판정. 성공:HP-10 / 실패:HP-35+갈증-20'},
+     {label:'숨을 참고 통과',icon:'😮‍💨',req:null,reward:{hp:-25,thi:-20},fixed:true,
+      desc:'무조건. HP-25, 갈증-20.'},
    ]},
-  {id:'caldera_quake', name:'🌍 강진',
-   flavor:'강력한 지진이 마을을 뒤흔든다.',
+  {id:'caldera_quake', name:'🌍 대지진',
+   flavor:'섬 자체가 쪼개질 것처럼 흔들린다.',
    choices:[
      {label:'무거운 것으로 버팀',icon:'⚒️',req:null,subReq:'무거움',
-      reward:{hp:-5},failPen:{hp:-20,removeCards:1},
-      desc:'무거움 판정. 성공:HP-5 / 실패:HP-20+비상태 1장 소멸'},
-     {label:'그냥 버틴다',icon:'😤',req:null,reward:{hp:-15},fixed:true,
-      desc:'무조건. HP-15.'},
+      reward:{hp:-12},failPen:{hp:-40,removeCards:2},
+      desc:'무거움 판정. 성공:HP-12 / 실패:HP-40+비상태 2장 소멸'},
+     {label:'그냥 버틴다',icon:'😤',req:null,reward:{hp:-30},fixed:true,
+      desc:'무조건. HP-30.'},
+   ]},
+  {id:'caldera_lava_burst', name:'🌋 용암 분출',
+   flavor:'마을 지하에서 용암이 솟구쳤다! HP가 타들어 간다.',
+   choices:[
+     {label:'날카로운 것으로 대피로 확보',icon:'🗡️',req:null,subReq:'날카로움',
+      reward:{hp:-8,thi:-10},failPen:{hp:-30,thi:-20},
+      desc:'날카로움 판정. 성공:HP-8+갈증-10 / 실패:HP-30+갈증-20'},
+     {label:'무조건 뛰어나간다',icon:'💨',req:null,reward:{hp:-20,thi:-15},fixed:true,
+      desc:'무조건. HP-20, 갈증-15.'},
    ]},
   // 몬스터 습격 — isCombat:true (기습 전투)
   {id:'caldera_monster_raid', isCombat:true,
-   flavor:'화산 폭발을 피해 도망치던 몬스터들이 마을로 밀려들었다!',
+   flavor:'화산 폭발을 피해 달아나던 몬스터 떼가 마을로 쏟아졌다!',
    combatPool:['cbt_lava_crab','cbt_flame_lizard']},
 ];
 
@@ -205,6 +214,16 @@ function checkGatherDanger(){
   openGather();
 }
 
+function showVolcanoEffect(cb){
+  const wrap=document.getElementById('wrap')||document.getElementById('game-wrap')||document.body;
+  wrap.classList.add('volcano-shake');
+  setTimeout(()=>wrap.classList.remove('volcano-shake'),1200);
+  const ov=document.getElementById('volcano-overlay');
+  if(ov){ov.style.display='';ov.style.animation='none';void ov.offsetWidth;ov.style.animation='volcanoFlash 2.5s ease-out forwards';setTimeout(()=>{ov.style.display='none';},2500);}
+  log('🌋💥 대분화!!!  용암이 마을 주변을 삼키고 있다!','danger');
+  if(cb) setTimeout(cb, 1800);
+}
+
 function _showCalderaDoomEvent(cb){
   const ev=CALDERA_DOOM_EVENTS[Math.floor(Math.random()*CALDERA_DOOM_EVENTS.length)];
   log(`🌋 대분화 종말이벤트: ${ev.name||ev.id}. ${ev.flavor||''}`,'danger');
@@ -227,13 +246,32 @@ function doCalderaFinaleStart(){
   if(G.over||G.calderaFinale) return;
   showConfirm(
     '🌋 화산의 종말을 기다립니다',
-    '대분화가 시작됩니다. 5일간 극한의 이벤트가 발생합니다.\n화상 3장, 목마름 2장이 덱에 추가됩니다.\n이 선택은 되돌릴 수 없습니다.',
+    '대분화가 시작됩니다. 5일간 극한의 이벤트가 발생합니다.\n화상×8, 목마름×3이 덱에 추가되고 매 취침마다 추가됩니다.\n주변 타일이 용암으로 막힙니다. 이 선택은 되돌릴 수 없습니다.',
     ()=>{
       G.calderaFinale=true;
       G.calderaFinaleDays=0;
-      addCard('burn_card',3); addCard('thirst_card',2);
-      log('🌋 대분화 시작! 화상×3, 목마름×2가 덱에 추가됐다.','danger');
-      render(); saveGame();
+      G.doom=100; // 즉시 doom 100 — 칼데라 finale 중에는 doom 사망 비활성
+      addCard('burn_card',8); addCard('thirst_card',3);
+      log('🌋🔥 대분화 시작! 화상×8, 목마름×3이 덱에 쏟아졌다!','danger');
+      // 마을 주변 타일 용암으로 봉쇄
+      const SAFE=['village','caldera_tile'];
+      const adj=getAdj(G.pos);
+      let blockedCnt=0;
+      adj.forEach(i=>{
+        const t=G.tiles[i];
+        if(t&&!SAFE.includes(t.id)&&!t.lavaDead){
+          t.lavaDead=true; blockedCnt++;
+        }
+      });
+      // 2칸 거리 타일도 절반 봉쇄 (랜덤)
+      const adj2=[];
+      adj.forEach(a=>getAdj(a).forEach(b=>{if(b!==G.pos&&!adj.includes(b)&&!adj2.includes(b))adj2.push(b);}));
+      shuffle(adj2).slice(0,Math.ceil(adj2.length/2)).forEach(i=>{
+        const t=G.tiles[i];
+        if(t&&!SAFE.includes(t.id)&&!t.lavaDead){t.lavaDead=true;blockedCnt++;}
+      });
+      if(blockedCnt>0) log(`🌋 ${blockedCnt}개 타일이 용암으로 막혔다!`,'danger');
+      showVolcanoEffect(()=>{render();saveGame();});
     }
   );
 }
@@ -248,11 +286,23 @@ function doSleep(){
   // ── 칼데라: 대분화 절정 5일 버티기 ──
   if(G.islandId==='caldera'&&G.calderaFinale&&!G.over){
     G.calderaFinaleDays=(G.calderaFinaleDays||0)+1;
-    G.doom=Math.min(99,G.doom); // doom 사망 방지
-    // 매 취침 화상 또는 목마름 카드 1장 추가
-    const addEvtCard=G.calderaFinaleDays%2===0?'thirst_card':'burn_card';
-    addCard(addEvtCard,1);
-    log(`🌋 대분화 절정 ${G.calderaFinaleDays}/5일 — ${addEvtCard==='burn_card'?'화상':'목마름'} 카드 추가`,'danger');
+    G.doom=100; // doom 사망 방지 (100 유지)
+    // 매 취침 화상×8, 목마름×3 추가
+    addCard('burn_card',8); addCard('thirst_card',3);
+    log(`🌋 대분화 절정 ${G.calderaFinaleDays}/5일 — 화상×8, 목마름×3 덱에 추가!`,'danger');
+    // 취침 중 극심한 허기·갈증 소모 (일반 취침보다 2~3배)
+    const finaleHunLoss=35, finaleThlLoss=45;
+    const prevHun=G.hun, prevThi=G.thi;
+    const hunDeficit=Math.max(0,finaleHunLoss-prevHun);
+    const thiDeficit=Math.max(0,finaleThlLoss-prevThi);
+    G.hun=Math.max(0,prevHun-finaleHunLoss);
+    G.thi=Math.max(0,prevThi-finaleThlLoss);
+    let finalePen=0;
+    if(hunDeficit>0){finalePen+=15+hunDeficit; log(`🍗 화산 열기에 식량이 타버렸다. 허기 부족 → HP-${15+hunDeficit}`,'danger');}
+    if(thiDeficit>0){finalePen+=20+thiDeficit; log(`💧 극심한 탈수. 갈증 부족 → HP-${20+thiDeficit}`,'danger');}
+    if(finalePen>0){G.hp=Math.max(1,G.hp-finalePen); flashDamage();}
+    // 취침 HP 회복 없음 (지옥 취침)
+    checkSurvival(); if(G.over) return;
     _showCalderaDoomEvent(()=>{
       log(`🌋 대분화 버티기 ${G.calderaFinaleDays}/5일`,'');
       if(G.calderaFinaleDays>=5){

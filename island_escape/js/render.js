@@ -128,7 +128,8 @@ function render(){
   // 맵
   const mapFrag=document.createDocumentFragment();
   p.tiles.forEach((t,i)=>{
-    const dt=_disguiseTemple(t); // 사원 위장 처리
+    const _disguiseLavaDead=t=>t.lavaDead?{...t,id:'_lava_dead',cls:'t-lava-dead',icon:'🌋',name:'용암 폐허'}:t;
+    const dt=_disguiseLavaDead(_disguiseTemple(t)); // 사원 위장 + 용암 폐허 처리
     const el=document.createElement('div');
     el.className='tile'
       +(t.revealed?` revealed ${dt.cls}`:t.wasSeen?` seen-fog`:'fog')
@@ -341,9 +342,9 @@ function render(){
           <div style="font-size:8px;color:var(--text3);">매 취침 종말 이벤트 발생. 5일 생존 시 탈출!</div>
         </div>`;
       } else {
-        const warnMsg=p.doom>=60?'⚠️ 대분화가 가까워졌다. 준비되면 종말을 기다려라.':'화산의 종말을 기다릴 수 있는 장소. 충분히 준비한 후 발동하라.';
+        const readyMsg=p.doom>=70?'🌋 DOOM이 위험 수위! 지금 발동하거나 뗏목·신호로 탈출하라.':p.doom>=50?'⚠️ 대분화가 가까워졌다. 화상×8+목마름×3이 매 취침 추가됨. 준비됐나?':'🏘️ 화산의 종말을 여기서 버틸 수 있다. 발동 시 주변 타일 용암 봉쇄 + 화상×8+목마름×3.';
         specEl.innerHTML=`
-          <div style="font-size:9px;color:var(--text3);font-family:var(--font-m);margin-bottom:6px;">${warnMsg}</div>
+          <div style="font-size:9px;color:var(--text3);font-family:var(--font-m);margin-bottom:6px;">${readyMsg}</div>
           <button class="btn full" style="border-color:var(--red);color:var(--red);font-size:10px;"
             onclick="doCalderaFinaleStart()" ${p.over?'disabled':''}>
             🌋 화산의 종말을 기다린다<span class="apb" style="margin-left:4px;">AP0</span>
