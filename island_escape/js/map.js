@@ -90,6 +90,11 @@ function tileDist(a, b){
 
 function clickTile(i){
   if(G.over) return;
+  // 대분화 절정 중: 마을 밖으로 이동 완전 차단
+  if(G.islandId==='caldera'&&G.calderaFinale&&i!==G.pos){
+    log('🌋 사방이 용암으로 막혔다. 마을 밖으로 나갈 수 없다.','danger');
+    render(); return;
+  }
   const t=G.tiles[i];
   if(!t.revealed||i===G.pos) return;
   if(t.lavaDead){log('🌋 용암에 막힌 땅이다. 이동 불가.','danger');render();return;}

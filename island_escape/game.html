@@ -4240,6 +4240,11 @@ function tileDist(a, b){
 
 function clickTile(i){
   if(G.over) return;
+  // 대분화 절정 중: 마을 밖으로 이동 완전 차단
+  if(G.islandId==='caldera'&&G.calderaFinale&&i!==G.pos){
+    log('🌋 사방이 용암으로 막혔다. 마을 밖으로 나갈 수 없다.','danger');
+    render(); return;
+  }
   const t=G.tiles[i];
   if(!t.revealed||i===G.pos) return;
   if(t.lavaDead){log('🌋 용암에 막힌 땅이다. 이동 불가.','danger');render();return;}
@@ -5632,24 +5637,14 @@ function doCalderaFinaleStart(){
       for(let i=0;i<3;i++){const c=_mk('thirst_card');if(c)G.deck.push(c);}
       G.deck=shuffle(G.deck);
       log('🌋🔥 대분화 시작! 화상×8, 목마름×3이 뽑기덱에 직접 섞였다!','danger');
-      // 마을 주변 타일 용암으로 봉쇄
+      // 맵 전체를 용암으로 봉쇄 (village·caldera_tile 제외)
       const SAFE=['village','caldera_tile'];
-      const adj=getAdj(G.pos);
       let blockedCnt=0;
-      adj.forEach(i=>{
-        const t=G.tiles[i];
-        if(t&&!SAFE.includes(t.id)&&!t.lavaDead){
-          t.lavaDead=true; blockedCnt++;
-        }
+      G.tiles.forEach((t,i)=>{
+        if(i===G.pos||SAFE.includes(t.id)||t.lavaDead) return;
+        t.lavaDead=true; t.revealed=true; blockedCnt++;
       });
-      // 2칸 거리 타일도 절반 봉쇄 (랜덤)
-      const adj2=[];
-      adj.forEach(a=>getAdj(a).forEach(b=>{if(b!==G.pos&&!adj.includes(b)&&!adj2.includes(b))adj2.push(b);}));
-      shuffle(adj2).slice(0,Math.ceil(adj2.length/2)).forEach(i=>{
-        const t=G.tiles[i];
-        if(t&&!SAFE.includes(t.id)&&!t.lavaDead){t.lavaDead=true;blockedCnt++;}
-      });
-      if(blockedCnt>0) log(`🌋 ${blockedCnt}개 타일이 용암으로 막혔다!`,'danger');
+      if(blockedCnt>0) log(`🌋 섬 전체가 용암에 잠겼다! ${blockedCnt}개 타일 봉쇄.`,'danger');
       // 분화구 타일과 그 주변을 모두 강제 공개 (화산에서 퍼져나오는 느낌)
       const calderaIdx=G.tiles.findIndex(t=>t.id==='caldera_tile');
       if(calderaIdx>=0){
