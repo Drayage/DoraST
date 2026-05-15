@@ -168,11 +168,29 @@ function calcDeficitDamage(cur, need, base){
 
 function checkSleepDanger(){
   const tW=getWeatherDelta(G.tomorrow);
+  const poisonN=allCards().filter(c=>c.id==='poison_status').length;
+
+  // ── 칼데라 대분화 절정: 별도 피해 계산 ──
+  if(G.islandId==='caldera'&&G.calderaFinale){
+    const sHpR=G.ap>=4?6:3;
+    const hunLoss=35, thiLoss=45;
+    const hunDef=Math.max(0,hunLoss-G.hun);
+    const thiDef=Math.max(0,thiLoss-G.thi);
+    const finalePen=(hunDef>0?15+hunDef:0)+(thiDef>0?20+thiDef:0)+5*poisonN;
+    const rawHpAfter=G.hp-finalePen+sHpR;
+    if(rawHpAfter<=0){
+      showConfirm('🌋 대분화 — 취침 사망 위기',
+        `취침 후 체력이 0이 됩니다.\n현재 HP ${G.hp} → 피해 ${finalePen} / 회복 ${sHpR}\n(허기-35, 갈증-45 소모)\n계속 진행하시겠습니까?`,
+        ()=>doSleep());
+      return;
+    }
+    doSleep(); return;
+  }
+
   const sNeedHun=14, sNeedThi=Math.max(0,18-tW.thi);
   const shDmg=Math.max(0,sNeedHun-G.hun)>0?15+Math.max(0,sNeedHun-G.hun):0;
   const stDmg=Math.max(0,sNeedThi-G.thi)>0?24+Math.max(0,sNeedThi-G.thi):0;
   const wHpDmg=Math.max(0,-tW.hp);
-  const poisonN=allCards().filter(c=>c.id==='poison_status').length;
   const sHpR=(G.ap>=4?15:9)-(G.doomPhase===4?4:0);
   const totalDmg=shDmg+stDmg+wHpDmg+5*poisonN;
   const rawHpAfter=G.hp-totalDmg+sHpR;
