@@ -5627,8 +5627,11 @@ function doCalderaFinaleStart(){
       G.calderaFinale=true;
       G.calderaFinaleDays=0;
       G.doom=100; // 즉시 doom 100 — 칼데라 finale 중에는 doom 사망 비활성
-      addCard('burn_card',8); addCard('thirst_card',3);
-      log('🌋🔥 대분화 시작! 화상×8, 목마름×3이 덱에 쏟아졌다!','danger');
+      const _mk=id=>{const d=CARD_MAP[id];if(!d)return null;const c={...d,uid:uid()};if(d.dur)c.curDur=d.dur;c.addedDay=G.day;return c;};
+      for(let i=0;i<8;i++){const c=_mk('burn_card');if(c)G.deck.push(c);}
+      for(let i=0;i<3;i++){const c=_mk('thirst_card');if(c)G.deck.push(c);}
+      G.deck=shuffle(G.deck);
+      log('🌋🔥 대분화 시작! 화상×8, 목마름×3이 뽑기덱에 직접 섞였다!','danger');
       // 마을 주변 타일 용암으로 봉쇄
       const SAFE=['village','caldera_tile'];
       const adj=getAdj(G.pos);
@@ -5663,9 +5666,12 @@ function doSleep(){
   if(G.islandId==='caldera'&&G.calderaFinale&&!G.over){
     G.calderaFinaleDays=(G.calderaFinaleDays||0)+1;
     G.doom=100; // doom 사망 방지 (100 유지)
-    // 매 취침 화상×8, 목마름×3 추가
-    addCard('burn_card',8); addCard('thirst_card',3);
-    log(`🌋 대분화 절정 ${G.calderaFinaleDays}/5일 — 화상×8, 목마름×3 덱에 추가!`,'danger');
+    // 매 취침 화상×8, 목마름×3 뽑기덱에 직접 삽입 (버림덱 아님)
+    const _mkCard=id=>{const d=CARD_MAP[id];if(!d)return null;const c={...d,uid:uid()};if(d.dur)c.curDur=d.dur;c.addedDay=G.day;return c;};
+    for(let i=0;i<8;i++){const c=_mkCard('burn_card');if(c)G.deck.push(c);}
+    for(let i=0;i<3;i++){const c=_mkCard('thirst_card');if(c)G.deck.push(c);}
+    G.deck=shuffle(G.deck);
+    log(`🌋 대분화 절정 ${G.calderaFinaleDays}/5일 — 화상×8, 목마름×3이 뽑기덱에 섞였다!`,'danger');
     // 취침 중 극심한 허기·갈증 소모 (일반 취침보다 2~3배)
     const finaleHunLoss=35, finaleThlLoss=45;
     const prevHun=G.hun, prevThi=G.thi;
