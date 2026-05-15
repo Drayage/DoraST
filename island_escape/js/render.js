@@ -128,7 +128,7 @@ function render(){
   // 맵
   const mapFrag=document.createDocumentFragment();
   p.tiles.forEach((t,i)=>{
-    const _disguiseLavaDead=t=>t.lavaDead?{...t,id:'_lava_dead',cls:'t-lava-dead',icon:'🌋',name:'용암 폐허'}:t;
+    const _disguiseLavaDead=t=>t.lavaDead?{...t,id:'_lava_dead',cls:'t-lava-dead',icon:'🟥',name:'용암 폐허'}:t;
     const dt=_disguiseLavaDead(_disguiseTemple(t)); // 사원 위장 + 용암 폐허 처리
     const el=document.createElement('div');
     el.className='tile'

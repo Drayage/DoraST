@@ -5677,6 +5677,10 @@ function doSleep(){
     if(hunDeficit>0){finalePen+=15+hunDeficit; log(`🍗 화산 열기에 식량이 타버렸다. 허기 부족 → HP-${15+hunDeficit}`,'danger');}
     if(thiDeficit>0){finalePen+=20+thiDeficit; log(`💧 극심한 탈수. 갈증 부족 → HP-${20+thiDeficit}`,'danger');}
     if(finalePen>0){G.hp=Math.max(1,G.hp-finalePen); flashDamage();}
+    // AP 복원 (카드 사용 가능하도록)
+    const fatigueN=allCards().filter(c=>c.id==='fatigue').length;
+    G.ap=Math.max(1,G.maxAP - fatigueN*2);
+    log(`☀️ 취침 완료. AP${G.ap} 회복.`,'');
     // 취침 HP 회복 없음 (지옥 취침)
     checkSurvival(); if(G.over) return;
     _showCalderaDoomEvent(()=>{
@@ -7559,7 +7563,7 @@ function render(){
   // 맵
   const mapFrag=document.createDocumentFragment();
   p.tiles.forEach((t,i)=>{
-    const _disguiseLavaDead=t=>t.lavaDead?{...t,id:'_lava_dead',cls:'t-lava-dead',icon:'🌋',name:'용암 폐허'}:t;
+    const _disguiseLavaDead=t=>t.lavaDead?{...t,id:'_lava_dead',cls:'t-lava-dead',icon:'🟥',name:'용암 폐허'}:t;
     const dt=_disguiseLavaDead(_disguiseTemple(t)); // 사원 위장 + 용암 폐허 처리
     const el=document.createElement('div');
     el.className='tile'
