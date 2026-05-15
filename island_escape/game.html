@@ -5556,7 +5556,8 @@ function checkSleepDanger(){
     const hunLoss=35, thiLoss=45;
     const hunDef=Math.max(0,hunLoss-G.hun);
     const thiDef=Math.max(0,thiLoss-G.thi);
-    const finalePen=(hunDef>0?15+hunDef:0)+(thiDef>0?20+thiDef:0)+5*poisonN;
+    const debrisCnt=allCards().filter(c=>c.id==='debris').length;
+    const finalePen=Math.max(0,(hunDef>0?15+hunDef:0)+(thiDef>0?20+thiDef:0)+5*poisonN-debrisCnt);
     const rawHpAfter=G.hp-finalePen+sHpR;
     if(rawHpAfter<=0){
       showConfirm('🌋 대분화 — 취침 사망 위기',
@@ -5725,6 +5726,14 @@ function doSleep(){
     let finalePen=0;
     if(hunDeficit>0){finalePen+=15+hunDeficit; log(`🍗 화산 열기에 식량이 타버렸다. 허기 부족 → HP-${15+hunDeficit}`,'danger');}
     if(thiDeficit>0){finalePen+=20+thiDeficit; log(`💧 극심한 탈수. 갈증 부족 → HP-${20+thiDeficit}`,'danger');}
+
+    // ── 잔해: 덱+버림덱의 잔해 수만큼 HP 피해 차단 ──
+    const debrisCnt=allCards().filter(c=>c.id==='debris').length;
+    if(debrisCnt>0&&finalePen>0){
+      const blocked=Math.min(finalePen,debrisCnt);
+      finalePen=Math.max(0,finalePen-blocked);
+      log(`🪨 잔해 ${debrisCnt}장으로 열기를 막았다. HP 피해 -${blocked} 차단`,'success');
+    }
 
     // ── HP·SAN 최종 적용 ──
     const poisonN=allCards().filter(c=>c.id==='poison_status').length;
