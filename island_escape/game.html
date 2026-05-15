@@ -5650,6 +5650,12 @@ function doCalderaFinaleStart(){
         if(t&&!SAFE.includes(t.id)&&!t.lavaDead){t.lavaDead=true;blockedCnt++;}
       });
       if(blockedCnt>0) log(`🌋 ${blockedCnt}개 타일이 용암으로 막혔다!`,'danger');
+      // 분화구 타일과 그 주변을 모두 강제 공개 (화산에서 퍼져나오는 느낌)
+      const calderaIdx=G.tiles.findIndex(t=>t.id==='caldera_tile');
+      if(calderaIdx>=0){
+        G.tiles[calderaIdx].revealed=true;
+        getAdj(calderaIdx).forEach(i=>{ G.tiles[i].revealed=true; });
+      }
       showVolcanoEffect(()=>{render();saveGame();});
     }
   );
