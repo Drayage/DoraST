@@ -101,6 +101,7 @@ const WEATHER_CALDERA=[
   {id:'heat',  name:'화산 열기', icon:'🔥', eff:'thi_-14'},
   {id:'sunny', name:'맑음',     icon:'☀️', eff:'san_+2'},
   {id:'sunny', name:'맑음',     icon:'☀️', eff:'san_+2'},
+  {id:'cloudy',name:'화산재 흐림',icon:'☁️', eff:'thi_+5'},
 ];
 
 // dur: n회 사용 후 덱에서 영구 제거. 인스턴스에 curDur 추가
