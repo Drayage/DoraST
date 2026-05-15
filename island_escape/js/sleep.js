@@ -295,14 +295,39 @@ function doSleep(){
   // ── 칼데라: 대분화 절정 5일 버티기 ──
   if(G.islandId==='caldera'&&G.calderaFinale&&!G.over){
     G.calderaFinaleDays=(G.calderaFinaleDays||0)+1;
-    G.doom=100; // doom 사망 방지 (100 유지)
-    // 매 취침 화상×8, 목마름×3 뽑기덱에 직접 삽입 (버림덱 아님)
-    const _mkCard=id=>{const d=CARD_MAP[id];if(!d)return null;const c={...d,uid:uid()};if(d.dur)c.curDur=d.dur;c.addedDay=G.day;return c;};
-    for(let i=0;i<8;i++){const c=_mkCard('burn_card');if(c)G.deck.push(c);}
-    for(let i=0;i<3;i++){const c=_mkCard('thirst_card');if(c)G.deck.push(c);}
-    G.deck=shuffle(G.deck);
-    log(`🌋 대분화 절정 ${G.calderaFinaleDays}/5일 — 화상×8, 목마름×3이 뽑기덱에 섞였다!`,'danger');
-    // 취침 중 극심한 허기·갈증 소모 (일반 취침보다 2~3배)
+    G.doom=100; // doom 사망 방지
+
+    // ── 캠프 보너스 ──
+    let ruinsBonusAP=0, hpR=early?6:3, sanR=early?3:1; // 대분화 중 회복량 감소
+    const campCount={cave:0,forest:0,shore:0,ruins:0};
+    const inCampNow=G.camps.includes(G.pos);
+    const campDouble=allCards().some(c=>c.id==='sk_cp_g');
+    G.camps.forEach(cp=>{
+      const t=G.tiles[cp];
+      if(t.id==='cave')   { sanR+=campDouble?6:3; campCount.cave++; }
+      if(t.id==='forest') { addCard('berry',campDouble?2:1); campCount.forest++; }
+      if(t.id==='shore')  { addCard('dew',campDouble?2:1); campCount.shore++; }
+      if(t.id==='ruins')  { ruinsBonusAP+=campDouble?2:1; G.san=Math.max(0,G.san-(campDouble?4:2)); campCount.ruins++; }
+    });
+    const _cx=n=>n>1?`(x${n})`:'';
+    if(campCount.cave)   log(`🪨 동굴캠프${_cx(campCount.cave)}: 정신력+${(campDouble?6:3)*campCount.cave}`,'success');
+    if(campCount.forest) log(`🌲 숲캠프${_cx(campCount.forest)}: 열매×${campDouble?campCount.forest*2:campCount.forest}`,'success');
+    if(campCount.shore)  log(`🌊 해안캠프${_cx(campCount.shore)}: 이슬×${campDouble?campCount.shore*2:campCount.shore}`,'success');
+    if(campCount.ruins)  log(`🏚️ 폐허캠프${_cx(campCount.ruins)}: AP+${campDouble?campCount.ruins*2:campCount.ruins}`,'');
+
+    // ── 스킬 패시브 (취침 HP/SAN) ──
+    const _slS1Cnt=allCards().filter(c=>c.id==='sk_sl_s1').length;
+    const _slS2Cnt=allCards().filter(c=>c.id==='sk_sl_s2').length;
+    const _cpS1Cnt=allCards().filter(c=>c.id==='sk_cp_s1').length;
+    hpR+=8*_slS1Cnt; sanR+=8*_slS2Cnt;
+    if(inCampNow) hpR+=5*_cpS1Cnt;
+
+    // ── 날씨 적용 ──
+    G.weather=G.tomorrow;
+    const wD=getWeatherDelta(G.weather);
+    G.tomorrow=WEATHER_CALDERA[Math.floor(Math.random()*WEATHER_CALDERA.length)];
+
+    // ── 극심한 허기·갈증 소모 (일반의 2~3배) ──
     const finaleHunLoss=35, finaleThlLoss=45;
     const prevHun=G.hun, prevThi=G.thi;
     const hunDeficit=Math.max(0,finaleHunLoss-prevHun);
@@ -312,12 +337,29 @@ function doSleep(){
     let finalePen=0;
     if(hunDeficit>0){finalePen+=15+hunDeficit; log(`🍗 화산 열기에 식량이 타버렸다. 허기 부족 → HP-${15+hunDeficit}`,'danger');}
     if(thiDeficit>0){finalePen+=20+thiDeficit; log(`💧 극심한 탈수. 갈증 부족 → HP-${20+thiDeficit}`,'danger');}
-    if(finalePen>0){G.hp=Math.max(1,G.hp-finalePen); flashDamage();}
-    // AP 복원 (카드 사용 가능하도록)
+
+    // ── HP·SAN 최종 적용 ──
+    const poisonN=allCards().filter(c=>c.id==='poison_status').length;
+    if(poisonN>0){ finalePen+=5*poisonN; log(`☠️ 중독 피해: HP-${5*poisonN}`,'danger'); }
+    const rawHp=G.hp+hpR-finalePen+Math.min(0,wD.hp); // 날씨 HP 디버프만 적용
+    G.hp=Math.min(100,Math.max(0,rawHp));
+    if(finalePen>0) flashDamage();
+    const sanDrain=G.camps.length?2:5;
+    G.san=Math.min(100,Math.max(0,G.san+sanR-sanDrain+wD.san));
+
+    // ── 화상×8, 목마름×3 뽑기덱에 직접 삽입 ──
+    const _mkCard=id=>{const d=CARD_MAP[id];if(!d)return null;const c={...d,uid:uid()};if(d.dur)c.curDur=d.dur;c.addedDay=G.day;return c;};
+    for(let i=0;i<8;i++){const c=_mkCard('burn_card');if(c)G.deck.push(c);}
+    for(let i=0;i<3;i++){const c=_mkCard('thirst_card');if(c)G.deck.push(c);}
+
+    // ── 덱 셔플 (버림덱 합산) ──
     const fatigueN=allCards().filter(c=>c.id==='fatigue').length;
-    G.ap=Math.max(1,G.maxAP - fatigueN*2);
-    log(`☀️ 취침 완료. AP${G.ap} 회복.`,'');
-    // 취침 HP 회복 없음 (지옥 취침)
+    G.ap=Math.max(1,G.maxAP+(early?2:0)+ruinsBonusAP-fatigueN*2+wD.ap);
+    G.deck=shuffle(G.deck.concat(G.disc)); G.disc=[];
+
+    const sanNet=sanR-sanDrain+wD.san;
+    log(`🌙🌋 ${G.day-1}일→${G.day}일 (대분화 ${G.calderaFinaleDays}/5일). HP${hpR-finalePen>=0?'+':''}${hpR-finalePen} 정신력${sanNet>=0?'+':''}${sanNet} AP${G.ap} | 화상×8+목마름×3 뽑기덱 투입`,'important');
+
     checkSurvival(); if(G.over) return;
     _showCalderaDoomEvent(()=>{
       log(`🌋 대분화 버티기 ${G.calderaFinaleDays}/5일`,'');
@@ -330,7 +372,7 @@ function doSleep(){
       checkSurvival(); if(G.over) return;
       render(); saveGame();
     });
-    return; // 정상 취침 스킵
+    return;
   }
 
   let hpR=early?15:9, sanR=early?4:2;
