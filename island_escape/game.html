@@ -6255,7 +6255,7 @@ function _finishResolveCombat(e,dmgE,dmgP,lines,stun,poisonApplied,hasArmor,will
         resEl.innerHTML+=`<div class="rl neutral">🗺️ 이 종류 몬스터에선 이미 조각을 획득했다</div>`;
       }
     }
-    if(e.mycMapDrop){
+    if(e.mycMapDrop&&G.islandId==='mycelium'){
       const dropKey='myc_'+(CBT._evtId||e.name);
       if(!G.mycMapDrops) G.mycMapDrops={};
       if(!G.mycMapDrops[dropKey]){
