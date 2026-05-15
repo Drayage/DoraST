@@ -391,7 +391,7 @@ const CARDS=[
    desc:'화산이 만든 날카로운 광물. 무기·도구 제작 재료.'},
   {id:'burn_card', name:'화상', icon:'🔥', tag:'status', atk:0, def:0, n:0, dur:1, onDraw:true, subTags:[],
    desc:'드로우 시 자동 HP-5 후 소멸. 대분화의 열기에 탄 상처.'},
-  {id:'thirst_card', name:'극심한 목마름', icon:'💧', tag:'status', atk:0, def:0, n:0, dur:1, onDraw:true, subTags:[],
+  {id:'thirst_card', name:'극심한 목마름', icon:'🥵', tag:'status', atk:0, def:0, n:0, dur:1, onDraw:true, subTags:[],
    desc:'드로우 시 자동 갈증-10 후 소멸. 화산 열기에 탈수됐다.'},
   {id:'obsidian_blade', name:'흑요석 칼날', icon:'🗡️', tag:'combat', atk:7, def:0, n:0, dur:3, subTags:['날카로움','불꽃'],
    desc:'화산 흑요석을 갈아 만든 날. ATK+7, 날카로움·불꽃 태그.'},
